@@ -202,71 +202,108 @@ if (helmetCards.length > 0) {
     }
     helmetCards.forEach(card => {
         let animationFrame;
+        let bounds;
 
-        // Holographic effect on mouse move
+        // Update bounds on mouse enter for better performance
+        card.addEventListener('mouseenter', () => {
+            bounds = card.getBoundingClientRect();
+        });
+
+        // Simple 3D effect with light following mouse
         card.addEventListener('mousemove', (e) => {
             if (animationFrame) cancelAnimationFrame(animationFrame);
 
             animationFrame = requestAnimationFrame(() => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
+                if (!bounds) bounds = card.getBoundingClientRect();
 
-                // Calculate rotation based on mouse position
-                const rotateX = (y - centerY) / 20;
-                const rotateY = (centerX - x) / 20;
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+                const leftX = mouseX - bounds.left;
+                const topY = mouseY - bounds.top;
+                const centerX = leftX - bounds.width / 2;
+                const centerY = topY - bounds.height / 2;
 
-                // Calculate percentages for gradient positioning
-                const percentX = (x / rect.width) * 100;
-                const percentY = (y / rect.height) * 100;
+                // Calculate rotation (subtle)
+                const rotateX = (centerY / (bounds.height / 2)) * 15;
+                const rotateY = (centerX / (bounds.width / 2)) * -15;
 
-                // Apply 3D transform to the card
-                card.style.transform = `perspective(1000px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+                // Apply 3D transform to the card with scale
+                card.style.transform = `
+                    perspective(1000px)
+                    rotateX(${-rotateX}deg)
+                    rotateY(${rotateY}deg)
+                    scale3d(1.05, 1.05, 1.05)
+                `;
 
-                // Update the holographic gradient position
-                const beforeElement = card.querySelector('.helmet-card::before') || card;
-                card.style.setProperty('--mouse-x', `${percentX}%`);
-                card.style.setProperty('--mouse-y', `${percentY}%`);
+                // Calculate pointer position as percentages
+                const pointerFromCenter = {
+                    x: (leftX / bounds.width) * 100,
+                    y: (topY / bounds.height) * 100
+                };
 
-                // Update rainbow gradient on images
+                // Update CSS variables for light effect
+                card.style.setProperty('--pointer-x', `${pointerFromCenter.x}%`);
+                card.style.setProperty('--pointer-y', `${pointerFromCenter.y}%`);
+
+                // Update shine position
                 const helmetImages = card.querySelector('.helmet-images');
                 if (helmetImages) {
-                    const angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
-                    helmetImages.style.setProperty('--gradient-angle', `${angle + 90}deg`);
-                }
+                    const shineX = (pointerFromCenter.x - 50) * 2;
+                    const shineY = (pointerFromCenter.y - 50) * 2;
 
-                // Update shine layer position
-                const shineLayer = card.querySelector('.helmet-images::before');
-                if (helmetImages) {
-                    const shineX = ((x / rect.width) - 0.5) * 200;
-                    const shineY = ((y / rect.height) - 0.5) * 200;
                     helmetImages.style.setProperty('--shine-x', `${shineX}%`);
                     helmetImages.style.setProperty('--shine-y', `${shineY}%`);
                 }
 
-                // Apply subtle 3D effect to images
+                // Apply layered 3D effect to images with different depths
                 const images = card.querySelectorAll('.helmet-img');
                 images.forEach((img, idx) => {
-                    const depth = idx === 0 ? 1.02 : 1.05;
-                    const imgRotateX = rotateX * (idx === 0 ? 0.5 : 0.8);
-                    const imgRotateY = rotateY * (idx === 0 ? 0.5 : 0.8);
-                    img.style.transform = `perspective(1000px) rotateX(${-imgRotateX}deg) rotateY(${imgRotateY}deg) scale(${depth})`;
+                    const depth = idx === 0 ? 1 : 1.05;
+                    const imgRotateX = rotateX * (idx === 0 ? 0.6 : 1);
+                    const imgRotateY = rotateY * (idx === 0 ? 0.6 : 1);
+
+                    img.style.transform = `
+                        perspective(1000px)
+                        rotateX(${-imgRotateX}deg)
+                        rotateY(${imgRotateY}deg)
+                        scale3d(${depth}, ${depth}, ${depth})
+                        translateZ(${idx * 10}px)
+                    `;
                 });
             });
         });
 
         card.addEventListener('mouseleave', () => {
             if (animationFrame) cancelAnimationFrame(animationFrame);
+            bounds = null;
 
-            // Reset transforms with smooth transition
+            // Smooth reset with transition
+            card.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
             card.style.transform = '';
+
+            // Reset CSS variables
+            card.style.removeProperty('--pointer-x');
+            card.style.removeProperty('--pointer-y');
+
+            const helmetImages = card.querySelector('.helmet-images');
+            if (helmetImages) {
+                helmetImages.style.removeProperty('--shine-x');
+                helmetImages.style.removeProperty('--shine-y');
+            }
 
             const images = card.querySelectorAll('.helmet-img');
             images.forEach(img => {
+                img.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
                 img.style.transform = '';
             });
+
+            // Remove transition after animation completes
+            setTimeout(() => {
+                card.style.transition = '';
+                images.forEach(img => {
+                    img.style.transition = '';
+                });
+            }, 500);
         });
     });
     let scrollTicking = false;

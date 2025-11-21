@@ -569,9 +569,9 @@ button {
 }
 
 .helmet-card {
-    background: rgba(15, 15, 15, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
+    background: rgba(15, 15, 15, 0.95);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
     overflow: hidden;
     cursor: pointer;
     position: relative;
@@ -580,144 +580,73 @@ button {
     text-decoration: none;
     color: inherit;
     transform-style: preserve-3d;
-    transition: all 0.3s ease;
-    will-change: transform, box-shadow;
+    transition: transform 0.1s ease-out, box-shadow 0.3s ease;
+    will-change: transform;
 }
 
+/* Subtle light effect */
 .helmet-card::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(125deg,
-            rgba(255, 0, 255, 0) 0%,
-            rgba(255, 0, 255, 0.3) 20%,
-            rgba(0, 255, 255, 0.3) 40%,
-            rgba(255, 255, 0, 0.3) 60%,
-            rgba(255, 0, 0, 0.3) 80%,
-            rgba(255, 0, 255, 0) 100%);
+    inset: 0;
+    background: radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+            rgba(196, 255, 0, 0.15) 0%,
+            rgba(196, 255, 0, 0.05) 30%,
+            transparent 60%);
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
     z-index: 3;
-    mix-blend-mode: color-dodge;
 }
 
-.helmet-card::after {
+
+
+.helmet-card:hover {
+    border-color: rgba(196, 255, 0, 0.4);
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.7),
+        0 0 40px rgba(196, 255, 0, 0.15);
+    z-index: 10;
+}
+
+.helmet-card:hover::before {
+    opacity: 1;
+}
+
+
+
+.helmet-images {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.4);
+    transform-style: preserve-3d;
+}
+
+/* Subtle shine that follows mouse */
+.helmet-images::before {
     content: '';
     position: absolute;
     top: -50%;
     left: -50%;
     width: 200%;
     height: 200%;
-    background: repeating-linear-gradient(0deg,
-            transparent 0px,
-            rgba(255, 255, 255, 0.03) 1px,
-            transparent 2px,
-            transparent 4px);
+    background: radial-gradient(circle at center,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0.1) 20%,
+            transparent 40%);
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
-    z-index: 4;
-    animation: scanlines 8s linear infinite;
-}
-
-@keyframes scanlines {
-    0% {
-        transform: translateY(0);
-    }
-
-    100% {
-        transform: translateY(50px);
-    }
-}
-
-.helmet-card:hover {
-    border-color: rgba(196, 255, 0, 0.5);
-    box-shadow:
-        0 25px 70px rgba(0, 0, 0, 0.6),
-        0 0 60px rgba(196, 255, 0, 0.2),
-        inset 0 0 80px rgba(255, 255, 255, 0.05);
-    z-index: 10;
-}
-
-.helmet-card:hover::before {
-    opacity: 0.6;
-}
-
-.helmet-card:hover::after {
-    opacity: 1;
-}
-
-.helmet-images {
-    position: relative;
-    aspect-ratio: 4 / 3;
-    overflow: hidden;
-    background: rgba(0, 0, 0, 0.3);
-}
-
-/* Holographic shine layer */
-.helmet-images::before {
-    content: '';
-    position: absolute;
-    top: -100%;
-    left: -100%;
-    width: 300%;
-    height: 300%;
-    background: linear-gradient(115deg,
-            transparent 20%,
-            rgba(255, 255, 255, 0) 20%,
-            rgba(255, 255, 255, 0.1) 25%,
-            transparent 25%,
-            transparent 30%,
-            rgba(255, 255, 255, 0) 30%,
-            rgba(255, 255, 255, 0.15) 35%,
-            transparent 35%,
-            transparent 70%,
-            rgba(255, 255, 255, 0) 70%,
-            rgba(255, 255, 255, 0.1) 75%,
-            transparent 75%);
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    pointer-events: none;
     z-index: 5;
-    mix-blend-mode: overlay;
+    transform: translate(var(--shine-x, 0%), var(--shine-y, 0%));
 }
 
 .helmet-card:hover .helmet-images::before {
     opacity: 1;
 }
 
-/* Rainbow gradient overlay */
-.helmet-images::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(var(--gradient-angle, 125deg),
-            #ff0080 0%,
-            #ff0080 10%,
-            #ff8c00 20%,
-            #40e0d0 30%,
-            #7b68ee 40%,
-            #ff1493 50%,
-            #ffd700 60%,
-            #00ced1 70%,
-            #ff69b4 80%,
-            #ff0080 90%,
-            #ff0080 100%);
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    pointer-events: none;
-    z-index: 2;
-    mix-blend-mode: color-dodge;
-    filter: brightness(0.8) contrast(1.2);
-}
 
-.helmet-card:hover .helmet-images::after {
-    opacity: 0.4;
-}
 
 .helmet-img {
     position: absolute;
@@ -753,7 +682,7 @@ button {
 
 .helmet-card:hover .project-icon-large {
     transform: scale(1.2) rotate(10deg);
-    filter: drop-shadow(0 15px 40px rgba(196, 255, 0, 0.4));
+    filter: drop-shadow(0 15px 40px rgba(196, 255, 0, 0.3));
 }
 
 .project-tech-badge {
@@ -770,7 +699,7 @@ button {
     transform: scale(1.15);
     text-shadow:
         0 4px 20px rgba(0, 0, 0, 0.5),
-        0 0 30px rgba(196, 255, 0, 0.6);
+        0 0 20px rgba(196, 255, 0, 0.4);
 }
 
 .helmet-img::before {
