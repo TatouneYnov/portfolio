@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bacquier Ethan - Portfolio</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%230a0a0a' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='%23c4ff00' font-weight='bold'%3EE%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <canvas id="backgroundCanvas"></canvas>
+    <header class="header">
+        <nav class="nav">
+            <div class="logo-container">
+                <div class="profile-pic">
+                    <img src="images/placeholder.svg" alt="Ethan Bacquier">
+                </div>
+                <div class="logo">BACQUIER ETHAN</div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Accueil</a></li>
+                <li><a href="#about">À propos</a></li>
+                <li><a href="#skills">Compétences</a></li>
+                <li><a href="#projects">Projets</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+    <section id="home" class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <div class="hero-badge">ÉTUDIANT DÉVELOPPEUR</div>
+            <h1 class="hero-title">
+                <span class="hero-name">BACQUIER</span>
+                <span class="hero-name">ETHAN</span>
+            </h1>
+            <p class="hero-tagline">B1 Informatique • Ynov Lyon</p>
+            <div class="hero-scroll">
+                <span>SCROLL</span>
+                <div class="scroll-indicator"></div>
+            </div>
+        </div>
+    </section>
+    <section id="about" class="section about">
+        <div class="container">
+            <h2 class="section-title-large">À PROPOS</h2>
+            <div class="about-content">
+                <div class="about-main">
+                    <p class="manifesto">APPRENDRE, CRÉER, ÉVOLUER.</p>
+                    <div class="about-description">
+                        <p>Actuellement étudiant en B1 Informatique à Ynov Campus Lyon, je suis passionné par le
+                            développement web et logiciel. À travers mes études et mes projets personnels, j'explore
+                            différentes technologies pour créer des applications modernes et fonctionnelles.</p>
+                        <p>Mon objectif est de transformer mes connaissances théoriques en compétences pratiques, tout
+                            en continuant à découvrir de nouveaux langages et frameworks pour enrichir mon expertise
+                            technique.</p>
+                    </div>
+                    <div class="about-badges">
+                        <div class="badge-item">
+                            <span class="badge-icon">⚡</span>
+                            <span class="badge-text">Performance</span>
+                        </div>
+                        <div class="badge-item">
+                            <span class="badge-icon">🎨</span>
+                            <span class="badge-text">Design</span>
+                        </div>
+                        <div class="badge-item">
+                            <span class="badge-icon">🚀</span>
+                            <span class="badge-text">Innovation</span>
+                        </div>
+                        <div class="badge-item">
+                            <span class="badge-icon">💡</span>
+                            <span class="badge-text">Créativité</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-side">
+                    <div class="about-image-main">
+                        <img src="images/about-photo.jpg.svg" alt="Bacquier Ethan">
+                    </div>
+                    <div class="about-stats">
+                        <div class="stat">
+                            <span class="stat-number" data-count="1">B1</span>
+                            <span class="stat-label">ANNEE D'ETUDES</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" data-count="10">10+</span>
+                            <span class="stat-label">PROJETS</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" data-count="4">4</span>
+                            <span class="stat-label">LANGAGES</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="about-quote">
+                <p class="quote-text">"Le code n'est pas juste du code, c'est de l'art en mouvement."</p>
+                <div class="signature">— Bacquier Ethan</div>
+            </div>
+        </div>
+    </section>
+    <section id="skills" class="section skills">
+        <div class="container">
+            <h2 class="section-title-large">COMPÉTENCES</h2>
+            <div class="skills-simple-layout">
+                <div class="skills-simple-column">
+                    <h3 class="skills-category">LANGAGES</h3>
+                    <div class="skills-badges">
+                        <div class="skill-badge">
+                            <span class="skill-icon">✓</span>
+                            <span class="skill-name">HTML / CSS</span>
+                        </div>
+                        <div class="skill-badge">
+                            <span class="skill-icon">✓</span>
+                            <span class="skill-name">JavaScript</span>
+                        </div>
+                        <div class="skill-badge">
+                            <span class="skill-icon">✓</span>
+                            <span class="skill-name">Python</span>
+                        </div>
+                        <div class="skill-badge">
+                            <span class="skill-icon">✓</span>
+                            <span class="skill-name">Go</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="skills-simple-column">
+                    <h3 class="skills-category">OUTILS</h3>
+                    <div class="skills-badges">
+                        <div class="skill-badge">
+                            <span class="skill-icon">✓</span>
+                            <span class="skill-name">Git / GitHub</span>
+                        </div>
+                        <div class="skill-badge">
+                            <span class="skill-icon">✓</span>
+                            <span class="skill-name">VS Code</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="skills-simple-column">
+                    <h3 class="skills-category">DÉVELOPPEMENT</h3>
+                    <div class="skills-badges">
+                        <div class="skill-badge">
+                            <span class="skill-icon">✓</span>
+                            <span class="skill-name">Développement Web</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="github-stats-container" style="margin-top: 4rem; text-align: center;">
+                <h3 class="skills-category" style="margin-bottom: 2rem; font-size: 1.5rem;">MES LANGAGES SUR GITHUB</h3>
+                <a href="https://github.com/TatouneYnov" target="_blank" rel="noopener noreferrer"
+                    style="display: inline-block; transition: transform 0.3s ease;"
+                    onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=TatouneYnov&layout=compact&theme=dark&bg_color=0a0a0a&title_color=c4ff00&text_color=ffffff&border_color=2a2a2a&hide_border=false&card_width=600"
+                        alt="Langages les plus utilisés"
+                        style="border-radius: 12px; width: 100%; max-width: 600px; height: auto;">
+                </a>
+            </div>
+        </div>
+    </section>
+    <section id="projects" class="section projects">
+        <div class="projects-intro">
+            <h2 class="section-title-large">PROJETS</h2>
+            <h3 class="projects-hall-title">HALL OF FAME</h3>
+            <p class="projects-description">Une sélection de mes projets les plus marquants, alliant créativité et
+                performance technique.</p>
+        </div>
+        <div class="helmets-gallery">
+            <a href="https://github.com/Hera-app/hera-connect" target="_blank" rel="noopener noreferrer"
+                class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="project-preview">
+                            <div class="project-icon-large">🚀</div>
+                        </div>
+                    </div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);">
+                        <div class="project-preview">
+                            <div class="project-tech-badge">HERA</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">Hera</h3>
+                    <p class="helmet-year">2024</p>
+                </div>
+            </a>
+            <a href="https://github.com/TatouneYnov/-power4-web" target="_blank" rel="noopener noreferrer"
+                class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="project-preview">
+                            <div class="project-icon-large">🎮</div>
+                        </div>
+                    </div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);">
+                        <div class="project-preview">
+                            <div class="project-tech-badge">POWER 4</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">Power 4</h3>
+                    <p class="helmet-year">2024</p>
+                </div>
+            </a>
+            <div class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #4facfe 40%, #00f2fe 100%);"></div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">Dashboard</h3>
+                    <p class="helmet-year">2024</p>
+                </div>
+            </div>
+            <div class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #fa709a 40%, #fee140 100%);"></div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">Portfolio</h3>
+                    <p class="helmet-year">2023</p>
+                </div>
+            </div>
+            <div class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #43e97b 40%, #38f9d7 100%);"></div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">SaaS Platform</h3>
+                    <p class="helmet-year">2023</p>
+                </div>
+            </div>
+            <div class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);"></div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #a8edea 40%, #fed6e3 100%);"></div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">Design System</h3>
+                    <p class="helmet-year">2023</p>
+                </div>
+            </div>
+            <div class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);"></div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #ff9a9e 40%, #fecfef 100%);"></div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">Auth API</h3>
+                    <p class="helmet-year">2023</p>
+                </div>
+            </div>
+            <div class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);"></div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #ffecd2 40%, #fcb69f 100%);"></div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">Marketing Site</h3>
+                    <p class="helmet-year">2022</p>
+                </div>
+            </div>
+            <div class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%);"></div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #ff6e7f 40%, #bfe9ff 100%);"></div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">Real-Time App</h3>
+                    <p class="helmet-year">2022</p>
+                </div>
+            </div>
+            <div class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);"></div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #e0c3fc 40%, #8ec5fc 100%);"></div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">Landing Page</h3>
+                    <p class="helmet-year">2022</p>
+                </div>
+            </div>
+            <div class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #f093fb 40%, #f5576c 100%);"></div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">CMS Platform</h3>
+                    <p class="helmet-year">2021</p>
+                </div>
+            </div>
+            <div class="helmet-card">
+                <div class="helmet-images">
+                    <div class="helmet-img helmet-img-1"
+                        style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);"></div>
+                    <div class="helmet-img helmet-img-2"
+                        style="background: linear-gradient(135deg, #30cfd0 40%, #330867 100%);"></div>
+                </div>
+                <div class="helmet-info">
+                    <h3 class="helmet-name">Web Game</h3>
+                    <p class="helmet-year">2021</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="contact" class="section contact">
+        <div class="contact-container">
+            <h2 class="section-title-large">TRAVAILLONS ENSEMBLE</h2>
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div class="contact-item-large">
+                        <span class="contact-label">EMAIL</span>
+                        <a href="mailto:bacquier.ethan@example.com" class="contact-link">ethan.bacquier@ynov.com</a>
+                    </div>
+                    <div class="contact-item-large">
+                        <span class="contact-label">TÉLÉPHONE</span>
+                        <a href="tel:+33612345678" class="contact-link">+33 6 50 14 20 52</a>
+                    </div>
+                    <div class="contact-item-large">
+                        <span class="contact-label">LOCALISATION</span>
+                        <span class="contact-text">Lyon, France</span>
+                    </div>
+                </div>
+                <form class="contact-form-modern" id="contactForm">
+                    <div class="form-row">
+                        <input type="text" id="name" name="name" placeholder="NOM" required>
+                    </div>
+                    <div class="form-row">
+                        <input type="email" id="email" name="email" placeholder="EMAIL" required>
+                    </div>
+                    <div class="form-row">
+                        <textarea id="message" name="message" rows="6" placeholder="MESSAGE" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-modern">ENVOYER →</button>
+                </form>
+                </form>
+            </div>
+            <div class="social-links-modern">
+                <a href="https://github.com/TatouneYnov" target="_blank" rel="noopener noreferrer"
+                    class="social-link">GITHUB</a>
+                <a href="https://www.linkedin.com/in/ethan-bacquier" target="_blank" rel="noopener noreferrer"
+                    class="social-link">LINKEDIN</a>
+                <a href="https://twitter.com/ethan_bcqr" target="_blank" rel="noopener noreferrer"
+                    class="social-link">TWITTER</a>
+                <a href="https://www.instagram.com/ethan.bcqr/" target="_blank" rel="noopener noreferrer"
+                    class="social-link">INSTAGRAM</a>
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-text">
+                <p class="footer-tagline">TOUJOURS PRÊT À RELEVER LE DÉFI.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Bacquier Ethan. Tous droits réservés.</p>
+                <div class="footer-links">
+                    <a href="#">Mentions légales</a>
+                    <a href="#">Confidentialité</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+
+</html>
