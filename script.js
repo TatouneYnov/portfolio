@@ -184,7 +184,7 @@ if (helmetCards.length > 0) {
                         card.style.opacity = '1';
                         card.style.transform = 'translateY(0) scale(1)';
                         card.style.filter = 'blur(0px)';
-                    }, index * 120); 
+                    }, index * 120);
                 });
                 helmetObserver.unobserve(entry.target);
             }
@@ -202,25 +202,67 @@ if (helmetCards.length > 0) {
     }
     helmetCards.forEach(card => {
         let animationFrame;
+
+        // Holographic effect on mouse move
         card.addEventListener('mousemove', (e) => {
             if (animationFrame) cancelAnimationFrame(animationFrame);
+
             animationFrame = requestAnimationFrame(() => {
                 const rect = card.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
-                const rotateX = (y - centerY) / 15;
-                const rotateY = (centerX - x) / 15;
+
+                // Calculate rotation based on mouse position
+                const rotateX = (y - centerY) / 20;
+                const rotateY = (centerX - x) / 20;
+
+                // Calculate percentages for gradient positioning
+                const percentX = (x / rect.width) * 100;
+                const percentY = (y / rect.height) * 100;
+
+                // Apply 3D transform to the card
+                card.style.transform = `perspective(1000px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+
+                // Update the holographic gradient position
+                const beforeElement = card.querySelector('.helmet-card::before') || card;
+                card.style.setProperty('--mouse-x', `${percentX}%`);
+                card.style.setProperty('--mouse-y', `${percentY}%`);
+
+                // Update rainbow gradient on images
+                const helmetImages = card.querySelector('.helmet-images');
+                if (helmetImages) {
+                    const angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
+                    helmetImages.style.setProperty('--gradient-angle', `${angle + 90}deg`);
+                }
+
+                // Update shine layer position
+                const shineLayer = card.querySelector('.helmet-images::before');
+                if (helmetImages) {
+                    const shineX = ((x / rect.width) - 0.5) * 200;
+                    const shineY = ((y / rect.height) - 0.5) * 200;
+                    helmetImages.style.setProperty('--shine-x', `${shineX}%`);
+                    helmetImages.style.setProperty('--shine-y', `${shineY}%`);
+                }
+
+                // Apply subtle 3D effect to images
                 const images = card.querySelectorAll('.helmet-img');
                 images.forEach((img, idx) => {
                     const depth = idx === 0 ? 1.02 : 1.05;
-                    img.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${depth})`;
+                    const imgRotateX = rotateX * (idx === 0 ? 0.5 : 0.8);
+                    const imgRotateY = rotateY * (idx === 0 ? 0.5 : 0.8);
+                    img.style.transform = `perspective(1000px) rotateX(${-imgRotateX}deg) rotateY(${imgRotateY}deg) scale(${depth})`;
                 });
             });
         });
+
         card.addEventListener('mouseleave', () => {
             if (animationFrame) cancelAnimationFrame(animationFrame);
+
+            // Reset transforms with smooth transition
+            card.style.transform = '';
+
             const images = card.querySelectorAll('.helmet-img');
             images.forEach(img => {
                 img.style.transform = '';
@@ -299,7 +341,7 @@ window.addEventListener('scroll', () => {
 });
 const projectCards = document.querySelectorAll('.project-card-large');
 projectCards.forEach(card => {
-    card.addEventListener('mouseenter', function() {
+    card.addEventListener('mouseenter', function () {
         this.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
         const cardImage = this.querySelector('.project-image-large');
         if (cardImage) {
@@ -307,7 +349,7 @@ projectCards.forEach(card => {
             cardImage.style.transform = 'scale(1.1)';
         }
     });
-    card.addEventListener('mouseleave', function() {
+    card.addEventListener('mouseleave', function () {
         const cardImage = this.querySelector('.project-image-large');
         if (cardImage) {
             cardImage.style.transform = 'scale(1.05)';
@@ -316,7 +358,7 @@ projectCards.forEach(card => {
 });
 const skillItems = document.querySelectorAll('.skills-list li');
 skillItems.forEach(item => {
-    item.addEventListener('mouseenter', function() {
+    item.addEventListener('mouseenter', function () {
         const allItems = this.parentElement.querySelectorAll('li');
         const index = Array.from(allItems).indexOf(this);
         allItems.forEach((sibling, i) => {
@@ -435,7 +477,7 @@ if (window.innerWidth < 768) {
 */
 const magneticElements = document.querySelectorAll('.btn-modern, .social-link, .nav-links a');
 magneticElements.forEach(el => {
-    el.addEventListener('mousemove', function(e) {
+    el.addEventListener('mousemove', function (e) {
         const rect = this.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
@@ -443,7 +485,7 @@ magneticElements.forEach(el => {
         const moveY = y * 0.3;
         this.style.transform = `translate(${moveX}px, ${moveY}px)`;
     });
-    el.addEventListener('mouseleave', function() {
+    el.addEventListener('mouseleave', function () {
         this.style.transform = 'translate(0, 0)';
     });
 });
@@ -517,7 +559,7 @@ const imageObserver = new IntersectionObserver((entries) => {
 aboutImages.forEach(img => imageObserver.observe(img));
 const interactiveLinks = document.querySelectorAll('.contact-link, .social-link');
 interactiveLinks.forEach(link => {
-    link.addEventListener('mouseenter', function(e) {
+    link.addEventListener('mouseenter', function (e) {
         const rect = this.getBoundingClientRect();
         const ripple = document.createElement('span');
         ripple.style.cssText = `

@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="glowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:0.4" />
+    </linearGradient>
+    
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgGradient)"/>
+  
+  <!-- Decorative circles in background -->
+  <circle cx="150" cy="100" r="120" fill="#a78bfa" opacity="0.1"/>
+  <circle cx="650" cy="500" r="150" fill="#ec4899" opacity="0.1"/>
+  <circle cx="700" cy="150" r="80" fill="#8b5cf6" opacity="0.15"/>
+  
+  <!-- Connection nodes network -->
+  <g opacity="0.3">
+    <line x1="200" y1="200" x2="350" y2="280" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+    <line x1="350" y1="280" x2="500" y2="250" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+    <line x1="500" y1="250" x2="600" y2="350" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+    <line x1="350" y1="280" x2="400" y2="400" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+    <line x1="200" y1="200" x2="250" y2="350" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+  </g>
+  
+  <!-- Connection nodes -->
+  <g filter="url(#softGlow)">
+    <circle cx="200" cy="200" r="12" fill="#ffffff" opacity="0.8"/>
+    <circle cx="350" cy="280" r="16" fill="#ffffff" opacity="0.9"/>
+    <circle cx="500" cy="250" r="12" fill="#ffffff" opacity="0.8"/>
+    <circle cx="600" cy="350" r="10" fill="#ffffff" opacity="0.7"/>
+    <circle cx="400" cy="400" r="10" fill="#ffffff" opacity="0.7"/>
+    <circle cx="250" cy="350" r="10" fill="#ffffff" opacity="0.7"/>
+  </g>
+  
+  <!-- Central hub/interface -->
+  <g transform="translate(400, 300)">
+    <!-- Outer ring -->
+    <circle cx="0" cy="0" r="100" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.3"/>
+    <circle cx="0" cy="0" r="85" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.2"/>
+    
+    <!-- Inner elements -->
+    <circle cx="0" cy="0" r="60" fill="rgba(255,255,255,0.1)" filter="url(#softGlow)"/>
+    
+    <!-- Connecting lines from center -->
+    <line x1="0" y1="0" x2="0" y2="-60" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+    <line x1="0" y1="0" x2="52" y2="-30" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+    <line x1="0" y1="0" x2="52" y2="30" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+    <line x1="0" y1="0" x2="0" y2="60" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+    <line x1="0" y1="0" x2="-52" y2="30" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+    <line x1="0" y1="0" x2="-52" y2="-30" stroke="#ffffff" stroke-width="2" opacity="0.4"/>
+    
+    <!-- Small nodes around -->
+    <circle cx="0" cy="-60" r="8" fill="#ffffff" opacity="0.8"/>
+    <circle cx="52" cy="-30" r="8" fill="#ffffff" opacity="0.8"/>
+    <circle cx="52" cy="30" r="8" fill="#ffffff" opacity="0.8"/>
+    <circle cx="0" cy="60" r="8" fill="#ffffff" opacity="0.8"/>
+    <circle cx="-52" cy="30" r="8" fill="#ffffff" opacity="0.8"/>
+    <circle cx="-52" cy="-30" r="8" fill="#ffffff" opacity="0.8"/>
+    
+    <!-- Center core -->
+    <circle cx="0" cy="0" r="20" fill="url(#glowGradient)" filter="url(#glow)"/>
+    <circle cx="0" cy="0" r="15" fill="#ffffff" opacity="0.9"/>
+  </g>
+  
+  <!-- HERA Logo -->
+  <g transform="translate(400, 80)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="72" font-weight="900" 
+          fill="#ffffff" text-anchor="middle" letter-spacing="8" filter="url(#glow)">
+      HERA
+    </text>
+  </g>
+  
+  <!-- Subtitle -->
+  <g transform="translate(400, 520)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="20" font-weight="300" 
+          fill="#ffffff" text-anchor="middle" opacity="0.8" letter-spacing="4">
+      CONNECTION PLATFORM
+    </text>
+  </g>
+  
+  <!-- Decorative geometric shapes -->
+  <g opacity="0.15">
+    <rect x="50" y="450" width="60" height="60" fill="none" stroke="#ffffff" stroke-width="2" transform="rotate(45 80 480)"/>
+    <rect x="680" y="80" width="50" height="50" fill="none" stroke="#ffffff" stroke-width="2" transform="rotate(30 705 105)"/>
+  </g>
+  
+  <!-- Animated pulse effect (optional, can be removed if not needed) -->
+  <circle cx="400" cy="300" r="100" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.2">
+    <animate attributeName="r" from="100" to="120" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" from="0.2" to="0" dur="2s" repeatCount="indefinite"/>
+  </circle>
+</svg>

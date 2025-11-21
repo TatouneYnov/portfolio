@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bgGradientPower4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="redGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b9d;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffa07a;stop-opacity:0.6" />
+    </linearGradient>
+    
+    <linearGradient id="yellowGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd700;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffed4e;stop-opacity:0.6" />
+    </linearGradient>
+    
+    <filter id="glowPower4">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <filter id="softGlowPower4">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgGradientPower4)"/>
+  
+  <!-- Decorative circles in background -->
+  <circle cx="120" cy="120" r="100" fill="#ff6b9d" opacity="0.15"/>
+  <circle cx="680" cy="480" r="130" fill="#ffd700" opacity="0.15"/>
+  <circle cx="650" cy="100" r="70" fill="#ff8fab" opacity="0.2"/>
+  
+  <!-- Game Board Grid -->
+  <g transform="translate(200, 120)">
+    <!-- Board background -->
+    <rect x="-10" y="-10" width="420" height="370" rx="20" fill="rgba(255,255,255,0.1)" filter="url(#softGlowPower4)"/>
+    
+    <!-- Grid lines -->
+    <g stroke="#ffffff" stroke-width="3" opacity="0.3">
+      <!-- Vertical lines -->
+      <line x1="60" y1="0" x2="60" y2="350"/>
+      <line x1="120" y1="0" x2="120" y2="350"/>
+      <line x1="180" y1="0" x2="180" y2="350"/>
+      <line x1="240" y1="0" x2="240" y2="350"/>
+      <line x1="300" y1="0" x2="300" y2="350"/>
+      <line x1="360" y1="0" x2="360" y2="350"/>
+      
+      <!-- Horizontal lines -->
+      <line x1="0" y1="60" x2="400" y2="60"/>
+      <line x1="0" y1="120" x2="400" y2="120"/>
+      <line x1="0" y1="180" x2="400" y2="180"/>
+      <line x1="0" y1="240" x2="400" y2="240"/>
+      <line x1="0" y1="300" x2="400" y2="300"/>
+    </g>
+    
+    <!-- Game pieces - Red player -->
+    <g filter="url(#glowPower4)">
+      <circle cx="30" cy="330" r="22" fill="url(#redGlow)"/>
+      <circle cx="90" cy="330" r="22" fill="url(#redGlow)"/>
+      <circle cx="150" cy="330" r="22" fill="url(#redGlow)"/>
+      <circle cx="210" cy="330" r="22" fill="url(#redGlow)"/>
+      
+      <circle cx="30" cy="270" r="22" fill="url(#redGlow)"/>
+      <circle cx="90" cy="270" r="22" fill="url(#redGlow)"/>
+      <circle cx="150" cy="270" r="22" fill="url(#redGlow)"/>
+      
+      <circle cx="30" cy="210" r="22" fill="url(#redGlow)"/>
+      <circle cx="150" cy="210" r="22" fill="url(#redGlow)"/>
+      
+      <circle cx="30" cy="150" r="22" fill="url(#redGlow)"/>
+    </g>
+    
+    <!-- Game pieces - Yellow player -->
+    <g filter="url(#glowPower4)">
+      <circle cx="270" cy="330" r="22" fill="url(#yellowGlow)"/>
+      <circle cx="330" cy="330" r="22" fill="url(#yellowGlow)"/>
+      <circle cx="370" cy="330" r="22" fill="url(#yellowGlow)"/>
+      
+      <circle cx="210" cy="270" r="22" fill="url(#yellowGlow)"/>
+      <circle cx="270" cy="270" r="22" fill="url(#yellowGlow)"/>
+      <circle cx="330" cy="270" r="22" fill="url(#yellowGlow)"/>
+      
+      <circle cx="90" cy="210" r="22" fill="url(#yellowGlow)"/>
+      <circle cx="210" cy="210" r="22" fill="url(#yellowGlow)"/>
+      <circle cx="270" cy="210" r="22" fill="url(#yellowGlow)"/>
+      
+      <circle cx="90" cy="150" r="22" fill="url(#yellowGlow)"/>
+      <circle cx="210" cy="150" r="22" fill="url(#yellowGlow)"/>
+    </g>
+    
+    <!-- Winning line highlight (diagonal) -->
+    <line x1="30" y1="330" x2="210" y2="150" stroke="#ffffff" stroke-width="6" opacity="0.6" stroke-linecap="round" filter="url(#glowPower4)"/>
+    
+    <!-- Highlight circles on winning pieces -->
+    <g stroke="#ffffff" stroke-width="3" fill="none" opacity="0.8">
+      <circle cx="30" cy="330" r="28"/>
+      <circle cx="90" cy="270" r="28"/>
+      <circle cx="150" cy="210" r="28"/>
+      <circle cx="210" cy="150" r="28"/>
+    </g>
+  </g>
+  
+  <!-- POWER 4 Logo -->
+  <g transform="translate(400, 70)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="64" font-weight="900" 
+          fill="#ffffff" text-anchor="middle" letter-spacing="6" filter="url(#glowPower4)">
+      POWER 4
+    </text>
+  </g>
+  
+  <!-- Subtitle -->
+  <g transform="translate(400, 540)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="18" font-weight="300" 
+          fill="#ffffff" text-anchor="middle" opacity="0.8" letter-spacing="4">
+      MULTIPLAYER GAME
+    </text>
+  </g>
+  
+  <!-- Decorative game controller elements -->
+  <g opacity="0.2">
+    <!-- Left controller button -->
+    <circle cx="80" cy="500" r="30" fill="none" stroke="#ffffff" stroke-width="3"/>
+    <circle cx="80" cy="500" r="15" fill="#ffffff"/>
+    
+    <!-- Right controller buttons -->
+    <circle cx="720" cy="500" r="12" fill="#ffffff"/>
+    <circle cx="750" cy="470" r="12" fill="#ffffff"/>
+    <circle cx="750" cy="530" r="12" fill="#ffffff"/>
+    <circle cx="780" cy="500" r="12" fill="#ffffff"/>
+  </g>
+  
+  <!-- Animated piece dropping (optional) -->
+  <circle cx="270" cy="30" r="22" fill="url(#yellowGlow)" filter="url(#glowPower4)" opacity="0.6">
+    <animate attributeName="cy" from="30" to="90" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" from="0.6" to="0.3" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>
