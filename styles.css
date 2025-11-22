@@ -697,6 +697,7 @@ button {
     letter-spacing: 0.05em;
     text-transform: uppercase;
     transition: all 0.3s ease;
+    pointer-events: all;
 }
 
 .tech-tag:hover {
@@ -719,6 +720,9 @@ button {
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     text-transform: uppercase;
     width: 100%;
+    pointer-events: all;
+    position: relative;
+    z-index: 11;
 }
 
 .btn-more-info:hover {
