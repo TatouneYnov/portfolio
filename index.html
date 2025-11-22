@@ -4,9 +4,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bacquier Ethan - Portfolio</title>
+    
+    <!-- SEO Meta Tags -->
+    <title>Bacquier Ethan - Développeur Web | Portfolio</title>
+    <meta name="description" content="Portfolio de Bacquier Ethan, étudiant en B1 Informatique à Ynov Lyon. Découvrez mes projets en développement web : JavaScript, Python, Go. Passionné par le code et l'innovation.">
+    <meta name="keywords" content="Bacquier Ethan, développeur web, portfolio, Ynov Lyon, JavaScript, Python, développement web, étudiant informatique">
+    <meta name="author" content="Bacquier Ethan">
+    <meta name="theme-color" content="#c4ff00">
+    
+    <!-- Open Graph Meta Tags (Facebook, LinkedIn, Discord) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tatouneynov.github.io/portfolio/">
+    <meta property="og:title" content="Bacquier Ethan - Développeur Web | Portfolio">
+    <meta property="og:description" content="Étudiant en B1 Informatique à Ynov Lyon, passionné par le développement web. Découvrez mes projets et compétences.">
+    <meta property="og:image" content="https://tatouneynov.github.io/portfolio/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:site_name" content="Bacquier Ethan Portfolio">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@ethan_bcqr">
+    <meta name="twitter:creator" content="@ethan_bcqr">
+    <meta name="twitter:title" content="Bacquier Ethan - Développeur Web">
+    <meta name="twitter:description" content="Portfolio d'un étudiant développeur passionné. Projets en JavaScript, Python, Go.">
+    <meta name="twitter:image" content="https://tatouneynov.github.io/portfolio/images/og-image.jpg">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://tatouneynov.github.io/portfolio/">
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%230a0a0a' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='%23c4ff00' font-weight='bold'%3EE%3C/text%3E%3C/svg%3E">
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Bacquier Ethan",
+      "jobTitle": "Étudiant Développeur Web",
+      "url": "https://tatouneynov.github.io/portfolio/",
+      "sameAs": [
+        "https://github.com/TatouneYnov",
+        "https://www.linkedin.com/in/ethan-bacquier",
+        "https://twitter.com/ethan_bcqr",
+        "https://www.instagram.com/ethan.bcqr/"
+      ],
+      "alumniOf": {
+        "@type": "EducationalOrganization",
+        "name": "Ynov Lyon"
+      },
+      "knowsAbout": ["JavaScript", "Python", "Go", "HTML", "CSS", "Développement Web"],
+      "email": "ethan.bacquier@ynov.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Lyon",
+        "addressCountry": "FR"
+      }
+    }
+    </script>
+    
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -81,10 +140,18 @@
                             <span class="badge-text">Créativité</span>
                         </div>
                     </div>
+                    <a href="assets/CV_Bacquier_Ethan.pdf" target="_blank" rel="noopener noreferrer" class="btn-download-cv">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        TÉLÉCHARGER MON CV
+                    </a>
                 </div>
                 <div class="about-side">
                     <div class="about-image-main">
-                        <img src="images/ethan_avatar.png" alt="Bacquier Ethan">
+                        <img src="images/ethan_avatar.jpg" alt="Bacquier Ethan" loading="lazy">
                     </div>
                     <div class="about-stats">
                         <div class="stat">
@@ -161,7 +228,8 @@
                 <a href="https://github.com/TatouneYnov" target="_blank" rel="noopener noreferrer" class="github-stats-link">
                     <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=TatouneYnov&layout=compact&theme=dark&bg_color=0a0a0a&title_color=c4ff00&text_color=ffffff&border_color=2a2a2a&hide_border=false&card_width=600&langs_count=8&hide=jupyter%20notebook,html&cache_seconds=1800"
                         alt="Langages les plus utilisés"
-                        class="github-stats-img">
+                        class="github-stats-img"
+                        loading="lazy">
                 </a>
             </div>
         </div>
@@ -236,6 +304,14 @@
             </div>
         </div>
     </footer>
+    
+    <!-- Bouton retour en haut -->
+    <button id="backToTop" class="back-to-top" aria-label="Retour en haut" title="Retour en haut">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    </button>
+    
     <!-- Scripts modulaires -->
     <script src="js/config.js"></script>
     <script src="js/templates.js"></script>
@@ -244,6 +320,7 @@
     <script src="js/animations.js"></script>
     <script src="js/projects.js"></script>
     <script src="js/interactive.js"></script>
+    <script src="js/back-to-top.js"></script>
     <script src="js/main.js"></script>
 </body>
 

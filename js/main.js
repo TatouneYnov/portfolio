@@ -10,4 +10,5 @@ document.addEventListener('DOMContentLoaded', () => {
     Animations.initHeroParallax();
     Animations.initLoadAnimations();
     InteractiveEffects.init();
+    BackToTop.init();
 });

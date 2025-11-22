@@ -6,7 +6,7 @@ const Templates = {
             <div class="helmet-card" data-project="${project.id}">
                 <div class="helmet-images">
                     <div class="helmet-img helmet-img-1">
-                        <img src="${project.image}" alt="${project.name} Project">
+                        <img src="${project.image}" alt="${project.name} Project" loading="lazy">
                     </div>
                     <div class="helmet-img helmet-img-2">
                         <div class="project-preview">

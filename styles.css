@@ -4,10 +4,39 @@
     --text-secondary: #a0a0a0;
     --bg-primary: #0a0a0a;
     --bg-secondary: #141414;
-    --bg-tertiary: #1a1a1a;
     --border-color: #2a2a2a;
     --transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     --transition-fast: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Animation de flottement pour les cartes */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+    }
+    50% {
+        transform: translateY(-10px) rotateX(0deg) rotateY(0deg);
+    }
+}
+
+/* Respect des préférences d'accessibilité - Réduit les animations */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .hero-bg {
+        animation: none !important;
+    }
+    
+    #backgroundCanvas {
+        display: none !important;
+    }
 }
 
 * {
@@ -758,7 +787,8 @@ button {
     opacity: 0;
     pointer-events: none;
     transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: 0 50px 100px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(196, 255, 0, 0.1), 0 0 60px rgba(196, 255, 0, 0.2);
 }
 
@@ -1095,6 +1125,9 @@ button {
     transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
+    text-align: center;
+    display: inline-block;
+    min-width: 140px;
 }
 
 .social-link::before {
@@ -1169,6 +1202,53 @@ button {
     font-size: 0.875rem;
 }
 
+/* Bouton retour en haut */
+.back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    background: var(--accent-color);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.8);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(196, 255, 0, 0.3);
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.back-to-top:hover {
+    background: rgba(196, 255, 0, 0.9);
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 8px 30px rgba(196, 255, 0, 0.5);
+}
+
+.back-to-top:active {
+    transform: translateY(-3px) scale(1.05);
+}
+
+.back-to-top svg {
+    transition: transform 0.3s ease;
+}
+
+.back-to-top:hover svg {
+    transform: translateY(-3px);
+}
+
 .github-stats-container {
     margin-top: 4rem;
     text-align: center;
@@ -1204,18 +1284,46 @@ button {
     }
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 @media (max-width: 768px) {
+    /* Animation de flottement sur les cartes projets */
+    .helmet-card {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    .helmet-card:nth-child(2) {
+        animation-delay: 0.5s;
+    }
+    
+    .helmet-card:nth-child(3) {
+        animation-delay: 1s;
+    }
+    
+    /* Afficher le bouton "En savoir plus" par défaut sur mobile */
+    .project-description {
+        position: relative;
+        opacity: 1;
+        background: transparent;
+        backdrop-filter: none;
+        padding: 1rem;
+        pointer-events: all;
+    }
+    
+    .project-desc-text {
+        display: none;
+    }
+    
+    .project-tech-stack {
+        display: none;
+    }
+    
+    .btn-more-info {
+        margin-top: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.8rem;
+        background: var(--accent-color);
+        box-shadow: 0 4px 12px rgba(196, 255, 0, 0.3);
+    }
+
     .nav {
         padding: 1rem 1.5rem;
     }
@@ -1284,6 +1392,20 @@ button {
         gap: 3rem;
     }
 
+    .social-links-modern {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .social-link {
+        display: block;
+        min-width: auto;
+    }
+
     .footer-bottom {
         flex-direction: column;
         gap: 1.5rem;
@@ -1302,8 +1424,14 @@ button {
     }
 
     .project-details {
-        padding: 2rem 1.5rem;
-        width: 95%;
+        top: 2vh;
+        left: 2.5vw;
+        right: 2.5vw;
+        bottom: 2vh;
+        padding: 1.5rem;
+        border-radius: 16px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .project-details-header h3 {
@@ -1411,6 +1539,40 @@ button {
 
 .badge-item:hover .badge-text {
     color: var(--accent-color);
+}
+
+.btn-download-cv {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: var(--accent-color);
+    color: var(--bg-primary);
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    margin-top: 1.5rem;
+    width: fit-content;
+    border: 2px solid var(--accent-color);
+}
+
+.btn-download-cv:hover {
+    background: transparent;
+    color: var(--accent-color);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(196, 255, 0, 0.3);
+}
+
+.btn-download-cv svg {
+    transition: transform 0.3s ease;
+}
+
+.btn-download-cv:hover svg {
+    transform: translateY(3px);
 }
 
 .about-side {
