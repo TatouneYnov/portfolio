@@ -579,6 +579,14 @@ button {
     display: block;
 }
 
+.helmet-img-1 {
+    z-index: 2;
+}
+
+.helmet-img-2 {
+    z-index: 1;
+}
+
 .project-preview {
     width: 100%;
     height: 100%;
@@ -1164,6 +1172,27 @@ button {
 .github-stats-container {
     margin-top: 4rem;
     text-align: center;
+}
+
+.github-title {
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+}
+
+.github-stats-link {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.github-stats-link:hover {
+    transform: scale(1.02);
+}
+
+.github-stats-img {
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    height: auto;
 }
 
 @keyframes fadeIn {
