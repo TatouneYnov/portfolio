@@ -214,10 +214,13 @@ button {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         opacity: 0.3;
     }
+
     50% {
         transform: scale(1.1);
         opacity: 0.5;
@@ -246,61 +249,61 @@ button {
 .hero-badge:hover {
     border-color: var(--accent-color);
     transform: scale(1.05);
-    box-shadow: 0 10px 30px rgba(196, 255, 0, 0.2);
 }
 
 .hero-title {
     font-size: clamp(4rem, 15vw, 12rem);
     font-weight: 900;
-    letter-spacing: -0.03em;
     line-height: 0.9;
     margin-bottom: 1rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: -0.03em;
+    perspective: 1000px;
 }
 
 .hero-name {
     display: block;
+    color: var(--text-primary);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-name:hover {
+    transform: translateZ(20px);
+    color: var(--accent-color);
 }
 
 .hero-tagline {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     color: var(--text-secondary);
-    letter-spacing: 0.05em;
-    margin-bottom: 2rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4rem;
 }
 
 .hero-scroll {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
+    gap: 1rem;
     color: var(--text-secondary);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
 }
 
 .scroll-indicator {
-    position: absolute;
-    bottom: 3rem;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(180deg, var(--accent-color) 0%, transparent 100%);
+    animation: scrollPulse 2s ease-in-out infinite;
 }
 
-.scroll-indicator:hover {
-    transform: translateX(-50%) translateY(5px);
-}
+@keyframes scrollPulse {
 
-@keyframes scrollBounce {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 0.3;
         transform: translateY(0);
     }
+
     50% {
         opacity: 1;
         transform: translateY(10px);
@@ -321,18 +324,70 @@ button {
     text-align: center;
 }
 
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 3rem;
+.skills-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-.skills-category {
-    font-size: 1.25rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-bottom: 1.5rem;
+.skills-list li {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: default;
+    position: relative;
+}
+
+.skills-list li::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%) scale(0);
+    width: 4px;
+    height: 4px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skills-list li:hover {
     color: var(--text-primary);
+    padding-left: 1.5rem;
+    border-color: var(--accent-color);
+    transform: translateX(5px);
+}
+
+.skills-list li:hover::before {
+    transform: translateY(-50%) scale(1);
+    left: 0;
+}
+
+.skills-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.skill-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
 }
 
 .skill-name {
@@ -340,6 +395,66 @@ button {
     color: var(--text-primary);
     font-weight: 600;
     letter-spacing: 0.02em;
+}
+
+.skill-percentage {
+    font-size: 1rem;
+    color: var(--accent-color);
+    font-weight: 700;
+}
+
+.skill-bar {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.skill-progress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color) 0%, rgba(196, 255, 0, 0.6) 100%);
+    border-radius: 10px;
+    width: 0;
+    transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    box-shadow: 0 0 10px rgba(196, 255, 0, 0.3);
+}
+
+.skill-progress::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.skill-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(196, 255, 0, 0.3);
+    transform: translateX(5px);
+}
+
+.skill-item:hover .skill-progress {
+    box-shadow: 0 0 20px rgba(196, 255, 0, 0.6);
+}
+
+.skill-item:hover .skill-name {
+    color: var(--accent-color);
 }
 
 .skills-simple-layout {
@@ -412,6 +527,14 @@ button {
     text-align: center;
 }
 
+.projects-hall-title {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
 .projects-description {
     color: var(--text-secondary);
     font-size: 1.125rem;
@@ -427,7 +550,6 @@ button {
     padding: 0 3rem;
     max-width: 1800px;
     margin: 0 auto;
-    perspective: 1000px;
 }
 
 @media (max-width: 1400px) {
@@ -452,7 +574,7 @@ button {
     background: rgba(15, 15, 15, 0.95);
     border: 2px solid rgba(255, 255, 255, 0.15);
     border-radius: 24px;
-    overflow: hidden;
+    overflow: visible;
     cursor: pointer;
     position: relative;
     backdrop-filter: blur(10px);
@@ -460,25 +582,8 @@ button {
     text-decoration: none;
     color: inherit;
     transform-style: preserve-3d;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
     will-change: transform;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
-}
-
-.helmet-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: 
-        linear-gradient(115deg, transparent 0%, var(--sparkle-color, rgba(196, 255, 0, 0)) 50%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    z-index: 3;
-    mix-blend-mode: color-dodge;
-}
-
-.helmet-card:hover::before {
-    opacity: 1;
 }
 
 .helmet-card:hover {
@@ -489,79 +594,22 @@ button {
     z-index: 10;
 }
 
+.helmet-card.flipped {
+    z-index: 1000;
+}
+
+
+
 .helmet-images {
     position: relative;
     aspect-ratio: 4 / 3;
     overflow: hidden;
     background: rgba(0, 0, 0, 0.4);
     transform-style: preserve-3d;
+    border-radius: 22px 22px 0 0;
 }
 
-.helmet-images::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        repeating-linear-gradient(
-            0deg,
-            rgb(255, 119, 115) calc(5% * 1),
-            rgba(255, 237, 95, 1) calc(5% * 2),
-            rgba(168, 255, 95, 1) calc(5% * 3),
-            rgba(131, 255, 247, 1) calc(5% * 4),
-            rgba(120, 148, 255, 1) calc(5% * 5),
-            rgb(216, 117, 255) calc(5% * 6),
-            rgb(255, 119, 115) calc(5% * 7)
-        ),
-        repeating-linear-gradient(
-            133deg,
-            #0e152e 0%,
-            hsl(180, 10%, 60%) 3.8%,
-            hsl(180, 29%, 66%) 4.5%,
-            hsl(180, 10%, 60%) 5.2%,
-            #0e152e 10%,
-            #0e152e 12%
-        ),
-        radial-gradient(
-            farthest-corner circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
-            rgba(0, 0, 0, 0.1) 12%,
-            rgba(0, 0, 0, 0.15) 20%,
-            rgba(0, 0, 0, 0.25) 120%
-        );
-    background-blend-mode: exclusion, hue, normal;
-    background-size: 200% 700%, 300% 100%, 100% 100%;
-    background-position: 
-        center calc(var(--pointer-from-center, 0) * 100%),
-        var(--pointer-x, 50%) var(--pointer-y, 50%),
-        center center;
-    filter: brightness(calc((var(--active, 0) * 0.75) + 0.5)) contrast(2) saturate(1.5);
-    mix-blend-mode: color-dodge;
-    opacity: calc(var(--active, 0) * 0.5);
-    transition: opacity 0.3s ease;
-    z-index: 2;
-    pointer-events: none;
-}
 
-.helmet-card:hover .helmet-images::before {
-    opacity: calc(var(--active, 0) * 0.8);
-}
-
-.helmet-images::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(
-            farthest-corner circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
-            rgba(255, 255, 255, 0.8) 10%,
-            rgba(255, 255, 255, 0.65) 20%,
-            rgba(255, 255, 255, 0) 90%
-        );
-    mix-blend-mode: overlay;
-    opacity: calc(var(--active, 0) * 0.5);
-    transition: opacity 0.3s ease;
-    z-index: 4;
-    pointer-events: none;
-}
 
 .helmet-img {
     position: absolute;
@@ -569,7 +617,8 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
+    transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity;
 }
 
 .helmet-img img {
@@ -588,6 +637,17 @@ button {
     position: relative;
 }
 
+.project-icon-large {
+    font-size: 8rem;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.helmet-card:hover .project-icon-large {
+    transform: scale(1.2) rotate(10deg);
+    filter: drop-shadow(0 15px 40px rgba(196, 255, 0, 0.3));
+}
+
 .project-tech-badge {
     font-size: 3rem;
     font-weight: 900;
@@ -595,7 +655,6 @@ button {
     color: var(--text-primary);
     text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 5;
 }
 
 .helmet-card:hover .project-tech-badge {
@@ -604,6 +663,30 @@ button {
     text-shadow:
         0 4px 20px rgba(0, 0, 0, 0.5),
         0 0 20px rgba(196, 255, 0, 0.4);
+}
+
+.helmet-img-1 {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    z-index: 2;
+}
+
+.helmet-img-2 {
+    opacity: 0;
+    transform: scale(1.15) rotate(8deg);
+    z-index: 1;
+}
+
+.helmet-card:hover .helmet-img-1 {
+    opacity: 0;
+    transform: scale(0.9) rotate(-8deg);
+    z-index: 1;
+}
+
+.helmet-card:hover .helmet-img-2 {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    z-index: 2;
 }
 
 .helmet-info {
@@ -644,13 +727,6 @@ button {
     transform: translateX(-6px);
 }
 
-.project-year {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    letter-spacing: 0.05em;
-}
-
 .project-description {
     position: absolute;
     inset: 0;
@@ -671,6 +747,7 @@ button {
 
 .helmet-card:hover .project-description {
     opacity: 1;
+    pointer-events: all;
 }
 
 .project-desc-text {
@@ -1152,20 +1229,11 @@ button {
     color: var(--accent-color);
 }
 
-.footer-text {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-}
-
-.github-stats-container {
-    margin-top: 4rem;
-    text-align: center;
-}
-
 @keyframes fadeIn {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -1176,6 +1244,7 @@ button {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1237,6 +1306,12 @@ button {
         flex-direction: column;
     }
 
+    .about-images {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
     .about-stats {
         grid-template-columns: 1fr;
     }
@@ -1244,6 +1319,14 @@ button {
     .skills-layout {
         grid-template-columns: 1fr;
         gap: 3rem;
+    }
+
+    .projects-track {
+        padding: 2rem 1.5rem;
+    }
+
+    .project-card-large {
+        width: 85vw;
     }
 
     .contact-grid {
@@ -1266,6 +1349,14 @@ button {
 
     .manifesto {
         font-size: 1.25rem;
+    }
+
+    .about-images {
+        grid-template-columns: 1fr;
+    }
+
+    .project-card-large {
+        width: 90vw;
     }
 
     .project-details {
@@ -1464,6 +1555,13 @@ button {
     margin-bottom: 1.5rem;
     font-style: italic;
     color: var(--text-primary);
+}
+
+.signature {
+    font-size: 1rem;
+    color: var(--accent-color);
+    font-weight: 600;
+    letter-spacing: 0.05em;
 }
 
 @media (max-width: 768px) {
