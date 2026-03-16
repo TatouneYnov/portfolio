@@ -9,6 +9,17 @@
     --transition-fast: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--accent-color);
+    z-index: 10001;
+    transition: width 0.1s ease;
+    width: 0;
+}
+
 /* Animation de flottement pour les cartes */
 @keyframes float {
     0%, 100% {
