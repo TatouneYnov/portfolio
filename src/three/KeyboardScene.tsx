@@ -7,6 +7,7 @@ import { gsap } from 'gsap';
 import icons from '../generated/keycap-icons.json';
 import type { Category, PressSignal, Skill } from '../sections/Toolbox';
 import { markWebGLLost } from '../lib/capabilities';
+import { Warmup } from './Warmup';
 
 type Props = {
   skills: Skill[];
@@ -289,6 +290,7 @@ export default function KeyboardScene(props: Props) {
       <directionalLight position={[-6, 3, -6]} intensity={2.6} color="#8B5CF6" />
       <pointLight position={[0, 2.5, 4]} intensity={6} distance={14} color="#7C3AED" />
       <Keyboard {...rest} />
+      <Warmup tick />
       <ContactShadows position={[0, -0.56, 0]} opacity={0.6} scale={18} blur={2.6} far={4} frames={1} color="#000000" />
     </Canvas>
   );

@@ -9,6 +9,7 @@ import { buildAvatar, buildDesk, JOINT_KEYS, makePose, idlePose, sitPose } from 
 import { stageState } from '../lib/stageState';
 import { markWebGLLost } from '../lib/capabilities';
 import { usePageVisible } from '../lib/hooks';
+import { Warmup } from './Warmup';
 
 type Rect = { x: number; y: number; w: number; h: number };
 type Framing = { center: THREE.Vector3; height: number; width: number; dir: THREE.Vector3 };
@@ -276,6 +277,7 @@ function Scene() {
       <pointLight position={[-1.3, 1.3, 1]} intensity={4} distance={7} decay={1.6} color="#7C3AED" />
       <primitive object={avatar.root} />
       <primitive object={desk.group} />
+      <Warmup reveal={[desk.group]} />
     </>
   );
 }

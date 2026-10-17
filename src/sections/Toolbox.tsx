@@ -6,6 +6,7 @@ import { gsap, isReducedMotion } from '../lib/motion';
 import { revealWords } from '../lib/reveal';
 import { canRun3D } from '../lib/capabilities';
 import { useInView, useMounted } from '../lib/hooks';
+import { useIdleMount } from '../lib/warm';
 import { SplitHeading } from '../components/SplitHeading';
 
 const KeyboardScene = lazy(() => import('../three/KeyboardScene'));
@@ -22,7 +23,9 @@ export function Toolbox() {
   const root = useRef<HTMLElement>(null);
   const readout = useRef<HTMLDivElement>(null);
   const mounted = useMounted();
-  const near = useInView(root, '50% 0px', true);
+  const nearView = useInView(root, '100% 0px', true);
+  const idleMount = useIdleMount();
+  const near = nearView || idleMount;
   const visible = useInView(root, '0px');
   const [use3D, setUse3D] = useState(false);
   const [listOpen, setListOpen] = useState(true);

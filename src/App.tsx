@@ -16,6 +16,7 @@ import { Footer } from './sections/Footer';
 import { bindAnchorLinks, refreshScroll, startMotion } from './lib/motion';
 import { canRun3D, getCapabilities } from './lib/capabilities';
 import { useMounted } from './lib/hooks';
+import { preload3D, scheduleIdleMount } from './lib/warm';
 
 const AvatarStage = lazy(() => import('./three/AvatarStage'));
 
@@ -35,6 +36,8 @@ export function App() {
       (window as Window & { __stageReady?: boolean }).__stageReady = true;
       window.dispatchEvent(new Event('stage:ready'));
     }
+    preload3D();
+    scheduleIdleMount();
     const onLost = () => setStage(false);
     window.addEventListener('webgl:lost', onLost);
     return () => {

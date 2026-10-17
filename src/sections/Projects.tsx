@@ -6,6 +6,7 @@ import IconArrow from '~icons/solar/arrow-right-up-linear';
 import { projects, isFilled, type Project } from '../lib/content';
 import { canRun3D, getCapabilities } from '../lib/capabilities';
 import { useInView, useMounted } from '../lib/hooks';
+import { useIdleMount } from '../lib/warm';
 import { gsap, isReducedMotion } from '../lib/motion';
 import { revealFade, revealWords } from '../lib/reveal';
 import { asset } from '../lib/env';
@@ -18,8 +19,11 @@ export type DockRequest = { id: string; n: number } | null;
 export function Projects() {
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
+  const tip = useRef<HTMLDivElement>(null);
   const mounted = useMounted();
-  const near = useInView(root, '50% 0px', true);
+  const nearView = useInView(root, '100% 0px', true);
+  const idleMount = useIdleMount(1);
+  const near = nearView || idleMount;
   const visible = useInView(root, '0px');
   const [use3D, setUse3D] = useState(false);
   const [docked, setDocked] = useState<string | null>(null);
@@ -64,13 +68,18 @@ export function Projects() {
             className="display display--lg projects__title"
             lines={[{ text: 'Mes' }, { text: 'projets', accent: true }]}
           />
-          {show3D && <p className="label section-head__hint">Attrape une bulle et dépose-la dans le socle →</p>}
+          {show3D && (
+            <p className="label section-head__hint">
+              Clique sur une bulle pour ouvrir le projet
+              <span className="section-head__hint-sub">ou glisse-la dans le socle →</span>
+            </p>
+          )}
         </div>
       </div>
 
       {show3D ? (
         <div className="projects__stage-wrap">
-          <div ref={stage} className="projects__stage" data-cursor="grab" aria-hidden="true">
+          <div ref={stage} className="projects__stage" aria-hidden="true">
             {near && (
               <Suspense fallback={null}>
                 <BubblesScene
@@ -81,25 +90,35 @@ export function Projects() {
                   paused={!visible}
                   maxBubbles={getCapabilities().lowEnd ? 5 : 12}
                   wrapper={stage}
+                  tip={tip}
                   onLost={() => setUse3D(false)}
                 />
               </Suspense>
             )}
+            <div ref={tip} className="bubble-tip" />
           </div>
 
-          <div className="projects__open">
-            <p className="label" id="open-project-label">
-              Ouvrir un projet
-            </p>
-            <ul aria-labelledby="open-project-label">
-              {projects.map((p) => (
-                <li key={p.id}>
-                  <button type="button" onClick={(e) => openFromButton(p.id, e.currentTarget)}>
-                    {p.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <div className="container">
+            <div className="projects__open">
+              <p className="label" id="open-project-label">
+                Ou choisis directement
+              </p>
+              <ul aria-labelledby="open-project-label">
+                {projects.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      className="chip-btn"
+                      aria-pressed={docked === p.id}
+                      onClick={(e) => openFromButton(p.id, e.currentTarget)}
+                    >
+                      {p.bubbleLabel.replace(/\n/g, ' ')}
+                      <span className="sr-only"> : ouvrir la fiche « {p.name} »</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           <ProjectPanel project={current} onClose={close} />

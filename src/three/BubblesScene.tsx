@@ -1,3 +1,6 @@
+// Bulles projets : un clic ouvre la fiche (la bulle file dans le socle) ; le glisser-déposer
+// fonctionne aussi. Pas de « pousseur » au survol : une bulle survolée grossit et reste immobile,
+// pour qu'on puisse toujours cliquer dessus.
 import { useEffect, useMemo, useRef, type RefObject } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Physics, RigidBody, BallCollider, useRapier, type RapierRigidBody } from '@react-three/rapier';
@@ -7,6 +10,7 @@ import { gsap } from 'gsap';
 import type { Project } from '../lib/content';
 import type { DockRequest } from '../sections/Projects';
 import { markWebGLLost } from '../lib/capabilities';
+import { Warmup } from './Warmup';
 
 type Props = {
   projects: Project[];
@@ -16,8 +20,11 @@ type Props = {
   paused: boolean;
   maxBubbles: number;
   wrapper: RefObject<HTMLDivElement>;
+  tip: RefObject<HTMLDivElement>;
   onLost: () => void;
 };
+
+const DRAG_THRESHOLD = 6; // px parcourus avant de considérer qu'on glisse (sinon : clic)
 
 /** Texture « nacre » avec le nom du projet, centrée sur la face avant de la sphère. */
 function makeBubbleTexture(label: string): THREE.CanvasTexture {
@@ -82,18 +89,26 @@ function Environment() {
 }
 
 type BallState = { body: RapierRigidBody | null; mesh: THREE.Mesh | null; radius: number };
+type Press = { id: string; x: number; y: number; touch: boolean; dragging: boolean };
 
-function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paused' | 'maxBubbles' | 'onLost'>) {
-  const { camera, size, pointer } = useThree();
+function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 'paused' | 'maxBubbles' | 'onLost'>) {
+  const { camera, size, gl } = useThree();
   const { rapier } = useRapier();
   const balls = useRef(new Map<string, BallState>());
-  const pusher = useRef<RapierRigidBody>(null);
-  const dockRing = useRef<THREE.Group>(null);
+  const ring = useRef<THREE.Group>(null);
+  const ringMat = useRef<THREE.MeshStandardMaterial>(null);
   const halo = useRef<THREE.Mesh>(null);
-  const drag = useRef<{ id: string; t: number; x: number; y: number; moved: boolean } | null>(null);
+  const press = useRef<Press | null>(null);
+  const hovered = useRef<string | null>(null);
   const dockedRef = useRef<string | null>(null);
   const proxy = useRef({ x: 0, y: 0 });
-  const tmp = useMemo(() => ({ v: new THREE.Vector3(), dir: new THREE.Vector3(), pt: new THREE.Vector3(), raycaster: new THREE.Raycaster(), plane: new THREE.Plane(new THREE.Vector3(0, 0, 1), 0) }), []);
+  const pointer = useRef({ world: new THREE.Vector3(), valid: false });
+  const glow = useRef(0);
+  const throwVel = useRef(new THREE.Vector3());
+  const tmp = useMemo(
+    () => ({ v: new THREE.Vector3(), dir: new THREE.Vector3(), ndc: new THREE.Vector2(), raycaster: new THREE.Raycaster(), plane: new THREE.Plane(new THREE.Vector3(0, 0, 1), 0) }),
+    [],
+  );
 
   // Géométrie de la scène selon la taille de l'écran (unités monde au plan z = 0)
   const frame = useMemo(() => {
@@ -107,7 +122,7 @@ function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paus
       halfH,
       unit,
       attractor: portrait ? new THREE.Vector3(0, halfH * 0.32, 0) : new THREE.Vector3(-halfW * 0.28, 0, 0),
-      dock: portrait ? new THREE.Vector3(0, -halfH * 0.62, 0) : new THREE.Vector3(halfW * 0.56, -halfH * 0.05, 0),
+      dock: portrait ? new THREE.Vector3(0, -halfH * 0.58, 0) : new THREE.Vector3(halfW * 0.5, -halfH * 0.04, 0),
     };
   }, [camera, size]);
 
@@ -126,14 +141,47 @@ function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paus
     return new THREE.CanvasTexture(c);
   }, []);
 
-  useEffect(() => () => {
-    Object.values(textures).forEach((t) => t.dispose());
-    dockLabel.dispose();
-    haloTex.dispose();
-    sphere.dispose();
-  }, [textures, dockLabel, haloTex, sphere]);
+  useEffect(
+    () => () => {
+      Object.values(textures).forEach((t) => t.dispose());
+      dockLabel.dispose();
+      haloTex.dispose();
+      sphere.dispose();
+    },
+    [textures, dockLabel, haloTex, sphere],
+  );
 
   const maxRadius = Math.max(...projects.map((p) => p.size)) * frame.unit;
+  const dockRadius = maxRadius * 1.18;
+
+  const clientToWorld = (cx: number, cy: number, out: THREE.Vector3) => {
+    const rect = gl.domElement.getBoundingClientRect();
+    tmp.ndc.set(((cx - rect.left) / rect.width) * 2 - 1, -((cy - rect.top) / rect.height) * 2 + 1);
+    tmp.raycaster.setFromCamera(tmp.ndc, camera);
+    return tmp.raycaster.ray.intersectPlane(tmp.plane, out);
+  };
+
+  const setCursor = (mode: 'pointer' | 'grabbing' | null) => {
+    const el = wrapper.current;
+    if (!el) return;
+    if (mode) el.dataset.cursor = mode;
+    else delete el.dataset.cursor;
+  };
+
+  const showTip = (text: string | null, x = 0, y = 0) => {
+    const el = tip.current;
+    if (!el) return;
+    if (!text) {
+      el.classList.remove('is-visible');
+      return;
+    }
+    if (el.textContent !== text) el.textContent = text;
+    const rect = el.parentElement?.getBoundingClientRect();
+    el.style.transform = `translate3d(${x - (rect?.left ?? 0) + 18}px, ${y - (rect?.top ?? 0) + 18}px, 0)`;
+    el.classList.add('is-visible');
+  };
+
+  const nameOf = (id: string) => projects.find((p) => p.id === id)?.name ?? '';
 
   const toDynamic = (id: string, push = true) => {
     const b = balls.current.get(id)?.body;
@@ -146,7 +194,7 @@ function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paus
     }
   };
 
-  const dock = (id: string, duration = 0.5) => {
+  const dock = (id: string, duration = 0.6) => {
     const prev = dockedRef.current;
     if (prev && prev !== id) toDynamic(prev);
     const b = balls.current.get(id)?.body;
@@ -157,12 +205,14 @@ function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paus
     b.setLinvel({ x: 0, y: 0, z: 0 }, false);
     b.setBodyType(rapier.RigidBodyType.KinematicPositionBased, true);
     dockedRef.current = id;
+    showTip(null);
     gsap.killTweensOf(proxy.current);
     gsap.to(proxy.current, { x: frame.dock.x, y: frame.dock.y, duration, ease: 'power3.out' });
+    glow.current = 1;
     onDock(id);
   };
 
-  // Fermeture du panneau : la bulle retourne dans le nuage
+  // Fermeture de la fiche : la bulle retourne dans le nuage
   useEffect(() => {
     const current = dockedRef.current;
     if (current && docked === null) {
@@ -173,56 +223,121 @@ function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paus
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [docked]);
 
-  // Ouverture depuis la liste de boutons (clavier) : la bulle vole vers le socle
+  // Ouverture depuis les boutons sous la scène : la bulle vole vers le socle
   useEffect(() => {
-    if (request) dock(request.id, 0.7);
+    if (request) dock(request.id, 0.75);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request]);
 
-  // Lâcher : dans le socle → on dépose ; ailleurs → la bulle repart avec son élan
+  // Suivi du pointeur pendant l'appui, puis clic ou dépôt au relâchement
   useEffect(() => {
-    const onUp = () => {
-      const d = drag.current;
-      if (!d) return;
-      drag.current = null;
-      if (wrapper.current) wrapper.current.dataset.cursor = 'grab';
-      const b = balls.current.get(d.id)?.body;
-      if (!b) return;
-      const t = b.translation();
-      const quick = performance.now() - d.t < 260 && !d.moved;
-      const inDock = Math.hypot(t.x - frame.dock.x, t.y - frame.dock.y) < maxRadius * 1.6;
-      if (quick || inDock) dock(d.id, quick ? 0.7 : 0.5);
+    const onMove = (e: PointerEvent) => {
+      const p = press.current;
+      if (!p) return;
+      if (!p.dragging && !p.touch && Math.hypot(e.clientX - p.x, e.clientY - p.y) > DRAG_THRESHOLD) {
+        p.dragging = true;
+        setCursor('grabbing');
+        showTip(null);
+        throwVel.current.set(0, 0, 0);
+        balls.current.get(p.id)?.body?.setBodyType(rapier.RigidBodyType.KinematicPositionBased, true);
+      }
+      if (p.dragging) pointer.current.valid = !!clientToWorld(e.clientX, e.clientY, pointer.current.world);
     };
+    const onUp = (e: PointerEvent) => {
+      const p = press.current;
+      if (!p) return;
+      press.current = null;
+      setCursor(hovered.current ? 'pointer' : null);
+      if (!p.dragging) {
+        dock(p.id); // simple clic (ou tap) : ouvrir
+        return;
+      }
+      const b = balls.current.get(p.id)?.body;
+      const t = b?.translation();
+      const pt = clientToWorld(e.clientX, e.clientY, tmp.v);
+      const near = (x: number, y: number) => Math.hypot(x - frame.dock.x, y - frame.dock.y) < dockRadius * 1.5;
+      if ((pt && near(pt.x, pt.y)) || (t && near(t.x, t.y))) {
+        dock(p.id, 0.4);
+        return;
+      }
+      // Sinon : la bulle repart avec l'élan du geste
+      if (b) {
+        b.setBodyType(rapier.RigidBodyType.Dynamic, true);
+        const v = throwVel.current.clampLength(0, 25);
+        b.setLinvel({ x: v.x, y: v.y, z: 0 }, true);
+      }
+    };
+    const onCancel = () => {
+      const p = press.current;
+      press.current = null;
+      setCursor(null);
+      if (p?.dragging) balls.current.get(p.id)?.body?.setBodyType(rapier.RigidBodyType.Dynamic, true);
+    };
+    window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerup', onUp);
-    window.addEventListener('pointercancel', onUp);
+    window.addEventListener('pointercancel', onCancel);
     return () => {
+      window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onUp);
+      window.removeEventListener('pointercancel', onCancel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [frame, maxRadius]);
+  }, [frame, dockRadius]);
+
+  // ?debug : positions écran des bulles et du socle (tests automatisés)
+  useEffect(() => {
+    if (!window.location.search.includes('debug')) return;
+    const v = new THREE.Vector3();
+    (window as Window & { __bubbles?: () => unknown }).__bubbles = () => {
+      const rect = gl.domElement.getBoundingClientRect();
+      const toScreen = (x: number, y: number) => {
+        v.set(x, y, 0).project(camera);
+        return { x: rect.left + ((v.x + 1) / 2) * rect.width, y: rect.top + ((1 - v.y) / 2) * rect.height };
+      };
+      const out: Record<string, unknown> = { dock: toScreen(frame.dock.x, frame.dock.y), docked: dockedRef.current };
+      balls.current.forEach((ball, id) => {
+        const t = ball.body?.translation();
+        if (t) out[id] = toScreen(t.x, t.y);
+      });
+      return out;
+    };
+  }, [camera, frame, gl]);
 
   useFrame((state, delta) => {
     const dt = Math.min(delta, 0.05);
-    // Pointeur projeté sur le plan z = 0
-    tmp.raycaster.setFromCamera(pointer, camera);
-    const hit = tmp.raycaster.ray.intersectPlane(tmp.plane, tmp.pt);
+    const p = press.current;
+    const dragging = p?.dragging ? p.id : null;
+    let overDock = false;
 
     balls.current.forEach((ball, id) => {
       const b = ball.body;
       if (!b) return;
       const t = b.translation();
+      const target = ball.radius * (hovered.current === id && !dragging ? 1.08 : 1);
+      if (ball.mesh) ball.mesh.scale.setScalar(THREE.MathUtils.damp(ball.mesh.scale.x, target, 14, dt));
+
       if (id === dockedRef.current) {
         b.setNextKinematicTranslation({ x: proxy.current.x, y: proxy.current.y, z: 0 });
         if (ball.mesh) ball.mesh.rotation.y += dt * 0.6;
         return;
       }
-      if (ball.mesh) ball.mesh.rotation.y += (0 - ball.mesh.rotation.y) * Math.min(1, dt * 3);
-      if (drag.current?.id === id && hit) {
-        // Tenue par un ressort amorti : la vitesse suit le pointeur, l'inertie reste au lâcher
-        tmp.v.set((tmp.pt.x - t.x) * 14, (tmp.pt.y - t.y) * 14, 0);
-        b.setLinvel({ x: tmp.v.x, y: tmp.v.y, z: 0 }, true);
-        if (Math.hypot(tmp.pt.x - drag.current.x, tmp.pt.y - drag.current.y) > 0.15) drag.current.moved = true;
+      if (ball.mesh) ball.mesh.rotation.y = THREE.MathUtils.damp(ball.mesh.rotation.y, 0, 3, dt);
+
+      if (id === dragging && pointer.current.valid) {
+        // La bulle tenue suit le pointeur quel que soit le débit d'images (léger lissage)
+        const w = pointer.current.world;
+        const a = 1 - Math.exp(-30 * dt);
+        const nx = t.x + (w.x - t.x) * a;
+        const ny = t.y + (w.y - t.y) * a;
+        if (dt > 0) throwVel.current.lerp(tmp.v.set((nx - t.x) / dt, (ny - t.y) / dt, 0), 0.35);
+        b.setNextKinematicTranslation({ x: nx, y: ny, z: 0 });
+        overDock = Math.hypot(t.x - frame.dock.x, t.y - frame.dock.y) < dockRadius * 1.5 || Math.hypot(w.x - frame.dock.x, w.y - frame.dock.y) < dockRadius * 1.5;
+        return;
+      }
+      // Une bulle survolée reste immobile pour qu'on puisse cliquer dessus
+      if (id === hovered.current || id === p?.id) {
+        const lv = b.linvel();
+        b.setLinvel({ x: lv.x * 0.85, y: lv.y * 0.85, z: 0 }, true);
         return;
       }
       // Attraction douce vers le nuage
@@ -230,15 +345,12 @@ function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paus
       b.applyImpulse({ x: tmp.dir.x, y: tmp.dir.y, z: 0 }, true);
     });
 
-    // La sphère invisible collée au pointeur pousse les bulles au survol
-    if (pusher.current) {
-      const active = hit && !drag.current && state.pointer.x > -1 && state.pointer.x < 1;
-      pusher.current.setNextKinematicTranslation(active ? { x: tmp.pt.x, y: tmp.pt.y, z: 0 } : { x: 0, y: 0, z: 50 });
-    }
-    if (halo.current) {
-      const s = 1 + Math.sin(state.clock.elapsedTime * 1.6) * 0.06;
-      halo.current.scale.setScalar(maxRadius * 3.4 * s);
-    }
+    // Le socle s'illumine quand une bulle glissée passe au-dessus, et brièvement au dépôt
+    glow.current = THREE.MathUtils.damp(glow.current, overDock ? 1 : 0, overDock ? 10 : 3, dt);
+    const pulse = 1 + Math.sin(state.clock.elapsedTime * 1.6) * 0.06;
+    if (ring.current) ring.current.scale.setScalar(1 + glow.current * 0.14);
+    if (ringMat.current) ringMat.current.emissiveIntensity = 2.4 + glow.current * 3;
+    if (halo.current) halo.current.scale.setScalar(maxRadius * 3.4 * pulse * (1 + glow.current * 0.35));
   });
 
   return (
@@ -249,24 +361,22 @@ function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paus
       <directionalLight position={[-6, -2, -4]} intensity={2.4} color="#7C3AED" />
 
       {/* Socle de dépôt */}
-      <group ref={dockRing} position={frame.dock.toArray()}>
+      <group position={frame.dock.toArray()}>
         <mesh ref={halo} position={[0, 0, -0.6]}>
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial map={haloTex} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
         </mesh>
-        <mesh>
-          <torusGeometry args={[maxRadius * 1.18, 0.035, 16, 96]} />
-          <meshStandardMaterial color="#B49CFF" emissive="#8B5CF6" emissiveIntensity={2.4} toneMapped={false} />
-        </mesh>
-        <mesh position={[0, -maxRadius * 1.18 - 0.38, 0]}>
+        <group ref={ring}>
+          <mesh>
+            <torusGeometry args={[dockRadius, 0.035, 16, 96]} />
+            <meshStandardMaterial ref={ringMat} color="#B49CFF" emissive="#8B5CF6" emissiveIntensity={2.4} toneMapped={false} />
+          </mesh>
+        </group>
+        <mesh position={[0, -dockRadius - 0.38, 0]}>
           <planeGeometry args={[2.2, 0.41]} />
           <meshBasicMaterial map={dockLabel} transparent depthWrite={false} toneMapped={false} />
         </mesh>
       </group>
-
-      <RigidBody ref={pusher} type="kinematicPosition" colliders={false} position={[0, 0, 50]}>
-        <BallCollider args={[frame.unit * 0.7]} />
-      </RigidBody>
 
       {projects.map((p, i) => {
         const radius = p.size * frame.unit;
@@ -293,7 +403,7 @@ function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paus
             enabledRotations={[false, false, false]}
             ccd
           >
-            <BallCollider args={[radius]} restitution={0.45} friction={0.2} />
+            <BallCollider args={[radius]} restitution={0.35} friction={0.2} />
             <mesh
               geometry={sphere}
               scale={radius}
@@ -301,13 +411,25 @@ function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paus
                 const entry = balls.current.get(p.id);
                 if (entry) entry.mesh = m;
               }}
+              onPointerOver={(e) => {
+                e.stopPropagation();
+                hovered.current = p.id;
+                if (!press.current) setCursor('pointer');
+                if (dockedRef.current !== p.id && !press.current?.dragging) showTip(`Ouvrir · ${nameOf(p.id)}`, e.nativeEvent.clientX, e.nativeEvent.clientY);
+              }}
+              onPointerMove={(e) => {
+                if (hovered.current === p.id && dockedRef.current !== p.id && !press.current?.dragging) showTip(`Ouvrir · ${nameOf(p.id)}`, e.nativeEvent.clientX, e.nativeEvent.clientY);
+              }}
+              onPointerOut={() => {
+                if (hovered.current === p.id) hovered.current = null;
+                if (!press.current) setCursor(null);
+                showTip(null);
+              }}
               onPointerDown={(e) => {
                 e.stopPropagation();
-                const target = e.target as unknown as Element | null;
-                (target as HTMLElement | null)?.setPointerCapture?.(e.pointerId);
                 if (dockedRef.current === p.id) return;
-                drag.current = { id: p.id, t: performance.now(), x: e.point.x, y: e.point.y, moved: false };
-                if (wrapper.current) wrapper.current.dataset.cursor = 'grabbing';
+                press.current = { id: p.id, x: e.nativeEvent.clientX, y: e.nativeEvent.clientY, touch: e.nativeEvent.pointerType === 'touch', dragging: false };
+                pointer.current.valid = !!clientToWorld(e.nativeEvent.clientX, e.nativeEvent.clientY, pointer.current.world);
               }}
             >
               <meshPhysicalMaterial
@@ -327,6 +449,7 @@ function World({ projects, docked, request, onDock, wrapper }: Omit<Props, 'paus
           </RigidBody>
         );
       })}
+      <Warmup tick />
     </>
   );
 }

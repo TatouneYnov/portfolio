@@ -282,8 +282,8 @@ Construction, réglages (couleurs, mèche, volume des cheveux) et régénératio
 
 **Architecture 3D** : un Canvas R3F **fixe** (plein écran, sous le contenu, `pointer-events: none`) porte l'avatar du Hero jusqu'à « Ce que je fais ». L'avatar est cadré dans des **emplacements DOM** (`data-slot="hero|about|desk"`) via `camera.setViewOffset`, et le rendu est découpé (scissor) à l'emplacement : aucun texte ne peut passer dessous. La progression vient de `src/lib/stageState.ts` (intro, about, travel, desk), écrite par des ScrollTriggers en scrub. Il passe en pause (`frameloop="demand"`) ou se démonte dès la section Parcours. Le clavier et les bulles ont chacun leur Canvas, montés à l'approche (IntersectionObserver, `rootMargin: 50%`) et en pause hors écran.
 
-### 0. Loader
-Écran noir, compteur JetBrains Mono « 000 → 100 » piloté par `useProgress` (vrai chargement), nom « ETHAN BACQUIER » en Archivo expanded. Sortie : `clip-path: inset` vertical, 0.8 s, `power3.inOut`. **Max 4 s**, puis le contenu s'affiche quand même (GLB en arrière-plan, fallback photo en attendant). Sans JS : pas de loader du tout.
+### 0. Loader (validé par Ethan le 17/10)
+**Durée fixe de 2 s à chaque visite** (progression fictive, voulue pour la mise en scène), puis ouverture `clip-path: inset` verticale 0.8 s. Nom « ETHAN BACQUIER » en Archivo expanded, **barre violette** dessous (remplissage animé en CSS `transform`, fluide même si la page travaille, avec une tête lumineuse), « CHARGEMENT » + compteur 000 → 100 synchronisé sur l'horloge de l'animation CSS (`getAnimations()`). Paliers communs dans `Loader.tsx` (`STEPS`) et `main.css` (`@keyframes loader-progress`) : les modifier ensemble. Pendant ces 2 s : préchargement des modules 3D et préchauffage des shaders (`src/lib/warm.ts`, `src/three/Warmup.tsx`). Sous « réduire les animations » : sauté. Sans JS : masqué (`noscript.css`), et une animation CSS de secours le retire après 4 s si le script plante.
 
 ### 1. Navigation (fixe)
 - Gauche : monogramme « EB » (Archivo 800) → haut de page
@@ -339,13 +339,17 @@ Pin ~150vh (desktop uniquement) : dolly-out + orbit 15°, bureau/chaise/écran s
 2 cartes (`--bg-2`, bordure `--line`, équerres pointillées) : TryHackMe et Hack The Box, données de `training.json` (voir §4.3), boutons « Voir le profil ↗ ». Pastille certif dessous. Mention « Stats au 17 oct. 2026 ».
 
 ### 8. Projets (bulles physiques)
-« MES » / « PROJETS » + « Attrape une bulle et dépose-la dans le socle → ».
+« MES » / « PROJETS » + « Clique sur une bulle pour ouvrir le projet / ou glisse-la dans le socle → ».
+**Interaction validée par Ethan le 17/10 (priorité : qu'un recruteur ouvre un projet sans effort)** :
+- **Clic (ou tap) sur une bulle = la bulle file dans le socle et la fiche s'ouvre.** Seuil de 6 px avant de considérer un glisser.
+- Survol : la bulle grossit légèrement, reste immobile, curseur main, info-bulle « Ouvrir · nom du projet ». **Pas de sphère « pousseur » au survol** (elle éjectait les bulles hors de portée).
+- Glisser : la bulle tenue devient cinématique et suit exactement le pointeur (repousse les autres), le socle s'agrandit et s'illumine quand elle passe au-dessus ; lâcher dans le socle (pointeur ou bulle à moins de 1,5 × son rayon) = ouverture ; ailleurs = la bulle repart avec l'élan du geste. Sur tactile : tap uniquement (le glisser vertical fait défiler la page).
+- **Rangée de boutons toujours visible sous la scène** (« Ou choisis directement : Hera · Cabinet infirmier · VBVB · Power 4 · RedQuest »), état actif sur le projet ouvert.
+- Fiche : s'ouvre **à gauche** sur grand écran (la bulle déposée reste visible dans le socle à droite), bottom sheet sur mobile.
 - Rapier, gravité faible vers un attracteur centre-gauche. Sphères nacrées (`MeshPhysicalMaterial` blanc cassé, clearcoat 1, roughness 0.25, iridescence violette légère) avec décal du nom/logo du projet. Taille = `size` (Hera ×1.6).
-- Le pointeur pousse les bulles (sphère cinématique invisible). Pointerdown = attraper (ressort amorti), on peut lancer.
-- Socle à droite : torus émissif `--accent`, halo pulsant, « Déposer ici », sensor collider. Dépôt = snap GSAP 0.5 s au centre + rotation lente + panneau projet qui glisse depuis la droite. Nouveau dépôt = éjection de la précédente.
-- Panneau (DOM) : capture 16:10 si dispo, nom, statut, rôle, contexte, description, stack (chips), « Ce que j'ai appris », liens (icônes Solar). Fermer (bouton + Échap) renvoie la bulle dans le nuage. Champs `null` masqués.
-- Accessibilité : liste de boutons « Ouvrir un projet » (visible au focus), animation bulle → socle, focus déplacé dans le panneau puis rendu au bouton.
-- Mobile : tap = la bulle vole au socle + bottom sheet ; drag supporté ; moins de bulles.
+- Socle à droite : torus émissif `--accent`, halo pulsant, « Déposer ici ». Dépôt = la bulle glisse au centre (GSAP) et tourne lentement. Nouveau dépôt = éjection de la précédente.
+- Fiche (DOM) : capture 16:10 si dispo, nom, statut, rôle, contexte, description, stack (chips), « Ce que j'ai appris », liens (icônes Solar). Fermer (bouton + Échap) renvoie la bulle dans le nuage. Champs `null` masqués.
+- Accessibilité : les boutons visibles sous la scène ouvrent la fiche (animation bulle → socle) ; focus déplacé dans la fiche puis rendu au bouton à la fermeture.
 - Reduced-motion / sans WebGL / sans JS : grille de cartes statiques (même contenu).
 
 ### 9. Disponibilités
@@ -473,6 +477,9 @@ object-src 'none';
 ---
 
 ## 16. Décisions prises pendant le build (17 oct. 2026)
+
+- **Ne jamais mettre `scroll-behavior: smooth` sur `html`** (même pour la version sans JS) : ScrollTrigger mémorise la valeur au chargement et la réapplique en style inline après chaque recalcul, ce qui bloque Lenis (la page se fige puis rattrape tout d'un coup). Les règles CSS recommandées par Lenis (`.lenis.lenis-smooth { scroll-behavior: auto !important }`) sont dans `main.css`.
+- **Préchauffage 3D** : les scènes clavier et bulles sont montées hors écran dès que le navigateur est au repos après le chargement (`useIdleMount`, échelonné), avec compilation des shaders, envoi des textures et un rendu à blanc (`Warmup`). Sans ça, la compilation se terminait au premier affichage, en plein défilement.
 
 - Appareil « modeste » (`hardwareConcurrency ≤ 4` ou `deviceMemory ≤ 4`, comme le brief) : images fixes à la place de l'avatar 3D. Seuil réglable dans `src/App.tsx` si trop de PC portables tombent dedans.
 - Les apparitions au défilement utilisent `opacity` (pas `visibility`) : tout reste atteignable au clavier.

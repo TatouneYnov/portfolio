@@ -27,7 +27,7 @@ export function Cursor() {
         el.classList.add('is-visible');
       }
       const t = e.target as Element | null;
-      const grab = t?.closest?.('[data-cursor="grab"], [data-cursor="grabbing"]');
+      const grab = t?.closest?.('[data-cursor="grab"], [data-cursor="grabbing"], [data-cursor="pointer"]');
       el.dataset.mode = grab ? (grab.getAttribute('data-cursor') as string) : t?.closest?.('input, textarea, select') ? 'native' : t?.closest?.(INTERACTIVE) ? 'hover' : 'default';
     };
     const onLeave = () => {
