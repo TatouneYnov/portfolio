@@ -1,0 +1,22 @@
+{
+  "_note": "Ajoute tes semaines de vacances Ynov dans fullWeeks. Dates au format AAAA-MM-JJ.",
+  "start": "2026-11-02",
+  "end": "2027-06-30",
+  "morningHours": "8h–12h",
+  "morningHoursCount": 4,
+  "fullDayHours": 7,
+  "fullWeeks": [
+    { "from": "2026-11-02", "to": "2026-11-06" },
+    { "from": "2026-12-21", "to": "2027-01-01" },
+    { "from": "2027-02-08", "to": "2027-02-12" }
+  ],
+  "holidays": ["2026-11-11", "2026-12-25", "2027-01-01", "2027-03-29", "2027-05-06", "2027-05-17"],
+  "facts": [
+    "Stage de 170 h",
+    "Les matins en semaine · 8h–12h",
+    "À temps plein pendant les vacances",
+    "Lyon ou télétravail"
+  ],
+  "example": "Exemple : les 4 semaines de vacances = 126 h (hors fériés) + 11 matinées de 4 h = 170 h",
+  "otherPeriods": "Autres périodes : à définir ensemble"
+}

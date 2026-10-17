@@ -1,0 +1,205 @@
+{
+  "_note": "Champs à null = masqués. draft: true = non affiché. size = taille de la bulle (1 = normale).",
+  "projects": [
+    {
+      "id": "hera",
+      "name": "Hera",
+      "bubbleLabel": "Hera",
+      "size": 1.6,
+      "status": null,
+      "role": "J'ai réalisé les parties admin.hera-app et hera-connect.",
+      "context": "Projet de groupe",
+      "description": "Une application web développée en équipe.",
+      "stack": [],
+      "learned": null,
+      "note": "Fiche détaillée bientôt",
+      "links": {
+        "github": null,
+        "organization": "https://github.com/Hera-app",
+        "live": "https://hera-app.fr",
+        "current": null
+      },
+      "image": null,
+      "draft": false
+    },
+    {
+      "id": "cabinet-infirmier",
+      "name": "Site du cabinet infirmier de Jassans-Riottier",
+      "bubbleLabel": "Cabinet\ninfirmier",
+      "size": 1.15,
+      "status": "En cours",
+      "role": "Je conçois et développe le site pour le cabinet.",
+      "context": "Client : un cabinet d'infirmières libérales",
+      "description": "Site vitrine statique pour retrouver les infos pratiques du cabinet et le contacter, aux couleurs de sa carte de visite. Les contenus sont validés par le cabinet.",
+      "stack": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "learned": null,
+      "note": null,
+      "links": {
+        "github": null,
+        "organization": null,
+        "live": null,
+        "current": null
+      },
+      "image": null,
+      "draft": false
+    },
+    {
+      "id": "vbvb",
+      "name": "Refonte du site du VBVB",
+      "bubbleLabel": "VBVB",
+      "size": 1.1,
+      "status": "En cours",
+      "role": "Je refais le site de mon propre club de volley.",
+      "context": "Volley Ball Villefranche Beaujolais (site actuel sous WordPress)",
+      "description": "Nouveau site pour le club : actus, équipes, inscriptions, formation, beach et partenaires.",
+      "stack": [],
+      "learned": null,
+      "note": null,
+      "links": {
+        "github": null,
+        "organization": null,
+        "live": null,
+        "current": "https://vbvb.fr"
+      },
+      "image": null,
+      "draft": false
+    },
+    {
+      "id": "power4",
+      "name": "Power 4 Web",
+      "bubbleLabel": "Power 4",
+      "size": 1,
+      "status": "Projet d'école",
+      "role": null,
+      "context": "Projet d'école · Ynov",
+      "description": "Le Puissance 4 dans le navigateur, avec un serveur en Go. Trois difficultés (Normal 6×7, Difficile 6×9, Expert 7×8) et des noms de joueurs personnalisables.",
+      "stack": [
+        "Go",
+        "net/http",
+        "HTML",
+        "CSS"
+      ],
+      "learned": null,
+      "note": null,
+      "links": {
+        "github": "https://github.com/TatouneYnov/-power4-web",
+        "organization": null,
+        "live": null,
+        "current": null
+      },
+      "image": null,
+      "draft": false
+    },
+    {
+      "id": "redquest",
+      "name": "RedQuest",
+      "bubbleLabel": "RedQuest",
+      "size": 1,
+      "status": "Projet d'école",
+      "role": null,
+      "context": "Projet d'école · Ynov",
+      "description": "Un RPG jouable dans le terminal, en Go : création de personnage (nom, classe, compétences, équipement), boutique, combats contre des gobelins et d'autres monstres, gestion du mana et des ressources.",
+      "stack": [
+        "Go"
+      ],
+      "learned": null,
+      "note": null,
+      "links": {
+        "github": "https://github.com/TatouneYnov/Projet_Red",
+        "organization": null,
+        "live": null,
+        "current": null
+      },
+      "image": null,
+      "draft": false
+    },
+    {
+      "id": "groupie-tracker",
+      "name": "Groupie Tracker",
+      "bubbleLabel": "Groupie\nTracker",
+      "size": 1,
+      "status": "Projet d'école",
+      "role": null,
+      "context": "Projet d'école · Ynov (collaboration)",
+      "description": null,
+      "stack": [],
+      "learned": null,
+      "note": null,
+      "links": {
+        "github": "https://github.com/Lyon-Ynov-Campus/groupie-tracker-gp-armonik",
+        "organization": null,
+        "live": null,
+        "current": null
+      },
+      "image": null,
+      "draft": true
+    },
+    {
+      "id": "escapequizz",
+      "name": "EscapeQuizz",
+      "bubbleLabel": "Escape\nQuizz",
+      "size": 1,
+      "status": null,
+      "role": null,
+      "context": "Collaboration",
+      "description": null,
+      "stack": [],
+      "learned": null,
+      "note": null,
+      "links": {
+        "github": "https://github.com/guiarthur7/EscapeQuizz",
+        "organization": null,
+        "live": null,
+        "current": null
+      },
+      "image": null,
+      "draft": true
+    },
+    {
+      "id": "cinelist",
+      "name": "CineList",
+      "bubbleLabel": "CineList",
+      "size": 1,
+      "status": null,
+      "role": null,
+      "context": "Collaboration",
+      "description": null,
+      "stack": [],
+      "learned": null,
+      "note": null,
+      "links": {
+        "github": "https://github.com/guiarthur7/CineList",
+        "organization": null,
+        "live": null,
+        "current": null
+      },
+      "image": null,
+      "draft": true
+    },
+    {
+      "id": "ysentinelle",
+      "name": "YSentinelle",
+      "bubbleLabel": "YSentinelle",
+      "size": 1,
+      "status": null,
+      "role": null,
+      "context": "Collaboration",
+      "description": null,
+      "stack": [],
+      "learned": null,
+      "note": null,
+      "links": {
+        "github": "https://github.com/YSentinelle/app",
+        "organization": null,
+        "live": null,
+        "current": null
+      },
+      "image": null,
+      "draft": true
+    }
+  ]
+}

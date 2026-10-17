@@ -22,3 +22,15 @@ dist/
 *.bak
 *_backup.*
 *_old.*
+
+# Build
+.ssr/
+dist-ssr/
+
+# Variables d'environnement (clé du formulaire, URL du site)
+.env
+.env.*
+!.env.example
+
+# Photos brutes (ne jamais publier)
+assets-src/

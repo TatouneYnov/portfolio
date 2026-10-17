@@ -1,0 +1,29 @@
+{
+  "_note": "Stats relevées à la main sur les profils publics. Mets null pour masquer une stat.",
+  "updatedAt": "2026-10-17",
+  "tryhackme": {
+    "username": ".Tatoune",
+    "url": "https://tryhackme.com/p/.Tatoune",
+    "memberSince": "2024-10",
+    "topPercent": 7,
+    "highestLeague": "Silver",
+    "questionsAnswered": 254,
+    "highestStreak": 8,
+    "roomsCompleted": null,
+    "badges": ["First Four", "cat linux.txt", "Blue", "OhSINT", "Hash Cracker"],
+    "pathInProgress": "Cyber Security 101"
+  },
+  "hackthebox": {
+    "username": "Tatoune",
+    "url": "https://app.hackthebox.com/users/2165775",
+    "memberSince": "2024-12",
+    "level": 13,
+    "machines": ["Cap", "Nexus"],
+    "challenges": null,
+    "sherlocks": null
+  },
+  "certification": {
+    "status": "in-progress",
+    "name": null
+  }
+}

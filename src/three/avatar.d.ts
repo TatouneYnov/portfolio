@@ -1,0 +1,29 @@
+import type * as THREE from 'three';
+
+type Limb = { ua: THREE.Group; la: THREE.Group; hand: THREE.Group };
+type Leg = { ul: THREE.Group; ll: THREE.Group; foot: THREE.Group };
+
+export type Avatar = {
+  root: THREE.Group;
+  hips: THREE.Group;
+  spine: THREE.Group;
+  chest: THREE.Group;
+  neck: THREE.Group;
+  head: THREE.Group;
+  torso: THREE.Mesh;
+  eyes: THREE.Group[];
+  arms: { L: Limb; R: Limb };
+  legs: { L: Leg; R: Leg };
+};
+
+export type Terminal = { texture: THREE.CanvasTexture; draw: () => void; step: () => void };
+export type Pose = Record<string, [number, number, number]> & { hipsY: number; breath: number };
+
+export const COLORS: Record<string, number>;
+export function buildAvatar(): Avatar;
+export function buildDesk(): { group: THREE.Group; screen: Terminal };
+export function makeTerminal(): Terminal;
+export const JOINT_KEYS: string[];
+export function makePose(): Pose;
+export function idlePose(t: number, P: Pose): void;
+export function sitPose(t: number, P: Pose): void;

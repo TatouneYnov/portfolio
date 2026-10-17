@@ -1,0 +1,38 @@
+{
+  "items": [
+    {
+      "title": "Bachelor 1 Informatique",
+      "place": "Ynov Lyon",
+      "year": "2025–26",
+      "text": "Bases du développement, des systèmes et des réseaux. Premiers projets en Go et en web.",
+      "upcoming": false,
+      "draft": false
+    },
+    {
+      "title": "Bachelor 2 Cybersécurité",
+      "place": "Ynov Lyon",
+      "year": "2026–27",
+      "text": "Spécialisation cyber : sécurité des systèmes et réseaux, analyse, offensive en lab. En parallèle : TryHackMe, Hack The Box, certif THM en préparation.",
+      "upcoming": false,
+      "draft": false
+    },
+    {
+      "title": "Stage · 170 h",
+      "place": "Et si c'était chez vous ?",
+      "year": "2026–27",
+      "text": "Je cherche un stage en DFIR, CTI, SOC ou infra, les matins (8h–12h) et à temps plein pendant les vacances.",
+      "link": { "label": "Voir mes disponibilités", "href": "#dispos" },
+      "upcoming": true,
+      "draft": false
+    },
+    {
+      "title": "Alternance · Bachelor 3",
+      "place": "Prochaine étape",
+      "year": "2027–28",
+      "text": "Objectif : continuer en alternance en B3.",
+      "upcoming": true,
+      "subtle": true,
+      "draft": false
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Image Open Graph</title>
+<style>
+@font-face{font-family:'Archivo Variable';src:url('/node_modules/@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2') format('woff2-variations');font-weight:100 900;font-stretch:62% 125%}
+@font-face{font-family:'Inter Variable';src:url('/node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');font-weight:100 900}
+@font-face{font-family:'JetBrains Mono';src:url('/node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2') format('woff2')}
+html,body{margin:0}
+body{width:1200px;height:630px;background:#07050C;color:#EEEAF6;font-family:'Inter Variable',sans-serif;position:relative;overflow:hidden}
+.glow{position:absolute;right:-60px;top:-40px;width:760px;height:760px;background:radial-gradient(circle,rgb(109 40 217/.42) 0%,rgb(109 40 217/.12) 42%,transparent 70%)}
+.av{position:absolute;right:20px;bottom:-10px;width:620px}
+.txt{position:absolute;left:72px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:22px;width:600px}
+.label{font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.2em;text-transform:uppercase;color:#8C84A3}
+h1{margin:0;font-family:'Archivo Variable';font-stretch:120%;font-weight:800;font-size:86px;line-height:.92;text-transform:uppercase}
+h1 span{display:block;color:#B49CFF}
+p{margin:0;font-size:26px;line-height:1.4}
+.badge{display:inline-flex;align-items:center;gap:12px;align-self:flex-start;padding:12px 20px;border:1.5px solid #B49CFF;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:19px}
+.dot{width:11px;height:11px;border-radius:50%;background:#7EE2B8}
+</style></head><body>
+<div class="glow"></div>
+<img class="av" src="og-avatar.png" alt="">
+<div class="txt">
+  <div class="label">Portfolio · Ynov Lyon</div>
+  <h1>Ethan<span>Bacquier</span></h1>
+  <p>Étudiant en cybersécurité<br>DFIR · CTI · Infra</p>
+  <div class="badge"><span class="dot"></span>Recherche stage 170 h</div>
+</div>
+</body></html>
