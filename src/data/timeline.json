@@ -29,9 +29,9 @@
       "title": "Alternance · Bachelor 3",
       "place": "Prochaine étape",
       "year": "2027–28",
-      "text": "Objectif : continuer en alternance en B3.",
+      "text": "Objectif : continuer en alternance en B3, au rythme de 1 semaine à l'école et 2 semaines en entreprise.",
       "upcoming": true,
-      "subtle": true,
+      "subtle": false,
       "draft": false
     }
   ]

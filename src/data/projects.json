@@ -11,7 +11,7 @@
       "context": "Projet de groupe",
       "description": "Une application web développée en équipe.",
       "stack": [],
-      "learned": null,
+      "learned": "Gérer des comptes et leurs permissions, construire une API et une interface d'administration.",
       "note": "Fiche détaillée bientôt",
       "links": {
         "github": null,
@@ -36,7 +36,7 @@
         "CSS",
         "JavaScript"
       ],
-      "learned": null,
+      "learned": "Réaliser un site, utiliser l'IA comme aide et le déployer.",
       "note": null,
       "links": {
         "github": null,
@@ -57,7 +57,7 @@
       "context": "Volley Ball Villefranche Beaujolais (site actuel sous WordPress)",
       "description": "Nouveau site pour le club : actus, équipes, inscriptions, formation, beach et partenaires.",
       "stack": [],
-      "learned": null,
+      "learned": "Réaliser un site, utiliser l'IA comme aide et le déployer.",
       "note": null,
       "links": {
         "github": null,
@@ -83,7 +83,7 @@
         "HTML",
         "CSS"
       ],
-      "learned": null,
+      "learned": "Monter un serveur web en Go.",
       "note": null,
       "links": {
         "github": "https://github.com/TatouneYnov/-power4-web",
@@ -106,7 +106,7 @@
       "stack": [
         "Go"
       ],
-      "learned": null,
+      "learned": "Apprendre le langage Go.",
       "note": null,
       "links": {
         "github": "https://github.com/TatouneYnov/Projet_Red",

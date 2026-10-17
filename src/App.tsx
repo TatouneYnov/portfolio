@@ -11,6 +11,7 @@ import { Toolbox } from './sections/Toolbox';
 import { Training } from './sections/Training';
 import { Projects } from './sections/Projects';
 import { Availability } from './sections/Availability';
+import { Testimonials } from './sections/Testimonials';
 import { Contact } from './sections/Contact';
 import { Footer } from './sections/Footer';
 import { bindAnchorLinks, refreshScroll, startMotion } from './lib/motion';
@@ -68,6 +69,7 @@ export function App() {
         <Toolbox />
         <Training />
         <Projects />
+        <Testimonials />
         <Availability />
         <Contact />
       </main>

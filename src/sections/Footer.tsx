@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import IconUp from '~icons/solar/arrow-up-linear';
 import IconClose from '~icons/solar/close-linear';
-import { asset } from '../lib/env';
+import IconShield from '~icons/solar/shield-check-linear';
+import { FORM_KEY, asset } from '../lib/env';
 
 const CREDITS = [
   {
@@ -28,10 +29,32 @@ const CREDITS = [
   },
 ];
 
+// Encart « Comment ce site est sécurisé » : uniquement ce qui est réellement en place dans le code.
+const SECURITY = [
+  'Aucun tracker, aucun cookie, aucune publicité.',
+  "Polices et icônes hébergées ici : rien n'est chargé depuis un autre site, ton adresse IP n'est pas envoyée à Google.",
+  'Politique de sécurité du contenu (CSP) stricte : seuls les scripts du site peuvent s\'exécuter, aucun script inline.',
+  ...(FORM_KEY ? ['Seul le formulaire de contact échange avec un service externe (Web3Forms), pour me transmettre ton message.'] : []),
+];
+
 export function Footer() {
   const dialog = useRef<HTMLDialogElement>(null);
   return (
     <footer className="site-footer">
+      <section className="container site-footer__sec" aria-labelledby="sec-title">
+        <h2 id="sec-title" className="label site-footer__sec-title">
+          <IconShield aria-hidden="true" /> Comment ce site est sécurisé
+        </h2>
+        <ul>
+          {SECURITY.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+          <li>
+            Une faille ? Le fichier{' '}
+            <a href={asset('.well-known/security.txt')}>security.txt</a> indique comment me la signaler.
+          </li>
+        </ul>
+      </section>
       <div className="container site-footer__inner">
         <p>© 2026 Ethan Bacquier · Fait à Lyon</p>
         <div className="site-footer__links">

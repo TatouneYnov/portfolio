@@ -96,13 +96,16 @@ Tout le texte modifiable sans toucher au code.
 | `projects.json` | bulles projets |
 | `timeline.json` | parcours |
 | `training.json` | TryHackMe / Hack The Box / certif |
-| `availability.json` | calendrier de stage |
+| `availability.json` | calendrier de stage + bloc alternance |
+| `testimonials.json` | témoignages (vide → section masquée) |
 
 **Règle des placeholders** : une valeur `"TODO"` ou `null` n'est **jamais** affichée. L'élément est masqué ou remplacé par un état propre. Une entrée `"draft": true` n'est pas rendue. Ajouter un test (ou un script `npm run check:content`) qui échoue si « TODO », « lorem » ou `href="#"` apparaissent dans le HTML pré-rendu.
 
 ### 4.1 profile.json
 - Nom : **Ethan Bacquier** · pseudo **Tatoune**
 - Statut : **Étudiant en B2 Cybersécurité · Ynov Campus Lyon (2026–2027)**
+- Badge du hero : « Stage 170 h dès nov. 2026 · Alternance B3 en 2027 » (affiché sur 2 lignes, coupé sur « · »)
+- Recherche : stage de 170 h cette année **et** alternance en B3 (rentrée 2027, rythme **1 semaine à l'école / 2 semaines en entreprise**). Les recruteurs s'intéressent souvent plus aux alternants : l'alternance est mise en avant (badge, Disponibilités, timeline, formulaire).
 - Intérêts : DFIR et CTI en priorité, ouvert à l'infra
 - Niveau (à respecter dans tous les textes) : bases solides en infra/cyber et plusieurs langages ; **pas encore de certification** ; ne jamais gonfler.
 - Email : `ethan.bacquier@gmail.com` (bouton copier + mailto)
@@ -120,7 +123,7 @@ Tout le texte modifiable sans toucher au code.
 1. **Bachelor 1 Informatique** · Ynov Lyon · 2025–26 · « Bases du développement, des systèmes et des réseaux. Premiers projets en Go et en web. » *(wording à valider par Ethan)*
 2. **Bachelor 2 Cybersécurité** · Ynov Lyon · 2026–27 · « Spécialisation cyber : sécurité des systèmes et réseaux, analyse, offensive en lab. En parallèle : TryHackMe, Hack The Box, certif THM en préparation. »
 3. **Stage · 170 h** · « Et si c'était chez vous ? » · 2026–27 · « Je cherche un stage en DFIR, CTI, SOC ou infra, les matins (8h–12h) et à temps plein pendant les vacances. » + lien « Voir mes disponibilités ↓ ». Style « à venir » : année en contour (`-webkit-text-stroke`), perle qui pulse.
-4. **Alternance · Bachelor 3** · « Prochaine étape » · 2027–28 · « Objectif : continuer en alternance en B3. » Style « à venir », plus discret.
+4. **Alternance · Bachelor 3** · « Prochaine étape » · 2027–28 · « Objectif : continuer en alternance en B3, au rythme de 1 semaine à l'école et 2 semaines en entreprise. » Style « à venir » (plus en version discrète depuis le 17/10 au soir).
 
 ### 4.3 training.json (stats relevées le 17 oct. 2026, mises à jour à la main)
 Pas d'appel API depuis le navigateur. Afficher discrètement « Stats au <date> ».
@@ -162,6 +165,11 @@ Pas d'appel API depuis le navigateur. Afficher discrètement « Stats au <date> 
 Champs : `id, name, bubbleLabel` (texte de la bulle et du bouton, `\n` = retour à la ligne), `size, status, role, context, description, stack[], learned, note, links{github,organization,live,current}, image, draft`.
 Statuts possibles : « En cours », « Livré », « Projet d'école ».
 
+« Ce que j'ai appris » (`learned`), rédigé à partir des mots d'Ethan (17/10), sans rien ajouter :
+- Hera : « Gérer des comptes et leurs permissions, construire une API et une interface d'administration. »
+- Power 4 : « Monter un serveur web en Go. » · RedQuest : « Apprendre le langage Go. »
+- Cabinet infirmier et VBVB : « Réaliser un site, utiliser l'IA comme aide et le déployer. »
+
 1. **Hera** — `size: 1.6`, mis en avant. Projet de groupe, application web. Liens : site https://hera-app.fr + organisation https://github.com/Hera-app (repos privés : pas de lien vers un repo). Ethan a fait les repos **`admin.hera-app`** et **`hera-connect`**. Description, stack, statut et détail du rôle : **à remplir à partir des zips des deux repos qu'Ethan enverra sur demande** (l'accès GitHub de Claude ne voit pas l'orga Hera-app). En attendant (codé) : description « Une application web développée en équipe. », rôle « J'ai réalisé les parties admin.hera-app et hera-connect. », statut `null`, note « Fiche détaillée bientôt », liens site + organisation. L'ancien portfolio parlait de « chat temps réel / WebSockets » : **ne pas reprendre sans vérification dans le code**.
 2. **Site du cabinet infirmier de Jassans-Riottier** — vrai client. Site vitrine statique HTML/CSS/JS (fichiers séparés, sans framework) pour un cabinet d'infirmières libérales : infos pratiques et contact, aux couleurs de leur carte de visite, contenus validés par le cabinet. Statut **« En cours »**, pas de lien live.
 3. **Refonte du site du VBVB** (Volley Ball Villefranche Beaujolais) — statut **« En cours »**. Ethan refait le site de son propre club (actuellement sous WordPress) : actus, équipes, inscriptions, formation, beach, partenaires. Stack = `null` (masquée). Lien https://vbvb.fr uniquement en « site actuel », jamais comme réalisation.
@@ -178,7 +186,8 @@ Ne **pas** utiliser : `biblio-groupe-15`, `togethapp`, `Scalingo`, `tp-template-
 
 ### 4.5 skills.json (26 touches)
 En tête : `"_note": "Ne garde que les outils que tu sais expliquer en entretien."`
-Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogramme si pas de logo), hotkey (lettre unique), quip`. Ton complice, jamais vantard. 17 logos Simple Icons existent ; AD, Réseau, Nmap, Gobuster, John/Hashcat, Volatility, Autopsy, CyberChef et MITRE ATT&CK utilisent leur monogramme.
+Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogramme si pas de logo), hotkey (lettre unique), quip, usedIn[]`.
+`usedIn` = où Ethan s'est servi de l'outil (réponses d'Ethan du 17/10), affiché « Utilisé : … » sous la phrase, dans le texte du clavier et dans la liste. Valeurs : « Cours à Ynov », « TryHackMe / HTB », « Projets perso », ou un exercice précis (Wireshark → Machine Cap (HTB) ; Nmap → Machines Cap et Nexus (HTB) ; Metasploit → Room Blue (THM) ; John/Hashcat → Room Blue (THM), badge Hash Cracker ; Go → Power 4 Web, RedQuest ; HTML/CSS et JS → Cabinet infirmier, Refonte du VBVB ; Vue → Mon ancien portfolio ; Git → Tous mes projets GitHub). Ne jamais ajouter un lieu qu'Ethan n'a pas confirmé. Noms longs d'un seul mot (> 8 lettres) : taille réduite (`toolbox__name--long`). Ton complice, jamais vantard. 17 logos Simple Icons existent ; AD, Réseau, Nmap, Gobuster, John/Hashcat, Volatility, Autopsy, CyberChef et MITRE ATT&CK utilisent leur monogramme.
 
 **Prog & web** (`prog`, violet `#7C3AED`)
 - Python — « Le couteau suisse : un script et le problème est réglé. »
@@ -225,6 +234,7 @@ Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogram
 - Jours fériés à griser : 11 nov. 2026, 25 déc. 2026, 1er janv. 2027, 29 mars 2027 (lundi de Pâques), 6 mai 2027 (Ascension), 17 mai 2027 (lundi de Pentecôte). Les 1er et 8 mai 2027 tombent un samedi.
 - **Jours passés grisés automatiquement** (comparaison avec la date du visiteur) ; un mois entièrement passé disparaît de la vue.
 - Mention : « Autres périodes : à définir ensemble ».
+- Bloc `alternance` (sous le CTA) : « Et après : alternance » · « Pour ma 3e année (Bachelor 3, rentrée 2027), je cherche une alternance. » · « 1 semaine à l'école · 2 semaines en entreprise » · lien « Me parler d'alternance → » (scroll vers Contact, objet « Alternance B3 »).
 - Exemple de calcul (affiché tel quel) : « Exemple : les 4 semaines de vacances = 126 h (hors fériés) + 11 matinées de 4 h = 170 h ». (18 jours × 7 h = 126 h.)
 
 Structure suggérée :
@@ -319,7 +329,8 @@ Construction, réglages (couleurs, mèche, volume des cheveux) et régénératio
 3 colonnes desktop, avatar au centre (buste, épaules → haut du crâne), lueur radiale derrière.
 - Gauche : « Salut, moi c'est » (Inter, `--accent`) puis « ETHAN / BACQUIER » (h1 unique, Archivo 700 expanded, `clamp(2rem, 4vw, 3.6rem)`)
 - Droite : « Étudiant en » puis mot rotatif « CYBERSÉCURITÉ » ↔ « INFRA ». Sortant : monte de 100 % dans un masque en passant en `--accent` et en perdant l'opacité ; entrant : arrive du bas en `--text`. Cycle 2.6 s, `power3.inOut` 0.7 s. `aria-live="off"` + span sr-only « Étudiant en cybersécurité et infrastructure ».
-- Badge : « ● Recherche stage 170 h · dès novembre 2026 » (point vert doux qui pulse) → scroll vers Disponibilités
+- Badge : « ● Stage 170 h dès nov. 2026 / Alternance B3 en 2027 » (2 lignes, 2e en `--accent`, point vert doux qui pulse) → scroll vers Disponibilités
+- Sous le badge : boutons « Me contacter » (plein) et « Voir mes projets » (contour). Un 3e bouton « CV » quand `cv.available` passera à `true`.
 - Avatar : idle qui respire. **Tête** suit le pointeur (os `Head` : yaw ±35°, pitch ±20°, lerp 0.08), yeux aussi si os disponibles. Tactile : balayage lent automatique.
 - Intro GSAP : lueur (scale 0.6 → 1), avatar +40 px en fondu, nom mot par mot (stagger 0.08), colonne droite, badge. Nav et badge utilisables pendant l'intro.
 - Indicateur de scroll : ligne verticale qui se remplit en boucle.
@@ -329,7 +340,7 @@ Construction, réglages (couleurs, mèche, volume des cheveux) et régénératio
 Le contenu du hero glisse vers l'extérieur en fondu (scrub). Avatar à gauche, tête qui suit toujours. À droite :
 - Label « À PROPOS »
 - Paragraphe (Inter ~20 px, passe de `--muted` à `--text` mot à mot au défilement) :
-  > Je suis Ethan, étudiant en 2e année de cybersécurité à Ynov Lyon. Ce qui m'attire, c'est de comprendre ce qui s'est passé après une attaque et qui se cache derrière : la réponse à incident (DFIR) et la threat intelligence (CTI). J'aime aussi mettre les mains dans l'infra, parce qu'on défend mieux ce qu'on sait construire. Je m'entraîne sur TryHackMe et Hack The Box, je code (Go, Python, web) et je cherche un premier stage pour apprendre aux côtés d'une vraie équipe.
+  > Je suis Ethan, étudiant en 2e année de cybersécurité à Ynov Lyon. Ce qui m'attire, c'est de comprendre ce qui s'est passé après une attaque et qui se cache derrière : la réponse à incident (DFIR) et la threat intelligence (CTI). J'aime aussi mettre les mains dans l'infra, parce qu'on défend mieux ce qu'on sait construire. Je m'entraîne sur TryHackMe et Hack The Box, je code (Go, Python, web) et je cherche un premier stage pour apprendre aux côtés d'une vraie équipe, puis une alternance pour ma 3e année.
 - Bloc « Hors écran » (carte `--bg-2`, bordure `--line`) : `volley.webp` (4:5, grayscale → couleur au survol) +
   > Hors clavier, je suis libéro en Nationale 3 au Volley Ball Villefranche Beaujolais (VBVB). Lire le jeu avant l'attaque, rester calme sous pression, jouer pour l'équipe : au fond, c'est le même métier.
 
@@ -389,7 +400,11 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
 - Droite : liens rapides (icône Solar + libellé + ↗ qui glisse) : Email (copier), LinkedIn, GitHub, TryHackMe, Hack The Box, Discord « tatoune » (copier), CV (désactivé « bientôt »).
 
 ### 11. Footer
-« © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confidentialité » (`confidentialite.html`) · « Crédits » (modale `<dialog>`, liste en dur dans `Footer.tsx`, à garder alignée avec `CREDITS.md` : avatar et scènes en code, polices, icônes Solar / Simple Icons, bibliothèques) · « Retour en haut ↑ ».
+Encart « Comment ce site est sécurisé » au-dessus (liste dans `Footer.tsx`, `SECURITY`) : uniquement ce qui est réellement en place (aucun tracker/cookie, polices et icônes auto-hébergées, CSP stricte, ligne Web3Forms seulement si `VITE_FORM_KEY`, lien `security.txt`). Ne pas y annoncer HSTS ou `frame-ancestors` tant que le site n'est pas hébergé avec `_headers`.
+
+Témoignages (`Testimonials.tsx`, entre Projets et Disponibilités) : affichés seulement si `testimonials.json` contient des entrées réelles avec `consent: true`. Jamais de témoignage inventé.
+
+Pied : « © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confidentialité » (`confidentialite.html`) · « Crédits » (modale `<dialog>`, liste en dur dans `Footer.tsx`, à garder alignée avec `CREDITS.md` : avatar et scènes en code, polices, icônes Solar / Simple Icons, bibliothèques) · « Retour en haut ↑ ».
 
 ---
 
@@ -468,7 +483,7 @@ object-src 'none';
 ## 13. SEO
 
 - `<title>` : « Ethan Bacquier · Étudiant en cybersécurité · Ynov Lyon » (raccourci à moins de 60 caractères après l'audit SEO)
-- `meta description` : « Étudiant en B2 cybersécurité à Ynov Lyon, attiré par le DFIR, la CTI et l'infra : je cherche un stage de 170 h dès novembre. » (120 à 160 caractères, sans troncature)
+- `meta description` : « Étudiant en B2 cybersécurité à Ynov Lyon (DFIR, CTI, infra) : je cherche un stage de 170 h dès novembre, puis une alternance en 2027. » (133 caractères) (120 à 160 caractères, sans troncature)
 - `llms.txt`, `404.html`, `confidentialite.html` (RGPD : formulaire de contact) générés ou présents dans `public/`.
 - Open Graph + Twitter card (`og-image.jpg`), canonical, favicon « EB » (SVG + PNG 32/180), `robots.txt`, `sitemap.xml` (générés depuis `VITE_SITE_URL`).
 - JSON-LD `@graph` : `Person` (`@id` …/#person, alternateName « Tatoune », affiliation Ynov, `sameAs` GitHub, LinkedIn, TryHackMe, HTB) + `WebSite`.
@@ -517,8 +532,14 @@ object-src 'none';
 - Le formulaire Web3Forms n'apparaît qu'avec `VITE_FORM_KEY` ; sinon bloc « Écris-moi directement ».
 - Rendus de l'avatar découpés (scissor) à son emplacement, avec un fondu en bas de l'emplacement pour masquer la coupe.
 - Mot rotatif du hero : le CSS décale le 2e mot (repli sans JS) ; le JS remet ce décalage à zéro (`y: 0`) avant d'animer en `yPercent`.
+- Canvas de l'avatar **effacé quand il se met en pause** (`ClearWhenPaused`) et quand aucun emplacement n'est visible : après un saut de défilement, la dernière image (avatar au bureau) restait figée par-dessus la section Outils.
+- Mesures de défilement : la machine de test du 17/10 au soir n'a que 2 cœurs, les chiffres absolus ne sont comparables qu'avec un build de référence mesuré sur la même machine.
 
-## 17. TODO d'Ethan (état au 17 oct. 2026, soir)
+### Pistes examinées le 17/10 (grill « améliorations »)
+- **Fait** : « Utilisé : … » sur les touches, boutons du hero, alternance B3 mise en avant, « Ce que j'ai appris », encart sécurité, emplacement témoignages.
+- **Écarté pour l'instant** (ne pas réintroduire sans demande) : rapports d'exercices détaillés (enquêtes type alerte → recherche → conclusion), bloc « En ce moment », statistiques de visite (le site reste **zéro tracker**), page sécurité dédiée (un encart suffit).
+
+## 17. TODO d'Ethan (état au 17 oct. 2026, fin de soirée)
 
 - [ ] Vérifier sur son PC la fluidité de la 3D (avatar, clavier, bulles) et le nouveau défilement
 - [ ] Envoyer les zips de `admin.hera-app` et `hera-connect` pour la fiche Hera
@@ -530,6 +551,9 @@ object-src 'none';
 - [ ] CV PDF puis `cv.available: true` (un ancien `CV_Bacquier_Ethan.pdf` existe sur la branche `main` : à vérifier avant de le réutiliser)
 - [ ] Créer une clé Web3Forms (`VITE_FORM_KEY`)
 - [ ] Acheter `ethanbacquier.fr` et choisir l'hébergeur (recommandé : Cloudflare Pages)
-- [ ] Choisir la certification TryHackMe (puis renseigner `certification.name`)
 - [ ] Mettre à jour `training.json` de temps en temps
 - [ ] Stack du site VBVB ; lien live du cabinet quand il est en ligne
+- [ ] Demander de vrais témoignages (prof Ynov, coach de volley, cabinet infirmier) avec accord de publication → `testimonials.json`
+- [ ] Monter un homelab (puis on pourra l'ajouter au site)
+- [ ] Créer un compte Root-Me, participer au FCSC ou au 404CTF (puis les ajouter dans « Terrain d'entraînement »)
+- [ ] Choisir la certification TryHackMe, puis renseigner `certification.name` (la SAL1, analyste SOC, est la plus proche du DFIR/SOC ; la PT1 est offensive)

@@ -141,7 +141,13 @@ function Scene() {
       visible = false;
     }
     avatar.root.visible = visible;
-    if (!visible) return;
+    if (!visible) {
+      // Rien à l'écran : on efface tout le canevas (sinon une ancienne image peut rester affichée)
+      desk.group.visible = false;
+      gl.setScissorTest(false);
+      gl.clear();
+      return;
+    }
 
     // Découpe du rendu à l'emplacement (marge en haut et sur les côtés, aucune en bas)
     const padX = s.rect.w * 0.12;
@@ -282,6 +288,18 @@ function Scene() {
   );
 }
 
+/** Efface le canevas quand la scène se met en pause : après un défilement rapide, la dernière
+ * image rendue pourrait sinon rester figée par-dessus une autre section. */
+function ClearWhenPaused({ active }: { active: boolean }) {
+  const { gl } = useThree();
+  useEffect(() => {
+    if (active) return;
+    gl.setScissorTest(false);
+    gl.clear();
+  }, [active, gl]);
+  return null;
+}
+
 export default function AvatarStage({ onLost }: { onLost: () => void }) {
   const pageVisible = usePageVisible();
   const [slotVisible, setSlotVisible] = useState(true);
@@ -319,6 +337,7 @@ export default function AvatarStage({ onLost }: { onLost: () => void }) {
         }}
       >
         <Scene />
+        <ClearWhenPaused active={pageVisible && slotVisible} />
       </Canvas>
     </div>
   );

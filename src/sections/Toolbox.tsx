@@ -103,10 +103,14 @@ export function Toolbox() {
             <div ref={readout} className="toolbox__readout" aria-live="polite">
               {current ? (
                 <>
-                  <p className="toolbox__name" data-cat={current.category}>
+                  <p
+                    className={`toolbox__name${Math.max(...current.label.split(' ').map((w) => w.length)) > 8 ? ' toolbox__name--long' : ''}`}
+                    data-cat={current.category}
+                  >
                     {current.label}
                   </p>
                   <p className="toolbox__quip">{current.quip}</p>
+                  {current.usedIn?.length ? <p className="toolbox__used">Utilisé : {current.usedIn.join(' · ')}</p> : null}
                   <p className="label toolbox__cat">{catById[current.category]?.label}</p>
                 </>
               ) : (
@@ -173,6 +177,7 @@ export function Toolbox() {
               <span className="skills-list__name">{s.label}</span>
               <span className="skills-list__cat">{catById[s.category]?.label}</span>
               <span className="skills-list__quip">{s.quip}</span>
+              {s.usedIn?.length ? <span className="skills-list__used">Utilisé : {s.usedIn.join(' · ')}</span> : null}
             </li>
           ))}
         </ul>

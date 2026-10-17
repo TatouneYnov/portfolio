@@ -849,6 +849,22 @@ a.cv-tab:hover {
   margin-top: 10px;
   max-width: 100%;
 }
+.hero__badge-text {
+  display: grid;
+  gap: 2px;
+  line-height: 1.45;
+}
+.hero__badge-text > span + span {
+  color: var(--accent);
+}
+.hero__badge:hover .hero__badge-text > span + span {
+  color: inherit;
+}
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 .hero__center {
   position: relative;
 }
@@ -1206,9 +1222,18 @@ a.cv-tab:hover {
   line-height: 0.95;
   overflow-wrap: anywhere;
 }
+.toolbox__name--long {
+  font-size: clamp(1.5rem, 2.9vw, 2.9rem);
+}
 .toolbox__quip {
   font-size: clamp(1rem, 1.3vw, 1.2rem);
   max-width: 26ch;
+}
+.toolbox__used {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  max-width: 34ch;
 }
 .toolbox__stage {
   position: relative;
@@ -1288,6 +1313,11 @@ a.cv-tab:hover {
 .skills-list__quip {
   font-size: 15px;
   color: var(--text);
+}
+.skills-list__used {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
 }
 
 /* ---------- Entraînement ---------- */
@@ -1588,6 +1618,25 @@ a.cv-tab:hover {
   font-size: 12.5px;
   letter-spacing: 0.08em;
   color: var(--accent);
+}
+.dispo__alt {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  width: 100%;
+  margin-top: 8px;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  background: var(--bg-2);
+}
+.dispo__alt-rhythm {
+  font-family: var(--font-display);
+  font-stretch: 110%;
+  font-weight: 700;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  line-height: 1.2;
 }
 .dispo__cal-head {
   display: flex;
@@ -1917,6 +1966,40 @@ button.quick-link:hover .arrow {
   color: var(--muted);
 }
 
+/* ---------- Témoignages (affichés seulement s'il y en a) ---------- */
+.testimonials__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: clamp(16px, 2.4vw, 32px);
+  margin-top: clamp(32px, 5vw, 64px);
+}
+.quote-card {
+  display: grid;
+  gap: 20px;
+  align-content: space-between;
+  padding: clamp(22px, 3vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.quote-card blockquote p {
+  font-size: clamp(1.05rem, 1.4vw, 1.25rem);
+  line-height: 1.55;
+}
+.quote-card__who {
+  display: grid;
+  gap: 4px;
+}
+.quote-card__name {
+  font-weight: 600;
+}
+.quote-card__role {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
 /* ---------- Pied de page ---------- */
 .site-footer {
   position: relative;
@@ -1926,6 +2009,39 @@ button.quick-link:hover .arrow {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--muted);
+}
+.site-footer__sec {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+.site-footer__sec-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+.site-footer__sec-title svg {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+}
+.site-footer__sec ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px 32px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.site-footer__sec li {
+  padding-left: 14px;
+  border-left: 1px solid var(--line-2);
+}
+.site-footer__sec a {
+  color: var(--accent);
 }
 .site-footer__inner {
   display: flex;

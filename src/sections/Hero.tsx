@@ -25,7 +25,7 @@ export function Hero() {
       gsap.set(right, { autoAlpha: 0, y: 24 });
       gsap.set('.hero__hello', { autoAlpha: 0, y: 12 });
       gsap.set(glow, { scale: 0.6, autoAlpha: 0 });
-      gsap.set('.hero__badge', { autoAlpha: 0, y: 12 });
+      gsap.set('.hero__badge, .hero__actions', { autoAlpha: 0, y: 12 });
 
       const play = () => {
         gsap
@@ -35,7 +35,8 @@ export function Hero() {
           .to('.hero__hello', { autoAlpha: 1, y: 0, duration: 0.6 }, 0.25)
           .to(words, { yPercent: 0, duration: 0.9, stagger: 0.08 }, 0.35)
           .to(right, { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.08 }, 0.6)
-          .to('.hero__badge', { autoAlpha: 1, y: 0, duration: 0.6 }, 0.8);
+          .to('.hero__badge', { autoAlpha: 1, y: 0, duration: 0.6 }, 0.8)
+          .to('.hero__actions', { autoAlpha: 1, y: 0, duration: 0.6 }, 0.9);
       };
       if (document.documentElement.classList.contains('is-loaded')) play();
       else window.addEventListener('app:loaded', play, { once: true });
@@ -80,8 +81,23 @@ export function Hero() {
           />
           <a className="hero__badge badge" href="#dispos">
             <span className="badge__dot" aria-hidden="true" />
-            {profile.badge}
+            <span className="hero__badge-text">
+              {profile.badge.split(' · ').map((part, i) => (
+                <span key={part}>
+                  {i > 0 && <span className="sr-only"> · </span>}
+                  {part}
+                </span>
+              ))}
+            </span>
           </a>
+          <div className="hero__actions">
+            <a className="btn btn--primary btn--sm" href="#contact">
+              Me contacter
+            </a>
+            <a className="btn btn--ghost btn--sm" href="#projets">
+              Voir mes projets
+            </a>
+          </div>
         </div>
 
         <div className="hero__center">

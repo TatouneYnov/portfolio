@@ -51,17 +51,19 @@ Tout le texte vit dans `src/data/`. Règle commune : une valeur à `null` est ma
 | Fichier | Ce qu'il contient |
 |---|---|
 | `profile.json` | nom, statut, e-mail, Discord, liens, texte « À propos », bloc « Hors écran », cartes « Ce que je fais », CV |
-| `skills.json` | les 26 touches du clavier : nom, catégorie, logo, lettre du raccourci, phrase |
+| `skills.json` | les 26 touches du clavier : nom, catégorie, logo, lettre du raccourci, phrase, où tu t'en es servi (`usedIn`) |
 | `projects.json` | les bulles projets |
 | `timeline.json` | le parcours |
 | `training.json` | stats TryHackMe et Hack The Box, certification |
-| `availability.json` | le calendrier de stage |
+| `availability.json` | le calendrier de stage et le bloc alternance |
+| `testimonials.json` | les témoignages (section masquée tant que la liste est vide) |
 
 ### Exemples courants
 
 - **Ajouter tes vacances Ynov** : dans `availability.json`, ajoute une ligne dans `fullWeeks`, par exemple `{ "from": "2027-04-12", "to": "2027-04-16" }`.
 - **Mettre à jour tes stats** : modifie `training.json`, puis change `updatedAt` (la date s'affiche sur le site). Mets `null` pour masquer une stat.
 - **Ajouter une compétence** : ajoute une entrée dans `skills.json` avec une lettre de raccourci encore libre. Pour le logo, mets un identifiant [Simple Icons](https://simpleicons.org/) (`"simple-icons:nom"`), ou `null` pour afficher le monogramme (`mono`). Le build signale un logo introuvable.
+- **Ajouter un témoignage** : dans `testimonials.json`, ajoute `{ "quote": "…", "name": "Prénom Nom", "role": "…", "org": "…", "consent": true, "draft": false }`. Uniquement avec l'accord de la personne.
 - **Changer une couleur de catégorie** : mets-la à jour dans `skills.json` (clavier 3D) **et** dans `src/styles/main.css`, section « Couleurs des catégories » (liste HTML).
 
 ### Ajouter un projet

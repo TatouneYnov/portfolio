@@ -8,7 +8,7 @@
   "school": "Ynov Campus Lyon",
   "rotatingWords": ["Cybersécurité", "Infra"],
   "rotatingSrOnly": "Étudiant en cybersécurité et infrastructure",
-  "badge": "Recherche stage 170 h · dès novembre 2026",
+  "badge": "Stage 170 h dès nov. 2026 · Alternance B3 en 2027",
   "email": "ethan.bacquier@gmail.com",
   "discord": "tatoune",
   "links": {
@@ -23,7 +23,7 @@
     "available": false,
     "path": "cv/ethan-bacquier-cv.pdf"
   },
-  "about": "Je suis Ethan, étudiant en 2e année de cybersécurité à Ynov Lyon. Ce qui m'attire, c'est de comprendre ce qui s'est passé après une attaque et qui se cache derrière : la réponse à incident (DFIR) et la threat intelligence (CTI). J'aime aussi mettre les mains dans l'infra, parce qu'on défend mieux ce qu'on sait construire. Je m'entraîne sur TryHackMe et Hack The Box, je code (Go, Python, web) et je cherche un premier stage pour apprendre aux côtés d'une vraie équipe.",
+  "about": "Je suis Ethan, étudiant en 2e année de cybersécurité à Ynov Lyon. Ce qui m'attire, c'est de comprendre ce qui s'est passé après une attaque et qui se cache derrière : la réponse à incident (DFIR) et la threat intelligence (CTI). J'aime aussi mettre les mains dans l'infra, parce qu'on défend mieux ce qu'on sait construire. Je m'entraîne sur TryHackMe et Hack The Box, je code (Go, Python, web) et je cherche un premier stage pour apprendre aux côtés d'une vraie équipe, puis une alternance pour ma 3e année.",
   "offscreen": {
     "title": "Hors écran",
     "text": "Hors clavier, je suis libéro en Nationale 3 au Volley Ball Villefranche Beaujolais (VBVB). Lire le jeu avant l'attaque, rester calme sous pression, jouer pour l'équipe : au fond, c'est le même métier.",

@@ -211,7 +211,7 @@ export function Contact() {
                   <IconCopy aria-hidden="true" /> Copier l'adresse
                 </button>
               </div>
-              <p className="contact__privacy">Pour un stage, précise la période et le type de missions : je réponds vite.</p>
+              <p className="contact__privacy">Pour un stage ou une alternance, précise la période et le type de missions : je réponds vite.</p>
             </div>
           )}
 

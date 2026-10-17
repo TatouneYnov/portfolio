@@ -18,5 +18,11 @@
     "Lyon ou télétravail"
   ],
   "example": "Exemple : les 4 semaines de vacances = 126 h (hors fériés) + 11 matinées de 4 h = 170 h",
-  "otherPeriods": "Autres périodes : à définir ensemble"
+  "otherPeriods": "Autres périodes : à définir ensemble",
+  "alternance": {
+    "title": "Et après : alternance",
+    "text": "Pour ma 3e année (Bachelor 3, rentrée 2027), je cherche une alternance.",
+    "rhythm": "1 semaine à l'école · 2 semaines en entreprise",
+    "cta": "Me parler d'alternance"
+  }
 }

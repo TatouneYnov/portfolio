@@ -123,10 +123,11 @@ export function Availability() {
   // Balayage horizontal sur mobile
   const swipe = useRef<number | null>(null);
 
-  const propose = () => {
-    window.dispatchEvent(new CustomEvent('contact:subject', { detail: 'stage' }));
+  const propose = (topic: 'stage' | 'alternance' = 'stage') => {
+    window.dispatchEvent(new CustomEvent('contact:subject', { detail: topic }));
     scrollToHash('#contact');
   };
+  const alt = data.alternance;
 
   return (
     <section ref={root} id="dispos" className="dispo section" aria-labelledby="dispo-title">
@@ -146,6 +147,16 @@ export function Availability() {
             <a className="btn btn--primary" href="#contact" onClick={(e) => (e.preventDefault(), propose())}>
               Me proposer un créneau <IconArrow aria-hidden="true" />
             </a>
+            {alt && (
+              <div className="dispo__alt">
+                <p className="label">{alt.title}</p>
+                <p>{alt.text}</p>
+                <p className="dispo__alt-rhythm">{alt.rhythm}</p>
+                <a className="text-link" href="#contact" onClick={(e) => (e.preventDefault(), propose('alternance'))}>
+                  {alt.cta} <span className="arrow" aria-hidden="true">→</span>
+                </a>
+              </div>
+            )}
           </div>
 
           <div className="dispo__cal">
