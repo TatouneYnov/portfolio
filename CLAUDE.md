@@ -1,6 +1,6 @@
 # CLAUDE.md — Portfolio d'Ethan Bacquier
 
-Ce fichier est la référence du projet. Il reprend le brief initial **et** les décisions validées avec Ethan le 17 octobre 2026 (mis à jour après le premier build). En cas de conflit entre ce fichier et un ancien message, ce fichier gagne.
+Ce fichier est la référence du projet. Il reprend le brief initial **et** les décisions validées avec Ethan le 17 octobre 2026, mises à jour après le premier build et les corrections du soir (défilement, chargement, bulles). Il décrit **ce qui est réellement codé** sur la branche `v2`. En cas de conflit entre ce fichier et un ancien message, ce fichier gagne.
 
 ---
 
@@ -31,7 +31,7 @@ Ancien plan : bilingue FR/EN, hero en graphe réseau, write-ups CTF, terminal in
 
 - **Vite 6 + React 18 + TypeScript** (Vite 6.4.4 : versions antérieures signalées par `npm audit`)
 - **Three.js** via `@react-three/fiber` + `@react-three/drei`
-- **Physique** : `@react-three/rapier` (bulles projets), chargé en lazy à l'approche de la section Projets
+- **Physique** : `@react-three/rapier` (bulles projets). Module et WebAssembly préchargés pendant l'écran de chargement (`src/lib/warm.ts`)
 - **Animation** : GSAP + ScrollTrigger (système principal et unique pour le DOM)
 - **Smooth scroll** : **Lenis uniquement** (jamais Locomotive). `lenis.on('scroll', ScrollTrigger.update)` + `gsap.ticker.add`, `lagSmoothing(0)`. Désactivé sous `prefers-reduced-motion`. `destroy()` au démontage.
 - **Icônes UI** : Solar via Iconify, **compilées au build** (`unplugin-icons` + `@svgr/core` + `@iconify-json/solar`). Logos de plateformes (GitHub, TryHackMe…) : `@iconify-json/simple-icons`. Aucun appel à l'API Iconify au runtime.
@@ -51,6 +51,28 @@ Ancien plan : bilingue FR/EN, hero en graphe réseau, write-ups CTF, terminal in
 
 Fournir un `.env.example`. Ne jamais committer de `.env`.
 
+### Carte du code
+| Fichier | Rôle |
+|---|---|
+| `src/App.tsx` | Assemble les sections, démarre le mouvement, monte la scène de l'avatar, lance le préchargement 3D |
+| `src/data/*.json` | Tout le contenu (§4) |
+| `src/sections/*.tsx` | Une section par fichier (Hero, About, WhatIDo, Journey, Toolbox, Training, Projects, Availability, Contact, Footer) |
+| `src/components/` | Loader, Header, Cursor, Toast, SplitHeading (titres mot par mot), Frame (cadre à équerres) |
+| `src/lib/motion.ts` | GSAP + ScrollTrigger + Lenis, ancres internes (`scrollToHash`) |
+| `src/lib/stageState.ts` | Progression partagée scroll → scène de l'avatar (`intro`, `about`, `travel`, `desk`) |
+| `src/lib/warm.ts` | Préchargement des modules 3D, montage anticipé des scènes (`useIdleMount`) |
+| `src/lib/capabilities.ts` | Détection WebGL, « réduire les animations », appareil modeste, pointeur précis |
+| `src/three/avatar.js` (+ `.d.ts`) | Avatar figurine, bureau, écran terminal, poses debout/assis |
+| `src/three/AvatarStage.tsx` | Canvas fixe de l'avatar, cadrage dans les emplacements DOM |
+| `src/three/KeyboardScene.tsx` | Clavier 3D |
+| `src/three/BubblesScene.tsx` | Bulles projets (Rapier) |
+| `src/three/Warmup.tsx` | Préchauffage : textures, compilation des shaders, rendu à blanc |
+| `src/styles/main.css` | Feuille unique, tokens en tête |
+| `scripts/build.mjs` | Build client + SSR, pré-rendu, fichiers générés, contrôle du contenu |
+| `scripts/check-content.mjs` | Échoue si TODO, lorem, valeur technique, lien vide, téléphone ou École 42 dans la page |
+| `scripts/gen-keycap-icons.mjs` | Logos blancs des touches (`src/generated/keycap-icons.json`) |
+| `tools/poster.html`, `tools/og.html` | Rendus des images fixes de l'avatar et de l'image Open Graph (via `npm run dev`) |
+
 ---
 
 ## 3. Hébergement et domaine
@@ -69,7 +91,7 @@ Tout le texte modifiable sans toucher au code.
 
 | Fichier | Contenu |
 |---|---|
-| `profile.json` | identité, liens, flags |
+| `profile.json` | identité, liens, CV, textes « À propos », « Hors écran », cartes « Ce que je fais » |
 | `skills.json` | touches du clavier |
 | `projects.json` | bulles projets |
 | `timeline.json` | parcours |
@@ -91,7 +113,8 @@ Tout le texte modifiable sans toucher au code.
 - Hack The Box : https://app.hackthebox.com/users/2165775
 - Instagram : https://www.instagram.com/ethan.bcqr/ → **uniquement** dans le bloc « Hors écran »
 - Téléphone : **aucun**
-- CV : `public/cv/ethan-bacquier-cv.pdf`, `cvAvailable: false` → bouton désactivé « CV · bientôt dispo » (`aria-disabled="true"`, pas de lien). Passer à `true` suffit à l'activer.
+- CV : `public/cv/ethan-bacquier-cv.pdf`, champ `cv.available: false` → bouton désactivé « CV · bientôt dispo » (`aria-disabled="true"`, pas de lien). Passer à `true` suffit à l'activer.
+- Photo volley : champ `offscreen.photo` (`null` → carte texte seule).
 
 ### 4.2 timeline.json (Ynov uniquement)
 1. **Bachelor 1 Informatique** · Ynov Lyon · 2025–26 · « Bases du développement, des systèmes et des réseaux. Premiers projets en Go et en web. » *(wording à valider par Ethan)*
@@ -136,10 +159,10 @@ Pas d'appel API depuis le navigateur. Afficher discrètement « Stats au <date> 
 - Count-up une seule fois à l'entrée dans le viewport ; valeur finale directe sous reduced-motion et sans JS.
 
 ### 4.4 projects.json
-Champs : `id, name, size, status, role, context, description, stack[], learned, links{github,live,current}, image, draft`.
+Champs : `id, name, bubbleLabel` (texte de la bulle et du bouton, `\n` = retour à la ligne), `size, status, role, context, description, stack[], learned, note, links{github,organization,live,current}, image, draft`.
 Statuts possibles : « En cours », « Livré », « Projet d'école ».
 
-1. **Hera** — `size: 1.6`, mis en avant. Projet de groupe, application web. Liens : site https://hera-app.fr + organisation https://github.com/Hera-app (repos privés : pas de lien vers un repo). Ethan a fait les repos **`admin.hera-app`** et **`hera-connect`**. Description, stack, statut et détail du rôle : **à remplir à partir des zips des deux repos qu'Ethan enverra sur demande** (l'accès GitHub de Claude ne voit pas l'orga Hera-app). En attendant : panneau minimal honnête (« Projet de groupe, application web » + liens + « Fiche détaillée bientôt »). L'ancien portfolio parlait de « chat temps réel / WebSockets » : **ne pas reprendre sans vérification dans le code**.
+1. **Hera** — `size: 1.6`, mis en avant. Projet de groupe, application web. Liens : site https://hera-app.fr + organisation https://github.com/Hera-app (repos privés : pas de lien vers un repo). Ethan a fait les repos **`admin.hera-app`** et **`hera-connect`**. Description, stack, statut et détail du rôle : **à remplir à partir des zips des deux repos qu'Ethan enverra sur demande** (l'accès GitHub de Claude ne voit pas l'orga Hera-app). En attendant (codé) : description « Une application web développée en équipe. », rôle « J'ai réalisé les parties admin.hera-app et hera-connect. », statut `null`, note « Fiche détaillée bientôt », liens site + organisation. L'ancien portfolio parlait de « chat temps réel / WebSockets » : **ne pas reprendre sans vérification dans le code**.
 2. **Site du cabinet infirmier de Jassans-Riottier** — vrai client. Site vitrine statique HTML/CSS/JS (fichiers séparés, sans framework) pour un cabinet d'infirmières libérales : infos pratiques et contact, aux couleurs de leur carte de visite, contenus validés par le cabinet. Statut **« En cours »**, pas de lien live.
 3. **Refonte du site du VBVB** (Volley Ball Villefranche Beaujolais) — statut **« En cours »**. Ethan refait le site de son propre club (actuellement sous WordPress) : actus, équipes, inscriptions, formation, beach, partenaires. Stack = `null` (masquée). Lien https://vbvb.fr uniquement en « site actuel », jamais comme réalisation.
 4. **Power 4 Web** — Projet d'école. Puissance 4 dans le navigateur, serveur Go (`net/http`), interface HTML/CSS, 3 difficultés (Normal 6×7, Difficile 6×9, Expert 7×8), noms de joueurs personnalisables. GitHub : https://github.com/TatouneYnov/-power4-web (ignorer le repo privé `-power4-webbbbb`).
@@ -155,7 +178,7 @@ Ne **pas** utiliser : `biblio-groupe-15`, `togethapp`, `Scalingo`, `tp-template-
 
 ### 4.5 skills.json (26 touches)
 En tête : `"_note": "Ne garde que les outils que tu sais expliquer en entretien."`
-Chaque entrée : `id, label, category, icon (id iconify ou null), hotkey (lettre unique), quip`. Ton complice, jamais vantard.
+Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogramme si pas de logo), hotkey (lettre unique), quip`. Ton complice, jamais vantard. 17 logos Simple Icons existent ; AD, Réseau, Nmap, Gobuster, John/Hashcat, Volatility, Autopsy, CyberChef et MITRE ATT&CK utilisent leur monogramme.
 
 **Prog & web** (`prog`, violet `#7C3AED`)
 - Python — « Le couteau suisse : un script et le problème est réglé. »
@@ -247,7 +270,7 @@ Site **dark-only** (assumé).
 - Titres en 2 tons : 1re ligne `--text`, 2e ligne `--accent`
 
 ### Curseur custom (desktop, `pointer: fine` uniquement)
-Disque lavande ~22 px, opacité 0.9, lerp 0.18. ×2.2 + `mix-blend-mode: difference` au survol des éléments interactifs. Main « attraper » au-dessus des bulles, main fermée pendant le drag. Curseur natif conservé sur les champs de formulaire.
+Disque lavande ~22 px, opacité 0.9, lerp 0.18. ×2.2 + `mix-blend-mode: difference` au survol des éléments interactifs. Au-dessus d'une bulle : main (`data-cursor="pointer"`), main fermée pendant le glisser (`grabbing`) ; ailleurs sur la scène des bulles : le disque. Curseur natif conservé sur les champs de formulaire.
 
 ---
 
@@ -267,7 +290,7 @@ Disque lavande ~22 px, opacité 0.9, lerp 0.18. ×2.2 + `mix-blend-mode: differe
 **Repli de l'avatar** : scène 3D → images fixes `avatar-poster.webp` / `desk-poster.webp` (sans WebGL, « réduire les animations », appareil modeste, sans JS). Aucune photo d'Ethan n'est publiée dans le hero.
 
 ### Photos de référence fournies
-- **Face, plein pied, debout** (théâtre, chemise noire manches courtes, short cargo crème) → **référence principale** pour l'image-to-3D et source du détourage du hero.
+- **Face, plein pied, debout** (théâtre, chemise noire manches courtes, short cargo crème) → référence principale de l'avatar. Plus utilisée pour un détourage (le hero n'affiche aucune photo).
 - **3/4 face, assis** (bateau) → détails du visage et de la coiffure. Contient les mains d'une autre personne au premier plan : **ne jamais publier**.
 - **Profil, coucher de soleil** (port) → référence de profil uniquement ; lumière orange trop forte pour la texture.
 
@@ -280,17 +303,17 @@ Construction, réglages (couleurs, mèche, volume des cheveux) et régénératio
 
 ## 7. Structure et chorégraphie
 
-**Architecture 3D** : un Canvas R3F **fixe** (plein écran, sous le contenu, `pointer-events: none`) porte l'avatar du Hero jusqu'à « Ce que je fais ». L'avatar est cadré dans des **emplacements DOM** (`data-slot="hero|about|desk"`) via `camera.setViewOffset`, et le rendu est découpé (scissor) à l'emplacement : aucun texte ne peut passer dessous. La progression vient de `src/lib/stageState.ts` (intro, about, travel, desk), écrite par des ScrollTriggers en scrub. Il passe en pause (`frameloop="demand"`) ou se démonte dès la section Parcours. Le clavier et les bulles ont chacun leur Canvas, montés à l'approche (IntersectionObserver, `rootMargin: 50%`) et en pause hors écran.
+**Architecture 3D** : un Canvas R3F **fixe** (plein écran, sous le contenu, `pointer-events: none`) porte l'avatar du Hero jusqu'à « Ce que je fais ». L'avatar est cadré dans des **emplacements DOM** (`data-slot="hero|about|desk"`) via `camera.setViewOffset`, et le rendu est découpé (scissor) à l'emplacement : aucun texte ne peut passer dessous. La progression vient de `src/lib/stageState.ts` (intro, about, travel, desk), écrite par des ScrollTriggers en scrub. Le canvas passe en pause (`frameloop="never"`) dès qu'aucun emplacement n'est à l'écran ou que l'onglet est caché. Le clavier et les bulles ont chacun leur Canvas, montés **au repos après le chargement** (`useIdleMount` : clavier puis bulles) ou à l'approche (`rootMargin: 100%`), préchauffés (`Warmup`) et en pause hors écran. Appareil modeste : pas de scène avatar (images fixes), 5 bulles max.
 
 ### 0. Loader (validé par Ethan le 17/10)
 **Durée fixe de 2 s à chaque visite** (progression fictive, voulue pour la mise en scène), puis ouverture `clip-path: inset` verticale 0.8 s. Nom « ETHAN BACQUIER » en Archivo expanded, **barre violette** dessous (remplissage animé en CSS `transform`, fluide même si la page travaille, avec une tête lumineuse), « CHARGEMENT » + compteur 000 → 100 synchronisé sur l'horloge de l'animation CSS (`getAnimations()`). Paliers communs dans `Loader.tsx` (`STEPS`) et `main.css` (`@keyframes loader-progress`) : les modifier ensemble. Pendant ces 2 s : préchargement des modules 3D et préchauffage des shaders (`src/lib/warm.ts`, `src/three/Warmup.tsx`). Sous « réduire les animations » : sauté. Sans JS : masqué (`noscript.css`), et une animation CSS de secours le retire après 4 s si le script plante.
 
 ### 1. Navigation (fixe)
 - Gauche : monogramme « EB » (Archivo 800) → haut de page
-- Centre : `ethan.bacquier@gmail.com` en petit, clic = copie + toast « Copié ✓ »
+- Centre (≥ 1200 px) : `ethan.bacquier@gmail.com` en petit, clic = copie + toast « Adresse copiée ✓ »
 - Droite : À propos · Projets · Contact (ancres via `lenis.scrollTo`)
-- Bas droite fixe : « CV » vertical (rotation 90°, JetBrains Mono) → désactivé « CV · bientôt » tant que `cvAvailable: false`
-- Mobile : burger plein écran, liens en grand
+- Bas droite fixe : « CV » vertical (rotation 90°, JetBrains Mono) → désactivé « CV · bientôt » tant que `cv.available: false` (masqué sur mobile)
+- Mobile : burger plein écran, liens en grand, mention du CV et de l'e-mail
 
 ### 2. Hero (100vh)
 3 colonnes desktop, avatar au centre (buste, épaules → haut du crâne), lueur radiale derrière.
@@ -305,31 +328,30 @@ Construction, réglages (couleurs, mèche, volume des cheveux) et régénératio
 ### 3. À propos (l'avatar reste)
 Le contenu du hero glisse vers l'extérieur en fondu (scrub). Avatar à gauche, tête qui suit toujours. À droite :
 - Label « À PROPOS »
-- Paragraphe (Inter 20 px, révélation ligne par ligne scrubbée `--muted` → `--text`) :
+- Paragraphe (Inter ~20 px, passe de `--muted` à `--text` mot à mot au défilement) :
   > Je suis Ethan, étudiant en 2e année de cybersécurité à Ynov Lyon. Ce qui m'attire, c'est de comprendre ce qui s'est passé après une attaque et qui se cache derrière : la réponse à incident (DFIR) et la threat intelligence (CTI). J'aime aussi mettre les mains dans l'infra, parce qu'on défend mieux ce qu'on sait construire. Je m'entraîne sur TryHackMe et Hack The Box, je code (Go, Python, web) et je cherche un premier stage pour apprendre aux côtés d'une vraie équipe.
 - Bloc « Hors écran » (carte `--bg-2`, bordure `--line`) : `volley.webp` (4:5, grayscale → couleur au survol) +
   > Hors clavier, je suis libéro en Nationale 3 au Volley Ball Villefranche Beaujolais (VBVB). Lire le jeu avant l'attaque, rester calme sous pression, jouer pour l'équipe : au fond, c'est le même métier.
 
   + lien Instagram discret (icône Solar + « @ethan.bcqr »). Sans photo : carte texte seule, sans bloc vide.
-- Fin de section : l'écran du bureau monte du bas vers l'avatar (annonce la transition).
 
 ### 4. Ce que je fais (le perso s'assoit)
-Pin ~150vh (desktop uniquement) : dolly-out + orbit 15°, bureau/chaise/écran se mettent en place, crossfade idle → « Sitting Typing » (0.5 s, déclenché à 40 % du pin, pas scrubbé). Écran émissif violet avec texture canvas de faux terminal (log crédible qui défile lentement, ex. `[*] volatility -f mem.raw windows.pslist`).
+Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos » vers l'emplacement sous le titre (`travel`), puis la caméra passe du buste à une vue de 3/4 arrière par-dessus l'épaule (`desk`) pendant que le bureau, la chaise et l'écran montent du sol ; fondu debout → assis en train de taper (0.5 s, déclenché à 40 % du pin, pas scrubbé). Sous 1024 px : pas de pin, la même séquence suit simplement le défilement. Écran émissif violet avec texture canvas de faux terminal (log crédible qui défile lentement, ex. `[*] volatility -f mem.raw windows.pslist`).
 - Gauche : « CE QUE » / « JE FAIS » (Archivo 800 expanded, ~8vw)
 - Droite : 2 cartes à coins pointillés (tirets + équerres), une seule ouverte à la fois, la 1re par défaut, `<button aria-expanded>` :
   1. **CYBERSÉCURITÉ** — « Analyser, comprendre, remonter la trace. Forensic, analyse de logs et de trafic, threat intel, et CTF pour garder la main. » · DFIR · CTI · Blue team · CTF
   2. **INFRA** — « Monter, configurer et sécuriser des environnements : Linux, Windows Server, Active Directory, réseau, virtualisation et conteneurs. » · Linux · AD · Réseau · Docker
-- Sortie : avatar et bureau remontent et sortent par le haut ; le canvas fixe passe en pause.
+- Sortie : l'emplacement défile avec la page ; le canvas fixe passe en pause quand il n'est plus visible.
 
 ### 5. Parcours (timeline lumineuse)
 « Mon parcours & » / « mes objectifs » (Archivo 600, ~5vw, centré). Grille [Intitulé + établissement] | [Année, gros chiffres] | [Description], ligne verticale entre col. 2 et 3, remplie en `--accent-strong` (dégradé + lueur) au scroll, perle lumineuse en tête. Chaque ligne apparaît (fondu + y 30 px) quand la perle la dépasse. Données : `timeline.json`.
 
 ### 6. Ma boîte à outils (clavier 3D)
 « MA BOÎTE » / « À OUTILS » + « (astuce : survole ou appuie sur une touche) ».
-- Clavier isométrique (inclinaison ~35°, rotation ~-30°), socle noir mat arrondi avec rim light violet, `ContactShadows`. Keycaps `RoundedBox` (dessus légèrement conique) ou keycap instanciée, 4 rangées selon l'ordre de `skills.json`.
+- Clavier isométrique, socle noir mat arrondi avec liseré violet, `ContactShadows`. Keycaps `RoundedBox` en 4 rangées décalées (rangées de 5 sur mobile), dans l'ordre de `skills.json` ; la lettre du raccourci est imprimée en haut à gauche de chaque touche.
 - Couleurs par catégorie + légende cliquable (surbrillance de la catégorie).
 - Dessus de keycap : logo blanc (texture SVG → canvas) ou monogramme Archivo.
-- Survol / focus / touche physique : enfoncement (y -0.04, `elastic.out` 0.4 s), émissif, petite onde de lumière sur le socle ; à gauche, gros texte incliné ~-20° : nom (Archivo 800) + quip (Inter).
+- Survol / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde de lumière sur le socle ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (Archivo 800, couleur de la catégorie) + quip (Inter) + catégorie. Avant toute touche : « 26 outils ».
 - Hotkeys : seulement si la section est visible **et** qu'aucun champ n'a le focus ; jamais avec Ctrl/Alt/Meta.
 - Rotation y ±8° au scroll (scrub).
 - `<ul>` réelle des compétences dans le DOM (bouton « Voir en liste ») ; c'est la version affichée sous reduced-motion, sans WebGL et sans JS.
@@ -367,14 +389,15 @@ Pin ~150vh (desktop uniquement) : dolly-out + orbit 15°, bureau/chaise/écran s
 - Droite : liens rapides (icône Solar + libellé + ↗ qui glisse) : Email (copier), LinkedIn, GitHub, TryHackMe, Hack The Box, Discord « tatoune » (copier), CV (désactivé « bientôt »).
 
 ### 11. Footer
-« © 2026 Ethan Bacquier · Fait à Lyon » · « Retour en haut ↑ » · « Crédits » (modale rendant `CREDITS.md` : modèles 3D CC0, polices, icônes Iconify/Solar, outil de génération de l'avatar).
+« © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confidentialité » (`confidentialite.html`) · « Crédits » (modale `<dialog>`, liste en dur dans `Footer.tsx`, à garder alignée avec `CREDITS.md` : avatar et scènes en code, polices, icônes Solar / Simple Icons, bibliothèques) · « Retour en haut ↑ ».
 
 ---
 
 ## 8. Système de mouvement
 
 - GSAP = seul moteur des propriétés DOM. `useFrame` seulement pour l'idle 3D, le suivi de tête et la physique. Jamais deux systèmes sur la même propriété.
-- Lenis (`lerp: 0.1`, `smoothWheel: true`) ↔ ScrollTrigger. `ScrollTrigger.refresh()` après `document.fonts.ready` et après chargement des GLB.
+- Lenis (`lerp: 0.1`, `smoothWheel: true`) ↔ ScrollTrigger. `ScrollTrigger.refresh()` après `document.fonts.ready`, `load` et la fin du chargement. ScrollTrigger est enregistré dès le chargement du module `motion.ts` (les effets des sections s'exécutent avant celui de l'App).
+- **Interdit : `scroll-behavior: smooth` sur `html`** (voir §16).
 - Titres : mot par mot (`yPercent` 110 → 0 dans un masque, stagger 0.06, `power3.out` 0.9 s). `aria-label` sur le titre, mots découpés `aria-hidden`. Texte complet visible sans JS (le découpage se fait au montage client).
 - Un seul pin : « Ce que je fais ». Le reste en reveals simples.
 - Easing par défaut `power3.out`, 0.6–0.9 s, rien au-delà de 1.2 s hors scrub.
@@ -385,9 +408,9 @@ Pin ~150vh (desktop uniquement) : dolly-out + orbit 15°, bureau/chaise/écran s
 ## 9. Responsive
 
 - Breakpoints : ≥ 1200 desktop · 768–1199 tablette · < 768 mobile
-- Mobile : hero en colonne (avatar en haut, buste plus petit), pas de curseur custom, tête en balayage auto, pas de pin (transition simple), timeline 1 colonne ligne à gauche, clavier zoomé (3 rangées visibles, texte drôle au-dessus), bulles réduites + bottom sheet, calendrier 1 mois, formulaire pleine largeur.
+- Mobile : hero en colonne (avatar en haut), pas de curseur custom, tête en balayage auto, pas de pin, colonne « À propos » sans avatar, timeline 1 colonne ligne à gauche, clavier en rangées de 5 avec le texte au-dessus, bulles tap uniquement + fiche en bottom sheet, calendrier 1 mois (swipe + boutons), formulaire pleine largeur, onglet CV vertical masqué (CV dans le menu).
 - Aucun scroll horizontal de page, gouttière ≥ 16 px.
-- Appareils faibles (`hardwareConcurrency ≤ 4` ou `deviceMemory ≤ 4`) : poster/photo à la place du GLB, 5 bulles max.
+- Appareils faibles (`hardwareConcurrency ≤ 4` ou `deviceMemory ≤ 4`) : images fixes à la place de l'avatar 3D, 5 bulles max.
 
 ---
 
@@ -406,8 +429,9 @@ Pin ~150vh (desktop uniquement) : dolly-out + orbit 15°, bureau/chaise/écran s
 ## 11. Performance
 
 - DPR max 1.75 (1.25 mobile), antialias seulement si DPR < 2.
-- Canvases en pause hors écran et quand `document.hidden`. `frameloop="demand"` au repos.
-- Lazy : Rapier (WASM) et scène clavier à l'approche de leur section. Preload de l’image fixe du hero seulement.
+- Canvases en pause (`frameloop="never"`) hors écran et quand `document.hidden`.
+- Pendant les 2 s de chargement : import des modules clavier et bulles + init du WebAssembly Rapier ; compilation de l'avatar et du bureau (caché) derrière l'écran de chargement. Après : montage échelonné des scènes au repos, avec `Warmup` (textures envoyées, `gl.compile`, rendu à blanc sans frustum culling, et une image complète via `advance()` pour l'ombre du clavier). Preload de l'image fixe du hero seulement.
+- Mesures du 17/10 (navigateur de test sans GPU) : pendant le défilement, plus aucune compilation de shader ; une seule tâche longue de 58 ms, contre 4 à 5 s avant correction. JS initial ~120 Ko gzip.
 - Zéro allocation par frame (vecteurs réutilisés), `dispose()` de tout au démontage, gestion de `webglcontextlost` → bascule vers le fallback statique.
 - Images responsives (`srcset`), `loading="lazy"` sous la ligne de flottaison, dimensions explicites (pas de CLS).
 - Budget : LCP < 2.5 s en 4G avec le fallback photo ; JS initial < 250 Ko gzip (hors three/rapier à la demande).
@@ -437,6 +461,7 @@ object-src 'none';
 - Liens externes : `rel="noopener noreferrer"`.
 - `public/.well-known/security.txt` : `Contact: mailto:ethan.bacquier@gmail.com`, `Expires` dans 1 an, `Preferred-Languages: fr, en`, `Canonical` sur `VITE_SITE_URL`.
 - Pas de source maps en production.
+- Pages annexes (`404.html`, `merci.html`, `confidentialite.html`) : leur propre CSP en `<meta>`, feuille `pages.css`.
 
 ---
 
@@ -474,21 +499,28 @@ object-src 'none';
 4. Avant de rendre : `npm run build` sans erreur ; vérification 1440 px et 390 px ; navigation clavier complète ; reduced-motion ; WebGL désactivé ; JS désactivé ; un seul moteur de scroll ; recherche de tout « TODO » / placeholder visible ; aucun texte copié des références.
 5. Rapport final : skill de design utilisé, sources des assets, stack d'animation, décisions Three.js, validations faites, limites restantes, liste exacte des TODO d'Ethan.
 
+### Outils de vérification
+- `?debug` dans l'URL expose `window.__stage` (progression du scroll), `window.__stageDebug` (état de la scène avatar) et `window.__bubbles()` (positions écran des bulles et du socle, bulle déposée). Sert aux tests automatisés (Playwright) ; sans effet pour les visiteurs.
+- Tests Playwright : la CSP bloque l'évaluation de code ; créer le contexte avec `bypass_csp=True`. Forcer `navigator.hardwareConcurrency` / `deviceMemory` à 8, sinon la machine de test est vue comme « modeste » et la 3D ne se monte pas.
+- Le défilement se mesure avec de vraies molettes (`mouse.wheel`), en relevant `scrollY` à chaque image : un défilement sain avance régulièrement, un défilement bloqué reste plat puis saute.
+
 ---
 
 ## 16. Décisions prises pendant le build (17 oct. 2026)
 
 - **Ne jamais mettre `scroll-behavior: smooth` sur `html`** (même pour la version sans JS) : ScrollTrigger mémorise la valeur au chargement et la réapplique en style inline après chaque recalcul, ce qui bloque Lenis (la page se fige puis rattrape tout d'un coup). Les règles CSS recommandées par Lenis (`.lenis.lenis-smooth { scroll-behavior: auto !important }`) sont dans `main.css`.
 - **Préchauffage 3D** : les scènes clavier et bulles sont montées hors écran dès que le navigateur est au repos après le chargement (`useIdleMount`, échelonné), avec compilation des shaders, envoi des textures et un rendu à blanc (`Warmup`). Sans ça, la compilation se terminait au premier affichage, en plein défilement.
-
 - Appareil « modeste » (`hardwareConcurrency ≤ 4` ou `deviceMemory ≤ 4`, comme le brief) : images fixes à la place de l'avatar 3D. Seuil réglable dans `src/App.tsx` si trop de PC portables tombent dedans.
 - Les apparitions au défilement utilisent `opacity` (pas `visibility`) : tout reste atteignable au clavier.
 - Couleurs de catégorie en double (JSON pour la 3D, CSS `[data-cat]` pour le HTML) : la CSP interdit les attributs `style` dans le HTML pré-rendu.
 - Onglet CV vertical masqué sur mobile ; le CV est dans le menu.
 - Le formulaire Web3Forms n'apparaît qu'avec `VITE_FORM_KEY` ; sinon bloc « Écris-moi directement ».
+- Rendus de l'avatar découpés (scissor) à son emplacement, avec un fondu en bas de l'emplacement pour masquer la coupe.
+- Mot rotatif du hero : le CSS décale le 2e mot (repli sans JS) ; le JS remet ce décalage à zéro (`y: 0`) avant d'animer en `yPercent`.
 
-## 17. TODO d'Ethan (état au 17 oct. 2026)
+## 17. TODO d'Ethan (état au 17 oct. 2026, soir)
 
+- [ ] Vérifier sur son PC la fluidité de la 3D (avatar, clavier, bulles) et le nouveau défilement
 - [ ] Envoyer les zips de `admin.hera-app` et `hera-connect` pour la fiche Hera
 - [ ] Projets collaborateurs (Groupie Tracker, EscapeQuizz, CineList, YSentinelle) : en `draft`, à rédiger depuis le code et les commits d'Ethan
 - [ ] Valider le wording du Bachelor 1
