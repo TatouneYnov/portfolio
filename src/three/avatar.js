@@ -6,7 +6,7 @@ import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export const COLORS = {
   skin: 0xE6B496, lip: 0xC98B7A, mouth: 0x6B3A31,
-  hair: 0x3B271C, hairDark: 0x22160F, beard: 0x4A372C, brow: 0x2B1E18,
+  hair: 0x2A1C15, hairDark: 0x150D0A, streak: 0xEDE8E0, beard: 0x4A372C, brow: 0x2B1E18,
   eye: 0x1C120E,
   shirt: 0x18161D, placket: 0x2B2732,
   pants: 0x26242E, shoe: 0xF2F0F5, sole: 0xCFCBD6,
@@ -48,8 +48,9 @@ const gauss = (d, w) => Math.exp(-((d / w) ** 2));
 function headShape(p, out) {
   // p : point de la sphère unité. Renvoie la position déformée (relative au centre de la tête).
   const low = Math.max(0, -p.y);                  // 0 à l'équateur, 1 sous le menton
-  let x = p.x * 0.33 * (1 - 0.3 * Math.pow(low, 1.4)) * (1 + 0.035 * Math.exp(-(((p.y + 0.25) / 0.22) ** 2)));
-  let y = p.y * 0.335 * (1 + 0.1 * low);
+  // ovale doux : la mâchoire ne s'affine que tout en bas, menton arrondi
+  let x = p.x * 0.325 * (1 - 0.21 * Math.pow(low, 1.7)) * (1 + 0.04 * Math.exp(-(((p.y + 0.3) / 0.3) ** 2)));
+  let y = p.y * 0.335 * (1 + 0.06 * low);
   let z = p.z * 0.315 * (1 - 0.12 * Math.pow(low, 1.6));
   if (p.z > 0) z += 0.03 * low * p.z;             // menton légèrement en avant
   if (p.z < 0) z *= 1 + 0.06 * Math.max(0, p.y + 0.3); // arrière du crâne plus rond
@@ -98,26 +99,44 @@ const hairlineAt = (az) => {
   return mix(-0.5, 0.4, smooth(-0.7, 0.85, c)) + 0.2 * gauss(c + 0.05, 0.22) - 0.08 * gauss(c - 0.26, 0.08);
 };
 
-// Pointes du dessus : [x, z] sur la carte du crâne (projection azimutale : x vers la gauche, z vers
-// l'avant, 0 = sommet, ~0.74 = front), rayon de la base sur la carte, hauteur.
-const HAIR_SPIKES = [
-  [-0.33, 0.5, 0.27, 0.08], [0.0, 0.56, 0.29, 0.1], [0.34, 0.48, 0.27, 0.08],
-  [-0.17, 0.25, 0.29, 0.095], [0.18, 0.24, 0.29, 0.095],
-  [-0.45, 0.12, 0.25, 0.06], [0.46, 0.1, 0.25, 0.06],
-  [0.0, -0.02, 0.29, 0.08], [-0.27, -0.2, 0.26, 0.055], [0.28, -0.21, 0.26, 0.055],
-];
+// Pointes du dessus : irrégulières (tailles et positions variées, pas de couronne), plus grandes vers
+// l'avant, avec de petites pointes intercalées. Repère : carte du crâne (projection azimutale : x vers
+// la gauche du perso, z vers l'avant, 0 = sommet, ~0.74 = front). [x, z, rayon de la base, hauteur]
+const HAIR_SPIKES = (() => {
+  let seed = 41;
+  const rnd = () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const spikes = [];
+  for (let z = -0.42; z <= 0.6; z += 0.22) {
+    const row = Math.round((z + 0.42) / 0.22);
+    for (let x = -0.55 + (row % 2) * 0.15; x <= 0.58; x += 0.3) {
+      const cx = x + (rnd() - 0.5) * 0.12, cz = z + (rnd() - 0.5) * 0.08;
+      if (Math.hypot(cx, cz) > 0.7) continue;
+      const front = smooth(-0.3, 0.55, cz);
+      spikes.push([cx, cz, 0.25 + 0.06 * rnd(), (0.055 + 0.035 * rnd()) * mix(0.55, 1.15, front)]);
+      // petite pointe intercalée, pour le détail
+      if (rnd() < 0.3) spikes.push([cx + 0.13 + (rnd() - 0.5) * 0.05, cz + 0.06, 0.12 + 0.04 * rnd(), (0.02 + 0.02 * rnd()) * mix(0.6, 1.1, front)]);
+    }
+  }
+  return spikes;
+})();
 
-// Cheveux : silhouette Animal Crossing, matière Funko. Une seule surface continue : une calotte
-// épaisse (côtés et arrière lisses, bord arrondi) d'où sortent de larges pointes soudées entre elles,
-// inclinées vers le haut et l'avant. Creux adoucis, bouts pointus mais doux, légères stries le long
-// de chaque pointe.
+// Cheveux : une seule surface continue. Côtés et arrière ras en dégradé (jusqu'à la peau) ; sur le
+// dessus, des pointes soudées et irrégulières (voir HAIR_SPIKES), inclinées vers l'avant et vers la
+// gauche du perso (la droite de l'écran). Creux adoucis et un peu plus sombres.
 function buildHairGeometry() {
   const ROWS = 220, COLS = 440;
   const N = (ROWS + 1) * (COLS + 1);
   const p = new THREE.Vector3(), o = new THREE.Vector3();
   const cHair = new THREE.Color(COLORS.hair), cDark = new THREE.Color(COLORS.hairDark), c = new THREE.Color();
+  const cShort = new THREE.Color(COLORS.skin).lerp(cHair, 0.45);   // cheveux ras : la peau transparaît
+  const cStreak = new THREE.Color(COLORS.streak);
   const dirs = new Float32Array(N * 3), tRow = new Float32Array(N);
-  const height = new Float32Array(N), spikeH = new Float32Array(N), valley = new Float32Array(N);
+  const height = new Float32Array(N), spikeH = new Float32Array(N), valley = new Float32Array(N), fade = new Float32Array(N), streak = new Float32Array(N);
 
   for (let i = 0; i <= ROWS; i++) {
     const t = i / ROWS;
@@ -129,25 +148,27 @@ function buildHairGeometry() {
       dirs[k * 3] = p.x; dirs[k * 3 + 1] = p.y; dirs[k * 3 + 2] = p.z; tRow[k] = t;
       const rr = Math.acos(Math.max(-1, Math.min(1, p.y))) / (Math.PI / 2);
       const X = rr * Math.sin(az), Z = rr * Math.cos(az);
-      // calotte façon Funko : épaisse, un peu plus sur le dessus
+      // calotte : du volume seulement sur le dessus ; côtés et arrière ras, collés au crâne
       const top = smooth(-0.3, 0.8, p.y);
-      let h = 0.012 + 0.016 * top;
-      // pointes : cônes soudés (union douce), stries le long de la pointe dominante
-      let sum = 0, best = 0, bestAng = 0;
+      const crown = smooth(0.35, 0.85, p.y);
+      let h = 0.003 + 0.012 * crown;
+      // pointes : cônes soudés (union douce) ; là où deux pointes se rencontrent, un creux plus sombre
+      let sum = 0, best = 0, second = 0;
       for (const [sx, sz, R, H] of HAIR_SPIKES) {
         const dx = X - sx, dz = Z - sz, d = Math.hypot(dx, dz);
         if (d >= R) continue;
-        const v = H * (1 - d / R) ** 1.25;
+        const v = H * (1 - d / R) ** 1.3;
         sum += v ** 5;
-        if (v > best) { best = v; bestAng = Math.atan2(dz, dx); }
+        if (v > best) { second = best; best = v; } else if (v > second) second = v;
       }
-      const spikes = Math.pow(sum, 1 / 5);
-      const grooves = 1 - 0.035 * (0.5 + 0.5 * Math.cos(bestAng * 7)) * smooth(0.15, 0.6, best / 0.08);
-      spikeH[k] = spikes * grooves;
-      valley[k] = spikes > 0 ? 1 - best / Math.max(spikes, 1e-6) : 0;
-      // bord : bourrelet arrondi (quart de cercle) ; les pointes s'effacent avant le bord
+      spikeH[k] = Math.pow(sum, 1 / 5);
+      valley[k] = best > 0 ? smooth(0.5, 1, second / best) : 0;
+      // mèche blanche : sur l'avant, côté droit du perso (x négatif), qui suit les pointes vers l'avant
+      streak[k] = smooth(0.17, 0.08, Math.hypot((X + 0.24) * 1.2, (Z - 0.5) * 0.7));
+      // bord : bourrelet arrondi à l'avant seulement ; les pointes s'effacent avant le bord
       const front = smooth(0.2, 0.9, p.z);
       const t0 = mix(0.9, 0.94, front);
+      fade[k] = smooth(0.62, 1, t) * (1 - smooth(0.35, 0.85, p.z)) * (1 - crown);
       const rim = t > t0 ? Math.sqrt(Math.max(0, 1 - ((t - t0) / (1 - t0)) ** 2)) : 1;
       height[k] = h * rim;
       spikeH[k] *= smooth(0.97, 0.8, t);
@@ -174,10 +195,10 @@ function buildHairGeometry() {
     const len = o.length();
     const sh = spikeH[k];
     o.multiplyScalar((len + 0.0015 + height[k] + sh) / len);
-    o.z += 0.5 * sh;                        // les pointes s'inclinent vers l'avant, d'autant plus qu'elles sont hautes
-    o.y += 0.15 * sh;
+    o.z += 0.55 * sh;                       // les pointes s'inclinent vers l'avant et le côté, d'autant plus qu'elles sont hautes
+    o.x += 0.35 * sh;
     positions.push(o.x, o.y, o.z);
-    c.copy(cHair).lerp(cDark, 0.5 * smooth(0.2, 0.8, valley[k]) + 0.15 * (1 - smooth(-0.3, 0.6, p.y)));
+    c.copy(cHair).lerp(cDark, 0.5 * smooth(0.2, 0.8, valley[k])).lerp(cStreak, 0.9 * streak[k] * (1 - 0.5 * valley[k])).lerp(cShort, 0.8 * fade[k]);
     colors.push(c.r, c.g, c.b);
   }
   for (let i = 0; i < ROWS; i++) {
