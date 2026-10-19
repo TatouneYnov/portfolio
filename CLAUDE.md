@@ -314,6 +314,15 @@ Traits à respecter : cheveux brun foncé ondulés/bouclés, volumineux sur le d
 ### Avatar
 Construction, réglages (couleurs, mèche, volume des cheveux) et régénération des images fixes : voir `docs/AVATAR.md`. Ethan a validé la version actuelle (mèche blanche accentuée, volume des cheveux réduit).
 
+**Refonte « propre et pro » en cours (depuis le 19/10)**, décidée avec Ethan, validée étape par étape (captures avant/après, un commit par étape) : style figurine vinyle premium, proportions inchangées, toujours modélisé en code.
+1. Tête et visage — **fait**. Ethan a gardé la **forme du visage et les yeux d'origine** (billes noires brillantes) ; nouveaux sourcils sculptés, nez couleur peau, oreilles en coquille, bouche (pli + lèvre inférieure), moustache fine et bouc en relief aux bords fondus.
+2. Cheveux : base + une vingtaine de mèches sculptées, pointes claires (brun → blond cendré) sur le dessus avant (remplace la mèche blanche).
+3. Corps continu, manches qui couvrent l'épaule, mains à doigts séparés ; chemise noire à vrai col, pantalon anthracite, sneakers blanches.
+4. Lumière studio neutre sur le visage, violet en liseré de contre-jour ; peau satinée, tissu mat.
+5. Bureau, chaise, écran, vrai clavier et souris dans le même style.
+6. Animations : clignement + saccades du regard, sourire au survol du hero, vraies frappes au clavier, petit salut à la fin de l'intro (sauté sous « réduire les animations »).
+Budget : qualité d'abord, optimisation après mesure sur le PC d'Ethan. Images fixes et `og-image.jpg` à refaire à la fin.
+
 ---
 
 ## 7. Structure et chorégraphie

@@ -5,10 +5,11 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export const COLORS = {
-  skin: 0xE6B496, skinShade: 0xD9A084, lip: 0x9A5648,
-  hair: 0x2B1E18, hairFade: 0x4A3A33, streak: 0xE2D6C6, beard: 0x4A362B,
+  skin: 0xE6B496, lip: 0xC98B7A, mouth: 0x6B3A31,
+  hair: 0x2B1E18, hairFade: 0x4A3A33, streak: 0xE2D6C6, beard: 0x4A372C, brow: 0x2B1E18,
+  eye: 0x1C120E,
   shirt: 0x18161D, placket: 0x2B2732,
-  pants: 0x26242E, shoe: 0xF2F0F5, sole: 0xCFCBD6, eye: 0x1C120E,
+  pants: 0x26242E, shoe: 0xF2F0F5, sole: 0xCFCBD6,
 };
 
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -41,6 +42,8 @@ const sphere = (w = 24, h = 18) => new THREE.SphereGeometry(1, w, h);
 
 // ---------- Tête : une seule surface lisse (crâne + menton affiné) ----------
 const HEAD_C = new THREE.Vector3(0, 0.3, 0);
+
+const gauss = (d, w) => Math.exp(-((d / w) ** 2));
 
 function headShape(p, out) {
   // p : point de la sphère unité. Renvoie la position déformée (relative au centre de la tête).
@@ -164,24 +167,145 @@ function rng(seed) {
   };
 }
 
-// Trait posé sur une surface : chaque point (x, y) est projeté sur le visage, puis relié par un tube.
-function strokeOn(target, pts, radius, material, lift, cy) {
-  const pts3 = [];
-  for (const [x, y] of pts) {
-    _ray.set(new THREE.Vector3(x, cy + y, 1), new THREE.Vector3(0, 0, -1));
-    const hit = _ray.intersectObject(target, false)[0];
-    if (!hit) continue;
-    const n = hit.face.normal.clone().transformDirection(target.matrixWorld);
-    pts3.push(hit.point.clone().addScaledVector(n, lift));
+// Point et normale (lissée) du visage sous le point (x, y), visé de face.
+function surfaceHit(target, x, y) {
+  _ray.set(_hitO.set(x, y, 1), _hitD);
+  const hit = _ray.intersectObject(target, false)[0];
+  if (!hit) return null;
+  const n = (hit.normal || hit.face.normal).clone().transformDirection(target.matrixWorld);
+  return { p: hit.point.clone(), n };
+}
+const _hitO = new THREE.Vector3(), _hitD = new THREE.Vector3(0, 0, -1);
+
+// Trait sculpté posé sur le visage (sourcils, bouche) : section ovale aplatie,
+// largeur et épaisseur variables le long du trait, bouts qui se referment en douceur.
+function sculptStroke(target, pts, width, thick, cy, segs = 40, sides = 12) {
+  const curve = new THREE.SplineCurve(pts.map(([x, y]) => new THREE.Vector2(x, y)));
+  const P = [], N = [];
+  for (let i = 0; i <= segs; i++) {
+    const v = curve.getPoint(i / segs);
+    const hit = surfaceHit(target, v.x, cy + v.y);
+    P.push(hit.p); N.push(hit.n);
   }
-  const curve = new THREE.CatmullRomCurve3(pts3);
-  const geo = new THREE.TubeGeometry(curve, 24, radius, 8, false);
-  // bouts arrondis
-  const g = new THREE.Group();
-  g.add(mesh(geo, material));
-  [pts3[0], pts3[pts3.length - 1]].forEach((pt) => g.add(mesh(new THREE.SphereGeometry(radius, 10, 8), material, { p: [pt.x, pt.y, pt.z] })));
+  const pos = [], index = [];
+  const T = new THREE.Vector3(), B = new THREE.Vector3(), v = new THREE.Vector3();
+  for (let i = 0; i <= segs; i++) {
+    T.subVectors(P[Math.min(segs, i + 1)], P[Math.max(0, i - 1)]).normalize();
+    B.crossVectors(N[i], T).normalize();
+    const t = i / segs, end = Math.sqrt(Math.min(1, Math.min(t, 1 - t) / 0.08));
+    const w = width(t) * end, h = thick(t) * end;
+    for (let k = 0; k < sides; k++) {
+      const a = (k / sides) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
+      v.copy(P[i]).addScaledVector(B, c * w).addScaledVector(N[i], sn > 0 ? sn * h : sn * h * 0.4);
+      pos.push(v.x, v.y, v.z);
+    }
+  }
+  for (let i = 0; i < segs; i++) {
+    for (let k = 0; k < sides; k++) {
+      const a = i * sides + k, b = i * sides + ((k + 1) % sides);
+      index.push(a, a + sides, b, b, a + sides, b + sides);
+    }
+  }
+  return finishGeometry(pos, index, (i, v) => v.sub(P[Math.floor(i / sides)]));
+}
+
+// Normales calculées, et triangles retournés si elles pointent en moyenne vers l'intérieur.
+// outward(i, v) : direction « extérieure » attendue pour le sommet i (position v).
+function finishGeometry(pos, index, outward, colors) {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  if (colors) g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  g.setIndex(index);
+  g.computeVertexNormals();
+  const pa = g.attributes.position, na = g.attributes.normal, v = new THREE.Vector3(), n = new THREE.Vector3();
+  let sum = 0;
+  for (let i = 0; i < pa.count; i++) sum += n.fromBufferAttribute(na, i).dot(outward(i, v.fromBufferAttribute(pa, i)));
+  if (sum < 0) {
+    for (let i = 0; i < index.length; i += 3) [index[i + 1], index[i + 2]] = [index[i + 2], index[i + 1]];
+    g.setIndex(index);
+    g.computeVertexNormals();
+  }
   return g;
 }
+
+// ---------- Visage : yeux, nez, oreilles, pilosité ----------
+// Nez : sphère déformée, base arrondie avec ailes discrètes, arête qui remonte et se fond dans le visage.
+function buildNoseGeometry() {
+  const g = new THREE.SphereGeometry(1, 32, 24);
+  const pos = g.attributes.position, p = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    p.fromBufferAttribute(pos, i);
+    const up = Math.max(0, p.y);
+    const x = p.x * 0.025 * (1 - 0.3 * up * up) * (1 + 0.28 * gauss(p.y + 0.3, 0.35) * (1 - Math.abs(p.z)));
+    const y = p.y * (p.y > 0 ? 0.034 : 0.021);
+    const z = p.z * 0.023 * (1 - 0.45 * up * up);
+    pos.setXYZ(i, x, y, z);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+// Oreille : coquille creusée sur la face extérieure (+z), lobe plus étroit.
+function buildEarGeometry() {
+  const g = new THREE.SphereGeometry(1, 28, 20);
+  const pos = g.attributes.position, p = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    p.fromBufferAttribute(pos, i);
+    const bowl = p.z > 0 ? gauss(Math.hypot(p.x * 1.2, p.y + 0.05), 0.5) : 0;
+    const x = p.x * 0.034 * (1 - 0.3 * Math.max(0, -p.y));
+    const y = p.y * 0.056;
+    const z = p.z * 0.02 * (1 - 0.95 * bowl);
+    pos.setXYZ(i, x, y, z);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+// Moustache fine, mouche et bouc court : intensité 0 → 1 selon la position sur le visage.
+function facialHairMask(o) {
+  if (o.z < 0.02) return { m: 0, h: 0 };
+  const ax = Math.abs(o.x);
+  const mus = gauss(o.y + 0.152 + 0.004 * (ax / 0.048) ** 2, 0.006) * smooth(0.054, 0.036, ax) * (1 - 0.4 * gauss(o.x, 0.005));
+  const soul = gauss(o.y + 0.212, 0.011) * gauss(o.x, 0.007);
+  // bouc : écusson aux coins arrondis sur le bout du menton, poils courts (moins dense que la moustache)
+  const sq = ((ax / 0.04) ** 3 + (Math.abs(o.y + 0.292) / 0.034) ** 3) ** (1 / 3);
+  const goat = 0.55 * smooth(1.15, 0.55, sq) * smooth(0.02, 0.12, o.z);
+  return { m: Math.min(1, Math.max(mus, soul, goat)), h: 0.0022 * mus + 0.0022 * soul + 0.0055 * goat };
+}
+
+// Coque calée sur la tête (même déformation), ne garde que les zones de poils ; le bord a la couleur de la peau.
+function buildFacialHairGeometry() {
+  const ROWS = 130, COLS = 160;
+  const T0 = 1.72, T1 = 3.08, A = 0.85;
+  const p = new THREE.Vector3(), o = new THREE.Vector3();
+  const cSkin = new THREE.Color(COLORS.skin), cBeard = new THREE.Color(COLORS.beard), c = new THREE.Color();
+  const pos = [], colors = [], mask = [], index = [];
+  for (let i = 0; i <= ROWS; i++) {
+    const th = mix(T0, T1, i / ROWS);
+    for (let j = 0; j <= COLS; j++) {
+      const az = mix(-A, A, j / COLS);
+      p.set(Math.sin(th) * Math.sin(az), Math.cos(th), Math.sin(th) * Math.cos(az));
+      headShape(p, o);
+      const { m, h } = facialHairMask(o);
+      const len = o.length();
+      o.multiplyScalar((len + 0.0006 + h) / len);
+      pos.push(o.x, o.y, o.z);
+      c.copy(cSkin).lerp(cBeard, 0.9 * smooth(0, 0.6, m));
+      c.multiplyScalar(1 - 0.3 * m * noise3(p.x * 220, p.y * 220, p.z * 220));
+      colors.push(c.r, c.g, c.b);
+      mask.push(m);
+    }
+  }
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLS; j++) {
+      const a = i * (COLS + 1) + j, b = a + COLS + 1;
+      if (Math.max(mask[a], mask[a + 1], mask[b], mask[b + 1]) < 0.003) continue;
+      index.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+  }
+  return finishGeometry(pos, index, (i, v) => v, colors);
+}
+
 const curvePts = (x0, x1, fy, steps = 9) => Array.from({ length: steps }, (_, i) => {
   const x = x0 + ((x1 - x0) * i) / (steps - 1);
   return [x, fy(x)];
@@ -203,12 +327,15 @@ function placeOn(target, obj, origin, dir, lift = 0, spin = 0) {
 
 export function buildAvatar() {
   const M = {
-    skin: std(COLORS.skin, 0.55), skinShade: std(COLORS.skinShade, 0.6), lip: std(COLORS.lip, 0.5),
+    skin: std(COLORS.skin, 0.55), lip: std(COLORS.lip, 0.5),
     hair: std(0xffffff, 0.62, { vertexColors: true, side: THREE.DoubleSide }),
-    brow: std(COLORS.hair, 0.7), beard: std(COLORS.beard, 0.85), mustache: std(0x6A4D3F, 0.85),
+    brow: std(COLORS.brow, 0.8),
     shirt: std(COLORS.shirt, 0.85), placket: std(COLORS.placket, 0.7),
     pants: std(COLORS.pants, 0.9), shoe: std(COLORS.shoe, 0.5), sole: std(COLORS.sole, 0.7),
-    eye: std(COLORS.eye, 0.15), shine: std(0xffffff, 0.2, { emissive: 0xffffff, emissiveIntensity: 0.6 }),
+    shine: std(0xffffff, 0.2, { emissive: 0xffffff, emissiveIntensity: 0.6 }),
+    eye: std(COLORS.eye, 0.15),
+    mouth: std(COLORS.mouth, 0.7),
+    facialHair: std(0xffffff, 0.6, { vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }),
   };
 
   const root = new THREE.Group();
@@ -277,30 +404,29 @@ export function buildAvatar() {
     g.userData.base = g.position.clone();
     eyes.push(g);
   });
-  // Sourcils : légèrement arqués, le gauche un peu relevé (air sûr de lui)
-  head.add(strokeOn(headMesh, curvePts(0.07, 0.158, (x) => 0.068 + 0.012 * Math.sin(((x - 0.07) / 0.088) * Math.PI) - 0.01 * ((x - 0.07) / 0.088)), 0.0095, M.brow, 0.004, HEAD_C.y));
-  head.add(strokeOn(headMesh, curvePts(-0.158, -0.07, (x) => 0.055 + 0.009 * Math.sin(((x + 0.158) / 0.088) * Math.PI) + 0.006 * ((x + 0.158) / 0.088)), 0.0095, M.brow, 0.004, HEAD_C.y));
-  // Nez
-  face(mesh(sphere(18, 14), M.skinShade, { s: [0.026, 0.022, 0.021] }), 0, -0.078, 0.01);
-  // Moustache fine qui suit la lèvre
-  head.add(strokeOn(headMesh, curvePts(-0.046, 0.046, (x) => -0.121 - 0.005 * (x / 0.046) ** 2), 0.0045, M.mustache, 0.003, HEAD_C.y));
-  // Bouche : sourire en coin (côté gauche un peu plus haut)
-  head.add(strokeOn(headMesh, curvePts(-0.036, 0.044, (x) => -0.168 + 0.014 * ((x - 0.004) / 0.04) ** 2 + 0.008 * (x / 0.044)), 0.005, M.lip, 0.002, HEAD_C.y));
-  // Bouc court + mouche, posés à plat sur le menton
-  face(mesh(sphere(20, 14), M.beard, { s: [0.05, 0.022, 0.008] }), 0, -0.3, 0.002);
-  face(mesh(sphere(12, 10), M.beard, { s: [0.008, 0.016, 0.005] }), 0, -0.235, 0.002);
-
-  // Oreilles : petites, à hauteur des yeux, à moitié dans la tête
+  // Sourcils sculptés : épais à l'intérieur, fins vers la tempe, le gauche un peu relevé (air sûr de lui)
   [1, -1].forEach((sx) => {
-    const ear = mesh(sphere(18, 14), M.skin, { s: [0.042, 0.06, 0.022] });
-    placeOn(headMesh, ear, new THREE.Vector3(sx, HEAD_C.y - 0.06, -0.01), new THREE.Vector3(-sx, 0, 0), 0.008);
-    ear.rotateY(sx * -0.35);
+    const lift = sx > 0 ? 0.006 : 0;
+    const pts = [[0.058, 0.052], [0.09, 0.066], [0.125, 0.07], [0.162, 0.054]].map(([x, y]) => [sx * x, y + lift]);
+    const geo = sculptStroke(headMesh, pts, (t) => 0.0085 * (1 - 0.65 * t) * smooth(0, 0.12, t) + 0.0012, () => 0.0042, HEAD_C.y);
+    head.add(mesh(geo, M.brow));
+  });
+  // Nez : petit volume doux qui remonte en arête, de la même matière que le visage
+  face(mesh(buildNoseGeometry(), M.skin), 0, -0.075, -0.008);
+  // Bouche : pli fin avec un coin relevé, lèvre inférieure en léger relief
+  const mouthY = (x) => -0.168 + 0.009 * (x / 0.04) ** 2 + 0.003 * (x / 0.04);
+  head.add(mesh(sculptStroke(headMesh, curvePts(-0.04, 0.042, mouthY, 7), (t) => 0.0021 * Math.sin(Math.PI * t) + 0.0006, () => 0.0012, HEAD_C.y), M.mouth));
+  head.add(mesh(sculptStroke(headMesh, curvePts(-0.026, 0.028, (x) => mouthY(x) - 0.0095 + 0.004 * (x / 0.027) ** 2, 7), (t) => 0.0058 * Math.sin(Math.PI * t) ** 0.7, () => 0.0035, HEAD_C.y), M.lip));
+  // Moustache fine, mouche et bouc court : relief posé sur la peau, bords fondus
+  head.add(mesh(buildFacialHairGeometry(), M.facialHair, { p: [HEAD_C.x, HEAD_C.y, HEAD_C.z] }));
+
+  // Oreilles : forme en coquille, à hauteur des yeux, légèrement inclinées vers l'arrière
+  [1, -1].forEach((sx) => {
+    const ear = mesh(buildEarGeometry(), M.skin);
+    placeOn(headMesh, ear, new THREE.Vector3(sx, HEAD_C.y - 0.045, -0.025), new THREE.Vector3(-sx, 0, 0), 0.004);
+    ear.rotateY(sx * 0.3);
+    ear.rotateZ(sx * 0.12);
     head.add(ear);
-    const inner = mesh(sphere(14, 10), M.skinShade, { s: [0.022, 0.036, 0.01] });
-    inner.position.copy(ear.position);
-    inner.quaternion.copy(ear.quaternion);
-    inner.translateZ(0.014);
-    head.add(inner);
   });
 
   head.add(headMesh);
@@ -337,7 +463,19 @@ export function buildAvatar() {
     legs[side] = { ul, ll, foot };
   });
 
-  return { root, hips, spine, chest, neck, head, torso, eyes, arms, legs };
+  // Regard (radians, comme la tête) : les yeux glissent un peu sur le visage. Clignement : 1 ouvert, 0 fermé.
+  const setGaze = (yaw, pitch) => {
+    for (const e of eyes) {
+      e.position.copy(e.userData.base);
+      e.position.x += yaw * 0.012;
+      e.position.y -= pitch * 0.012;
+    }
+  };
+  const setBlink = (open) => {
+    for (const e of eyes) e.scale.y = mix(0.12, 1, open);
+  };
+
+  return { root, hips, spine, chest, neck, head, torso, eyes, arms, legs, setGaze, setBlink };
 }
 
 // ---------- Bureau, chaise, écran ----------

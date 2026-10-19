@@ -14,6 +14,10 @@ export type Avatar = {
   eyes: THREE.Group[];
   arms: { L: Limb; R: Limb };
   legs: { L: Leg; R: Leg };
+  /** Regard en radians (même repère que la tête). */
+  setGaze: (yaw: number, pitch: number) => void;
+  /** Paupières : 1 ouvertes, 0 fermées. */
+  setBlink: (open: number) => void;
 };
 
 export type Terminal = { texture: THREE.CanvasTexture; draw: () => void; step: () => void };

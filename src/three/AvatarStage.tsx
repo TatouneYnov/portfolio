@@ -210,19 +210,14 @@ function Scene() {
     avatar.head.rotation.x += s.look.pitch * lw * 0.75;
     avatar.neck.rotation.y += s.look.yaw * lw * 0.25;
     avatar.neck.rotation.x += s.look.pitch * lw * 0.25;
-    for (const eye of avatar.eyes) {
-      eye.position.copy(eye.userData.base);
-      eye.position.x += s.look.yaw * 0.012 * lw;
-      eye.position.y -= s.look.pitch * 0.012 * lw;
-    }
+    avatar.setGaze(s.look.yaw * lw, s.look.pitch * lw);
 
     // 6. Clignement
     if (t > s.nextBlink) {
       s.blinkUntil = t + 0.12;
       s.nextBlink = t + 2.5 + Math.random() * 3;
     }
-    const blink = t < s.blinkUntil ? 0.12 : 1;
-    for (const eye of avatar.eyes) eye.scale.y = blink;
+    avatar.setBlink(t < s.blinkUntil ? 0 : 1);
 
     // 7. Le bureau monte du sol pendant le recul de la caméra
     const rise = ease(clamp01(pDesk * 2.2));
