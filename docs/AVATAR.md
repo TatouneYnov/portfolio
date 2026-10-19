@@ -17,7 +17,7 @@ Les photos brutes ne sont pas dans le repo (`assets-src/` est ignoré par Git) e
 - **Squelette** : `Hips > Spine > Chest > Neck > Head`, plus les bras (`UpperArm`, `LowerArm`, `Hand`) et les jambes (`UpperLeg`, `LowerLeg`, `Foot`). Chaque os est un `THREE.Group` animé en rotation.
 - **Tête** : une seule sphère déformée (crâne rond, menton affiné), donc une surface lisse sans raccord.
 - **Visage** : yeux, nez et oreilles sont posés sur la tête par lancer de rayon. Sourcils et bouche sont des traits sculptés (`sculptStroke`) : section ovale, épaisseur variable, bouts arrondis, projetés sur le visage. Moustache, mouche et bouc forment une fine coque calée sur la tête (`buildFacialHairGeometry`), en relief, dont les bords prennent la couleur de la peau pour se fondre dedans.
-- **Cheveux** : une coque calée sur la ligne d'implantation, avec un relief bouclé (bruit 3D). Les couleurs passent par sommet : dégradé sur les côtés, mèche claire à l'avant.
+- **Cheveux** : silhouette « Animal Crossing », matière « figurine Funko ». Une seule surface continue calée sur la ligne d'implantation (`hairlineAt`) : une calotte fine à bord arrondi, d'où sortent de larges pointes soudées entre elles (`HAIR_SPIKES`), inclinées vers le haut et l'avant. Les creux entre pointes sont adoucis par lissage, de légères stries suivent chaque pointe. Brun foncé uniforme, creux plus sombres.
 - **Animations** : deux poses calculées à chaque image, `idlePose` (respiration, balancement) et `sitPose` (assis, en train de taper). La scène passe de l'une à l'autre en fondu de 0,5 s.
 - **Suivi** : la tête et les yeux suivent le pointeur (±35° horizontalement, ±20° verticalement). Sans souris, la tête balaie lentement la scène. La scène passe par `avatar.setGaze(yaw, pitch)` et `avatar.setBlink(ouverture)` : changer les yeux ne demande pas de toucher à `AvatarStage.tsx`.
 
@@ -28,8 +28,9 @@ Tout se règle en haut de `src/three/avatar.js`.
 | Pour changer… | Modifier |
 |---|---|
 | Les couleurs (peau, cheveux, mèche, vêtements) | l'objet `COLORS` |
-| La taille de la mèche claire | dans `buildHairGeometry`, les seuils de `s1` (`smooth(0.955, 0.985, …)`) : plus proches de 1, mèche plus petite |
-| Le volume des cheveux | dans `buildHairGeometry`, la ligne `offset` (valeurs `0.062 * top` et `0.042 * quiff`) |
+| Les pointes (position, largeur, hauteur) | `HAIR_SPIKES` : `[x, z, rayon, hauteur]` sur la carte du crâne |
+| L'épaisseur de la calotte | dans `buildHairGeometry`, la ligne `let h = …` |
+| La ligne d'implantation (front, côtés, pattes) | `hairlineAt` |
 | La forme du visage | `headShape` |
 | La moustache et le bouc (position, taille, densité) | `facialHairMask` |
 | Les sourcils, la bouche | les appels à `sculptStroke` dans `buildAvatar` |

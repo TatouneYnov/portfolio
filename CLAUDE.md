@@ -309,14 +309,14 @@ Disque lavande ~22 px, opacité 0.9, lerp 0.18. ×2.2 + `mix-blend-mode: differe
 - **3/4 face, assis** (bateau) → détails du visage et de la coiffure. Contient les mains d'une autre personne au premier plan : **ne jamais publier**.
 - **Profil, coucher de soleil** (port) → référence de profil uniquement ; lumière orange trop forte pour la texture.
 
-Traits à respecter : cheveux brun foncé ondulés/bouclés, volumineux sur le dessus avec **mèches claires décolorées** à l'avant, côtés courts dégradés ; fine moustache et bouc court ; style vestimentaire sombre et simple.
+Traits à respecter (photos) : cheveux brun foncé, volumineux sur le dessus, côtés courts (sur l'avatar, la coupe suit désormais les références choisies par Ethan, voir « Avatar ») ; fine moustache et bouc court ; style vestimentaire sombre et simple.
 
 ### Avatar
 Construction, réglages (couleurs, mèche, volume des cheveux) et régénération des images fixes : voir `docs/AVATAR.md`. Ethan a validé la version actuelle (mèche blanche accentuée, volume des cheveux réduit).
 
 **Refonte « propre et pro » en cours (depuis le 19/10)**, décidée avec Ethan, validée étape par étape (captures avant/après, un commit par étape) : style figurine vinyle premium, proportions inchangées, toujours modélisé en code.
 1. Tête et visage — **fait**. Ethan a gardé la **forme du visage et les yeux d'origine** (billes noires brillantes) ; nouveaux sourcils sculptés, nez couleur peau, oreilles en coquille, bouche (pli + lèvre inférieure), moustache fine et bouc en relief aux bords fondus.
-2. Cheveux : base + une vingtaine de mèches sculptées, pointes claires (brun → blond cendré) sur le dessus avant (remplace la mèche blanche).
+2. Cheveux — **fait** (après plusieurs essais refusés : mèches fines, boucles, blocs, houppe, coiffé-arrière façon Funko, pyramides à arêtes). Validé : **silhouette Animal Crossing, matière Funko** d'après deux images de référence d'Ethan : calotte fine à bord arrondi, larges pointes soudées sur tout le dessus, inclinées vers le haut et l'avant, bouts pointus mais doux, légères stries, brun foncé uniforme, pas de mèche claire. Ethan n'aime pas : arêtes vives, effet casque, vagues plaquées sur le crâne, pointes trop hautes ou séparées.
 3. Corps continu, manches qui couvrent l'épaule, mains à doigts séparés ; chemise noire à vrai col, pantalon anthracite, sneakers blanches.
 4. Lumière studio neutre sur le visage, violet en liseré de contre-jour ; peau satinée, tissu mat.
 5. Bureau, chaise, écran, vrai clavier et souris dans le même style.

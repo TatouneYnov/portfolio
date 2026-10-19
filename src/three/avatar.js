@@ -6,7 +6,7 @@ import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export const COLORS = {
   skin: 0xE6B496, lip: 0xC98B7A, mouth: 0x6B3A31,
-  hair: 0x2B1E18, hairFade: 0x4A3A33, streak: 0xE2D6C6, beard: 0x4A372C, brow: 0x2B1E18,
+  hair: 0x3B271C, hairDark: 0x22160F, beard: 0x4A372C, brow: 0x2B1E18,
   eye: 0x1C120E,
   shirt: 0x18161D, placket: 0x2B2732,
   pants: 0x26242E, shoe: 0xF2F0F5, sole: 0xCFCBD6,
@@ -90,23 +90,34 @@ function noise3(x, y, z) {
     w,
   );
 }
-const fbm = (p, f) => 0.65 * noise3(p.x * f, p.y * f, p.z * f) + 0.35 * noise3(p.x * f * 2.1 + 7, p.y * f * 2.1, p.z * f * 2.1);
-
-// ---------- Cheveux : coque sur une grille qui suit la ligne d'implantation ----------
+// ---------- Cheveux : base fine sur le crâne + mèches sculptées par-dessus ----------
 // Ligne d'implantation (en hauteur sur la sphère unité) selon la direction horizontale :
-// haute devant (front dégagé), au-dessus des oreilles sur les côtés, basse à la nuque.
+// front haut, côtés au-dessus de l'oreille, pattes courtes, nuque.
 const hairlineAt = (az) => {
-  const f = smooth(0.35, 0.95, Math.cos(az));
-  return mix(-0.55, 0.46, smooth(-0.55, 0.9, Math.cos(az))) - f * (0.07 + 0.045 * Math.sin(az * 13 + 0.6));
+  const c = Math.cos(az);
+  return mix(-0.5, 0.4, smooth(-0.7, 0.85, c)) + 0.2 * gauss(c + 0.05, 0.22) - 0.08 * gauss(c - 0.26, 0.08);
 };
 
+// Pointes du dessus : [x, z] sur la carte du crâne (projection azimutale : x vers la gauche, z vers
+// l'avant, 0 = sommet, ~0.74 = front), rayon de la base sur la carte, hauteur.
+const HAIR_SPIKES = [
+  [-0.33, 0.5, 0.27, 0.08], [0.0, 0.56, 0.29, 0.1], [0.34, 0.48, 0.27, 0.08],
+  [-0.17, 0.25, 0.29, 0.095], [0.18, 0.24, 0.29, 0.095],
+  [-0.45, 0.12, 0.25, 0.06], [0.46, 0.1, 0.25, 0.06],
+  [0.0, -0.02, 0.29, 0.08], [-0.27, -0.2, 0.26, 0.055], [0.28, -0.21, 0.26, 0.055],
+];
+
+// Cheveux : silhouette Animal Crossing, matière Funko. Une seule surface continue : une calotte
+// épaisse (côtés et arrière lisses, bord arrondi) d'où sortent de larges pointes soudées entre elles,
+// inclinées vers le haut et l'avant. Creux adoucis, bouts pointus mais doux, légères stries le long
+// de chaque pointe.
 function buildHairGeometry() {
-  const ROWS = 60, COLS = 144;
-  const positions = [], colors = [], index = [];
+  const ROWS = 220, COLS = 440;
+  const N = (ROWS + 1) * (COLS + 1);
   const p = new THREE.Vector3(), o = new THREE.Vector3();
-  const cHair = new THREE.Color(COLORS.hair), cFade = new THREE.Color(COLORS.hairFade);
-  const cStreak = new THREE.Color(COLORS.streak), c = new THREE.Color();
-  const streakA = new THREE.Vector3(-0.12, 0.62, 0.78).normalize();
+  const cHair = new THREE.Color(COLORS.hair), cDark = new THREE.Color(COLORS.hairDark), c = new THREE.Color();
+  const dirs = new Float32Array(N * 3), tRow = new Float32Array(N);
+  const height = new Float32Array(N), spikeH = new Float32Array(N), valley = new Float32Array(N);
 
   for (let i = 0; i <= ROWS; i++) {
     const t = i / ROWS;
@@ -114,32 +125,60 @@ function buildHairGeometry() {
       const az = (j / COLS) * Math.PI * 2;
       const theta = t * Math.acos(hairlineAt(az));
       p.set(Math.sin(theta) * Math.sin(az), Math.cos(theta), Math.sin(theta) * Math.cos(az));
-      const front = p.z;
-      const frontEdge = smooth(0.35, 0.9, Math.cos(az));        // le bord avant garde de l'épaisseur
-      const taper = smooth(1.0, 0.78, t);                        // 0 au bord : colle au crâne
-      const keepThick = Math.max(taper, 0.85 * frontEdge);
-      const top = smooth(0.2, 0.95, p.y);
-      const quiff = smooth(0.1, 0.75, front) * smooth(0.35, 0.92, p.y);
-      const n = fbm(p, 4.6);
-      const curls = 0.042 * n * smooth(-0.1, 0.6, p.y);
-      const sideTrim = 1 - 0.7 * (1 - top) * (1 - Math.abs(front)); // côtés plus ras
-      const offset = 0.004 + (0.01 * sideTrim + 0.062 * top + 0.042 * quiff + curls) * keepThick;
-      headShape(p, o);
-      const len = o.length();
-      o.multiplyScalar((len + offset) / len);
-      o.z += 0.022 * quiff + 0.03 * frontEdge * smooth(0.6, 1, t); // la frange avance et retombe un peu
-      o.y -= 0.015 * frontEdge * smooth(0.7, 1, t);
-      positions.push(o.x, o.y, o.z);
-
-      // Couleur : brun foncé, creux plus sombres, côtés fondus, petite mèche claire devant
-      const fade = (1 - taper) * (1 - frontEdge) * 0.9 + (1 - top) * (1 - Math.abs(front)) * 0.3;
-      c.copy(cHair).lerp(cFade, Math.min(1, fade));
-      const strands = smooth(0.35, 0.7, noise3(p.x * 26, p.y * 4 + 3, p.z * 4));
-      const s1 = smooth(0.955, 0.985, p.dot(streakA)) * (0.35 + 0.65 * strands);
-      c.lerp(cStreak, Math.min(0.92, s1));
-      c.multiplyScalar(0.72 + 0.28 * n + 0.2 * s1);
-      colors.push(c.r, c.g, c.b);
+      const k = i * (COLS + 1) + j;
+      dirs[k * 3] = p.x; dirs[k * 3 + 1] = p.y; dirs[k * 3 + 2] = p.z; tRow[k] = t;
+      const rr = Math.acos(Math.max(-1, Math.min(1, p.y))) / (Math.PI / 2);
+      const X = rr * Math.sin(az), Z = rr * Math.cos(az);
+      // calotte façon Funko : épaisse, un peu plus sur le dessus
+      const top = smooth(-0.3, 0.8, p.y);
+      let h = 0.012 + 0.016 * top;
+      // pointes : cônes soudés (union douce), stries le long de la pointe dominante
+      let sum = 0, best = 0, bestAng = 0;
+      for (const [sx, sz, R, H] of HAIR_SPIKES) {
+        const dx = X - sx, dz = Z - sz, d = Math.hypot(dx, dz);
+        if (d >= R) continue;
+        const v = H * (1 - d / R) ** 1.25;
+        sum += v ** 5;
+        if (v > best) { best = v; bestAng = Math.atan2(dz, dx); }
+      }
+      const spikes = Math.pow(sum, 1 / 5);
+      const grooves = 1 - 0.035 * (0.5 + 0.5 * Math.cos(bestAng * 7)) * smooth(0.15, 0.6, best / 0.08);
+      spikeH[k] = spikes * grooves;
+      valley[k] = spikes > 0 ? 1 - best / Math.max(spikes, 1e-6) : 0;
+      // bord : bourrelet arrondi (quart de cercle) ; les pointes s'effacent avant le bord
+      const front = smooth(0.2, 0.9, p.z);
+      const t0 = mix(0.9, 0.94, front);
+      const rim = t > t0 ? Math.sqrt(Math.max(0, 1 - ((t - t0) / (1 - t0)) ** 2)) : 1;
+      height[k] = h * rim;
+      spikeH[k] *= smooth(0.97, 0.8, t);
     }
+  }
+  // Adoucit les creux entre les pointes et le bout des pointes (lissage des hauteurs, colonnes bouclées)
+  const tmp = new Float32Array(N);
+  for (let pass = 0; pass < 2; pass++) {
+    for (let i = 0; i <= ROWS; i++) {
+      for (let j = 0; j <= COLS; j++) {
+        const k = i * (COLS + 1) + j;
+        if (i === 0 || i === ROWS) { tmp[k] = spikeH[k]; continue; }
+        const jl = j === 0 ? COLS - 1 : j - 1, jr = j === COLS ? 1 : j + 1;
+        tmp[k] = (4 * spikeH[k] + spikeH[k - COLS - 1] + spikeH[k + COLS + 1] + spikeH[i * (COLS + 1) + jl] + spikeH[i * (COLS + 1) + jr]) / 8;
+      }
+    }
+    spikeH.set(tmp);
+  }
+
+  const positions = [], colors = [], index = [];
+  for (let k = 0; k < N; k++) {
+    p.set(dirs[k * 3], dirs[k * 3 + 1], dirs[k * 3 + 2]);
+    headShape(p, o);
+    const len = o.length();
+    const sh = spikeH[k];
+    o.multiplyScalar((len + 0.0015 + height[k] + sh) / len);
+    o.z += 0.5 * sh;                        // les pointes s'inclinent vers l'avant, d'autant plus qu'elles sont hautes
+    o.y += 0.15 * sh;
+    positions.push(o.x, o.y, o.z);
+    c.copy(cHair).lerp(cDark, 0.5 * smooth(0.2, 0.8, valley[k]) + 0.15 * (1 - smooth(-0.3, 0.6, p.y)));
+    colors.push(c.r, c.g, c.b);
   }
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
@@ -153,18 +192,7 @@ function buildHairGeometry() {
   g.setIndex(index);
   const merged = mergeVertices(g);
   merged.computeVertexNormals();
-
   return merged;
-
-}
-
-function rng(seed) {
-  return () => {
-    seed = (seed + 0x6D2B79F5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 // Point et normale (lissée) du visage sous le point (x, y), visé de face.
@@ -328,7 +356,7 @@ function placeOn(target, obj, origin, dir, lift = 0, spin = 0) {
 export function buildAvatar() {
   const M = {
     skin: std(COLORS.skin, 0.55), lip: std(COLORS.lip, 0.5),
-    hair: std(0xffffff, 0.62, { vertexColors: true, side: THREE.DoubleSide }),
+    hair: std(0xffffff, 0.5, { vertexColors: true }),
     brow: std(COLORS.brow, 0.8),
     shirt: std(COLORS.shirt, 0.85), placket: std(COLORS.placket, 0.7),
     pants: std(COLORS.pants, 0.9), shoe: std(COLORS.shoe, 0.5), sole: std(COLORS.sole, 0.7),
@@ -430,8 +458,7 @@ export function buildAvatar() {
   });
 
   head.add(headMesh);
-  const hairMesh = mesh(buildHairGeometry(), M.hair, { p: [HEAD_C.x, HEAD_C.y, HEAD_C.z] });
-  head.add(hairMesh);
+  head.add(mesh(buildHairGeometry(), M.hair, { p: [HEAD_C.x, HEAD_C.y, HEAD_C.z] }));
 
   // Bras
   const arms = {};
