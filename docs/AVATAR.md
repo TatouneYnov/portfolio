@@ -39,6 +39,8 @@ Tout se règle en haut de `src/three/avatar.js`.
 | La forme du torse, l'ouverture du col | `buildTorsoGeometry` |
 | Les mains et les doigts | `buildHand` |
 | Les chaussures | `buildSneaker`, `soleOutline` |
+| L'éclairage (site et images fixes) | `buildLights` |
+| La matière de la peau, des tissus | `M.skin`, `fabric()` dans `buildAvatar` |
 | La pose assise | `sitPose` |
 
 Après une modification, recrée les images fixes (section suivante).

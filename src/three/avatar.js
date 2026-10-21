@@ -19,6 +19,10 @@ function std(color, roughness = 0.65, extra = {}) {
   return new THREE.MeshStandardMaterial({ color, roughness, ...extra });
 }
 
+function fabric(color, extra = {}) {
+  return new THREE.MeshPhysicalMaterial({ color, roughness: 0.92, sheen: 0.45, sheenRoughness: 0.7, sheenColor: 0x5E5670, ...extra });
+}
+
 function mesh(geo, material, { p = [0, 0, 0], r = [0, 0, 0], s = [1, 1, 1] } = {}) {
   const m = new THREE.Mesh(geo, material);
   m.position.set(p[0], p[1], p[2]);
@@ -492,12 +496,15 @@ function buildSneaker(foot, M) {
 
 export function buildAvatar() {
   const M = {
-    skin: std(COLORS.skin, 0.55), lip: std(COLORS.lip, 0.5),
+    // peau satinée : léger reflet doux et chaud sur les bords (sheen), sans brillance plastique
+    skin: new THREE.MeshPhysicalMaterial({ color: COLORS.skin, roughness: 0.5, sheen: 0.45, sheenRoughness: 0.55, sheenColor: 0xFFC9B0, clearcoat: 0.08, clearcoatRoughness: 0.6 }),
+    lip: std(COLORS.lip, 0.5),
     hair: std(0xffffff, 0.5, { vertexColors: true }),
     brow: std(COLORS.brow, 0.8),
-    shirt: std(COLORS.shirt, 0.85), shirtSkin: std(0xffffff, 0.75, { vertexColors: true }), placket: std(COLORS.placket, 0.8), collar: std(COLORS.collar, 0.8, { side: THREE.DoubleSide }),
+    // tissu mat : très rugueux, avec un reflet de fibre rasant (sheen) qui dessine les volumes
+    shirt: fabric(COLORS.shirt), shirtSkin: fabric(0xffffff, { vertexColors: true }), placket: std(COLORS.placket, 0.8), collar: fabric(COLORS.collar, { side: THREE.DoubleSide }),
     button: std(COLORS.button, 0.35),
-    pants: std(COLORS.pants, 0.9), shoe: std(COLORS.shoe, 0.5), sole: std(COLORS.sole, 0.7), outsole: std(COLORS.outsole, 0.8),
+    pants: fabric(COLORS.pants), shoe: std(COLORS.shoe, 0.5), sole: std(COLORS.sole, 0.7), outsole: std(COLORS.outsole, 0.8),
     lace: std(COLORS.lace, 0.6),
     shine: std(0xffffff, 0.2, { emissive: 0xffffff, emissiveIntensity: 0.6 }),
     eye: std(COLORS.eye, 0.15),
@@ -674,6 +681,29 @@ export function buildAvatar() {
 }
 
 // ---------- Bureau, chaise, écran ----------
+// ---------- Éclairage (partagé par la scène du site et l'outil d'images fixes) ----------
+// Studio : lumière principale blanc chaud en hauteur devant à droite, remplissage neutre doux à gauche,
+// ambiance neutre. Le violet n'éclaire jamais le visage de face : il vient de derrière, en deux
+// liserés qui détachent la silhouette du fond noir.
+export function buildLights() {
+  const g = new THREE.Group();
+  g.name = 'Lights';
+  g.add(new THREE.HemisphereLight(0xF2F0F4, 0x18151C, 0.6));
+  const key = new THREE.DirectionalLight(0xFFF1E4, 2.1);
+  key.position.set(1.6, 2.8, 2.6);
+  g.add(key);
+  const fill = new THREE.DirectionalLight(0xE8ECF6, 0.55);
+  fill.position.set(-2.2, 1.4, 1.8);
+  g.add(fill);
+  const rimL = new THREE.DirectionalLight(0xA58AE8, 2.0);
+  rimL.position.set(-2.2, 2.2, -2.4);
+  g.add(rimL);
+  const rimR = new THREE.DirectionalLight(0x8E6CD8, 1.3);
+  rimR.position.set(2.4, 1.6, -2.2);
+  g.add(rimR);
+  return g;
+}
+
 export function buildDesk() {
   const g = new THREE.Group();
   const top = std(0x1A1722, 0.6, { metalness: 0.1 });

@@ -9,7 +9,7 @@
 // &gaze=0.4 (regard vers la droite), &blink=0 (paupières fermées).
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { buildAvatar, buildDesk, JOINT_KEYS, makePose, idlePose, sitPose } from '/src/three/avatar.js';
+import { buildAvatar, buildDesk, buildLights, JOINT_KEYS, makePose, idlePose, sitPose } from '/src/three/avatar.js';
 const q = new URLSearchParams(location.search);
 const view = q.get('view') || 'bust', W = +(q.get('w') || 900), H = +(q.get('h') || 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -19,10 +19,7 @@ renderer.setClearColor(0x07050C, q.get('bg') ? 1 : 0); document.body.appendChild
 const scene = new THREE.Scene();
 const pm = new THREE.PMREMGenerator(renderer);
 scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.35;
-scene.add(new THREE.HemisphereLight(0xB9A6FF, 0x120C1E, 0.6));
-const key = new THREE.DirectionalLight(0xFFF2E8, 1.7); key.position.set(1.5, 2.6, 2.6); scene.add(key);
-const rim = new THREE.DirectionalLight(0x8B5CF6, 3.2); rim.position.set(-2, 2.2, -2.6); scene.add(rim);
-const fill = new THREE.PointLight(0x7C3AED, 4, 7, 1.6); fill.position.set(-1.3, 1.3, 1); scene.add(fill);
+scene.add(buildLights());
 const av = buildAvatar(); scene.add(av.root);
 av.root.rotation.y = +(q.get('turn') || 0);
 av.setGaze(+(q.get('gaze') || 0), 0);

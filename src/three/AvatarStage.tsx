@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { buildAvatar, buildDesk, JOINT_KEYS, makePose, idlePose, sitPose } from './avatar.js';
+import { buildAvatar, buildDesk, buildLights, JOINT_KEYS, makePose, idlePose, sitPose } from './avatar.js';
 import { stageState } from '../lib/stageState';
 import { markWebGLLost } from '../lib/capabilities';
 import { usePageVisible } from '../lib/hooks';
@@ -62,6 +62,7 @@ function Environment() {
 function Scene() {
   const { camera, size, gl } = useThree();
   const avatar = useMemo(() => buildAvatar(), []);
+  const lights = useMemo(() => buildLights(), []);
   const desk = useMemo(() => buildDesk(), []);
   const J = useMemo(
     () => ({
@@ -272,10 +273,7 @@ function Scene() {
   return (
     <>
       <Environment />
-      <hemisphereLight args={['#B9A6FF', '#120C1E', 0.6]} />
-      <directionalLight position={[1.5, 2.6, 2.6]} intensity={1.7} color="#FFF2E8" />
-      <directionalLight position={[-2, 2.2, -2.6]} intensity={3.2} color="#8B5CF6" />
-      <pointLight position={[-1.3, 1.3, 1]} intensity={4} distance={7} decay={1.6} color="#7C3AED" />
+      <primitive object={lights} />
       <primitive object={avatar.root} />
       <primitive object={desk.group} />
       <Warmup reveal={[desk.group]} />

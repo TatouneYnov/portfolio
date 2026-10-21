@@ -29,6 +29,7 @@ export type Pose = Record<string, [number, number, number]> & { hipsY: number; b
 
 export const COLORS: Record<string, number>;
 export function buildAvatar(): Avatar;
+export function buildLights(): THREE.Group;
 export function buildDesk(): { group: THREE.Group; screen: Terminal };
 export function makeTerminal(): Terminal;
 export const JOINT_KEYS: string[];
