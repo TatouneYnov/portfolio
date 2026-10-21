@@ -40,6 +40,7 @@ Tout se règle en haut de `src/three/avatar.js`.
 | Les mains et les doigts | `buildHand` |
 | Les chaussures | `buildSneaker`, `soleOutline` |
 | L'éclairage (site et images fixes) | `buildLights` |
+| Le bureau, la chaise, le décor | `buildDesk` (le clavier doit rester sous les mains de `sitPose`) |
 | La matière de la peau, des tissus | `M.skin`, `fabric()` dans `buildAvatar` |
 | La pose assise | `sitPose` |
 

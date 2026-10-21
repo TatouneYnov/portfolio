@@ -4,7 +4,7 @@
 </head><body>
 <script type="module">
 // Outil de développement : rend une image fixe de l'avatar (fond transparent).
-// ?view=bust|desk|og|face|head|full|hands|shoes|collar&w=900&h=1000 — ouvert via `npm run dev` puis /tools/poster.html
+// ?view=bust|desk|og|face|head|full|hands|shoes|collar|deskfront|kb&w=900&h=1000 — ouvert via `npm run dev` puis /tools/poster.html
 // Contrôle : &turn=0.6 (rotation de l'avatar en radians, 1.57 = profil), &bg=1 (fond du site au lieu du transparent),
 // &gaze=0.4 (regard vers la droite), &blink=0 (paupières fermées).
 import * as THREE from 'three';
@@ -25,16 +25,18 @@ av.root.rotation.y = +(q.get('turn') || 0);
 av.setGaze(+(q.get('gaze') || 0), 0);
 av.setBlink(+(q.get('blink') ?? 1));
 const J = { hips: av.hips, spine: av.spine, chest: av.chest, neck: av.neck, head: av.head, uaL: av.arms.L.ua, uaR: av.arms.R.ua, laL: av.arms.L.la, laR: av.arms.R.la, hL: av.arms.L.hand, hR: av.arms.R.hand, ulL: av.legs.L.ul, ulR: av.legs.R.ul, llL: av.legs.L.ll, llR: av.legs.R.ll, fL: av.legs.L.foot, fR: av.legs.R.foot };
-const P = makePose(); (view === 'desk' ? sitPose : idlePose)(0.6, P);
+const P = makePose(); (view === 'desk' || view === 'deskfront' || view === 'kb' ? sitPose : idlePose)(0.6, P);
 for (const k of JOINT_KEYS) J[k].rotation.set(...P[k]);
 av.hips.position.y = P.hipsY;
-const still = view === 'desk' || view === 'face' || view === 'head';
+const still = view === 'desk' || view === 'deskfront' || view === 'kb' || view === 'face' || view === 'head';
 av.head.rotation.y += still ? 0 : 0.18; av.head.rotation.x += still ? 0 : -0.04;
 const cam = new THREE.PerspectiveCamera(30, W / H, 0.05, 40);
-if (view === 'desk') {
+if (view === 'desk' || view === 'deskfront' || view === 'kb') {
   const d = buildDesk(); scene.add(d.group); d.screen.draw();
   cam.position.set(2.75, 1.65, -0.95).sub(new THREE.Vector3(0.05, 0.86, 0.3)).normalize().multiplyScalar(4.1).add(new THREE.Vector3(0.05, 0.86, 0.3));
   cam.lookAt(0.05, 0.86, 0.3);
+  if (view === 'kb') { cam.position.set(-0.55, 1.05, 0.05); cam.lookAt(-0.05, 0.6, 0.45); }
+  if (view === 'deskfront') { cam.position.set(-1.6, 1.5, 2.4); cam.lookAt(0, 0.6, 0.4); }
 } else if (view === 'full') {
   cam.position.set(0.3, 0.95, 4.2); cam.lookAt(0, 0.82, 0);
 } else if (view === 'collar') {

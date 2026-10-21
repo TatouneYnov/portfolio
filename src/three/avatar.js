@@ -704,33 +704,149 @@ export function buildLights() {
   return g;
 }
 
+// Bureau : plateau épais aux bords arrondis sur deux pieds en cadre métal, tapis de bureau, clavier à
+// vraies touches (une seule InstancedMesh), souris, mug, écran fin sur pied à plaque, chaise de bureau.
+// Le clavier reste à l'endroit où tombent les mains de la pose assise (sitPose).
 export function buildDesk() {
   const g = new THREE.Group();
-  const top = std(0x1A1722, 0.6, { metalness: 0.1 });
-  const frame = std(0x2B2733, 0.5, { metalness: 0.4 });
-  g.add(mesh(new RoundedBoxGeometry(1.3, 0.04, 0.6, 2, 0.012), top, { p: [0, 0.58, 0.62] }));
-  [[-0.6, 0.36], [0.6, 0.36], [-0.6, 0.88], [0.6, 0.88]].forEach(([x, z]) =>
-    g.add(mesh(new THREE.BoxGeometry(0.035, 0.56, 0.035), frame, { p: [x, 0.28, z] })));
-  g.add(mesh(new RoundedBoxGeometry(0.42, 0.025, 0.14, 2, 0.008), frame, { p: [0, 0.613, 0.43] }));
-  g.add(mesh(new THREE.BoxGeometry(0.4, 0.004, 0.006), std(0x7C3AED, 0.4, { emissive: 0x7C3AED, emissiveIntensity: 2 }), { p: [0, 0.6, 0.36] }));
-  g.add(mesh(new THREE.CylinderGeometry(0.09, 0.1, 0.015, 24), frame, { p: [0, 0.607, 0.8] }));
-  g.add(mesh(new THREE.BoxGeometry(0.03, 0.2, 0.03), frame, { p: [0, 0.7, 0.82] }));
-  g.add(mesh(new RoundedBoxGeometry(0.64, 0.4, 0.03, 2, 0.01), frame, { p: [0, 0.9, 0.82] }));
+  const wood = std(0x2A2328, 0.55);
+  const metal = std(0x2E2B33, 0.35, { metalness: 0.7 });
+  const plastic = std(0x1B1920, 0.45);
+  const keyMat = std(0x26232C, 0.5);
+  const fabricSeat = fabric(0x24212B);
+
+  // Plateau et pieds (cadre en U inversé de chaque côté + traverse)
+  const TOP_Y = 0.58;
+  g.add(mesh(new RoundedBoxGeometry(1.3, 0.035, 0.62, 4, 0.014), wood, { p: [0, TOP_Y, 0.62] }));
+  const tube = (len) => new RoundedBoxGeometry(0.035, len, 0.035, 2, 0.012);
+  [-0.58, 0.58].forEach((x) => {
+    g.add(mesh(tube(0.56), metal, { p: [x, 0.28, 0.4] }));
+    g.add(mesh(tube(0.56), metal, { p: [x, 0.28, 0.84] }));
+    g.add(mesh(new RoundedBoxGeometry(0.035, 0.035, 0.5, 2, 0.012), metal, { p: [x, 0.018, 0.62] }));   // patin au sol
+    g.add(mesh(new RoundedBoxGeometry(0.035, 0.03, 0.5, 2, 0.012), metal, { p: [x, TOP_Y - 0.035, 0.62] }));
+  });
+  g.add(mesh(new RoundedBoxGeometry(1.16, 0.05, 0.02, 2, 0.008), metal, { p: [0, TOP_Y - 0.05, 0.86] }));
+
+  // Tapis de bureau
+  g.add(mesh(new RoundedBoxGeometry(0.82, 0.004, 0.3, 2, 0.002), fabric(0x1A1820), { p: [-0.08, TOP_Y + 0.019, 0.5] }));
+
+  // Clavier : boîtier bas incliné + touches (5 rangées) + barre d'espace
+  const kb = new THREE.Group();
+  kb.position.set(0, TOP_Y + 0.024, 0.48);
+  kb.rotation.x = -0.05;
+  kb.add(mesh(new RoundedBoxGeometry(0.42, 0.018, 0.14, 3, 0.007), plastic));
+  const KEY = 0.024, GAP = 0.0035, rows = [14, 14, 13, 12, 0];
+  const keyGeo = new RoundedBoxGeometry(KEY, 0.01, KEY, 2, 0.003);
+  const count = rows.reduce((n, r) => n + r, 0);
+  const keys = new THREE.InstancedMesh(keyGeo, keyMat, count);
+  const m4 = new THREE.Matrix4();
+  let k = 0;
+  rows.forEach((n, r) => {
+    const z = 0.052 - r * (KEY + GAP);                 // rangée 0 côté écran, barre d'espace côté utilisateur
+    const x0 = -((n - 1) * (KEY + GAP)) / 2 + (r === 3 ? 0.012 : r === 2 ? 0.006 : 0);
+    for (let i = 0; i < n; i++) keys.setMatrixAt(k++, m4.makeTranslation(x0 + i * (KEY + GAP), 0.013, z));
+  });
+  keys.castShadow = true;
+  kb.add(keys);
+  kb.add(mesh(new RoundedBoxGeometry(0.15, 0.01, KEY, 2, 0.003), keyMat, { p: [0, 0.013, 0.052 - 4 * (KEY + GAP)] }));
+  g.add(kb);
+
+  // Souris : demi-ovoïde, plus haute à l'arrière, molette
+  const mouseGeo = new THREE.SphereGeometry(1, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+  const mp = mouseGeo.attributes.position, mv = new THREE.Vector3();
+  for (let i = 0; i < mp.count; i++) {
+    mv.fromBufferAttribute(mp, i);
+    mp.setXYZ(i, mv.x * 0.03, mv.y * (0.018 + 0.006 * smooth(0.4, -0.6, mv.z)), mv.z * 0.05);
+  }
+  mouseGeo.computeVertexNormals();
+  g.add(mesh(mouseGeo, plastic, { p: [-0.33, TOP_Y + 0.021, 0.48] }));
+  g.add(mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.005, 12), keyMat, { p: [-0.33, TOP_Y + 0.041, 0.502], r: [0, 0, Math.PI / 2] }));
+
+  // Mug
+  const mug = std(0xE9E5EE, 0.4);
+  g.add(mesh(new THREE.CylinderGeometry(0.032, 0.03, 0.085, 24), mug, { p: [0.45, TOP_Y + 0.06, 0.55] }));
+  g.add(mesh(new THREE.CylinderGeometry(0.027, 0.027, 0.002, 24), std(0x2A1A12, 0.2), { p: [0.45, TOP_Y + 0.099, 0.55] }));
+  g.add(mesh(new THREE.TorusGeometry(0.02, 0.006, 8, 20), mug, { p: [0.482, TOP_Y + 0.06, 0.55], r: [0, 0, 0], s: [1, 1, 1] }));
+
+  // Décor : lampe d'architecte (lumière chaude), petite plante en pot, carnet et stylo
+  const lamp = new THREE.Group();
+  lamp.position.set(0.52, TOP_Y + 0.018, 0.8);
+  lamp.rotation.y = Math.PI - 0.5;               // le bras se penche vers le centre du bureau
+  lamp.add(mesh(new THREE.CylinderGeometry(0.06, 0.065, 0.014, 28), metal));
+  const arm1 = new THREE.Group(); arm1.position.y = 0.01; arm1.rotation.z = 0.35; lamp.add(arm1);
+  arm1.add(mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 10), metal, { p: [0, 0.15, 0] }));
+  const arm2 = new THREE.Group(); arm2.position.y = 0.3; arm2.rotation.z = -1.55; arm1.add(arm2);
+  arm2.add(mesh(new THREE.SphereGeometry(0.014, 12, 10), metal));
+  arm2.add(mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.26, 10), metal, { p: [0, 0.13, 0] }));
+  const shade = new THREE.Group(); shade.position.y = 0.26; shade.rotation.z = -0.9; arm2.add(shade);
+  shade.add(mesh(new THREE.CylinderGeometry(0.03, 0.065, 0.09, 28, 1, true), std(0x2E2B33, 0.4, { metalness: 0.5, side: THREE.DoubleSide }), { p: [0, 0.035, 0] }));
+  shade.add(mesh(new THREE.SphereGeometry(0.024, 14, 10), std(0xFFE6C4, 0.3, { emissive: 0xFFD9A8, emissiveIntensity: 2 }), { p: [0, 0.055, 0] }));
+  const lampLight = new THREE.SpotLight(0xFFD9A8, 2.2, 1.6, 0.9, 0.7, 1.5);
+  lampLight.position.set(0, 0.06, 0);
+  lampLight.target.position.set(0, 0.6, 0);
+  shade.add(lampLight, lampLight.target);
+  g.add(lamp);
+
+  const pot = std(0xD9D3CB, 0.75);
+  g.add(mesh(new THREE.CylinderGeometry(0.045, 0.035, 0.08, 24), pot, { p: [-0.52, TOP_Y + 0.058, 0.82] }));
+  g.add(mesh(new THREE.CylinderGeometry(0.041, 0.041, 0.004, 24), std(0x3A2A20, 0.95), { p: [-0.52, TOP_Y + 0.094, 0.82] }));
+  const leaf = std(0x4F7A5A, 0.6);
+  const leafGeo = new THREE.SphereGeometry(1, 14, 10);
+  for (let i = 0; i < 9; i++) {
+    const a = (i / 9) * Math.PI * 2 + (i % 2) * 0.3, tilt = 0.45 + (i % 3) * 0.2, len = 0.06 + (i % 3) * 0.015;
+    const l = new THREE.Group();
+    l.position.set(-0.52, TOP_Y + 0.098, 0.82);
+    l.rotation.set(0, a, tilt);
+    l.add(mesh(leafGeo, leaf, { p: [0, len, 0], s: [0.012, len, 0.022] }));
+    g.add(l);
+  }
+
+  g.add(mesh(new RoundedBoxGeometry(0.15, 0.012, 0.21, 2, 0.004), std(0x3B3446, 0.8), { p: [0.33, TOP_Y + 0.024, 0.72], r: [0, 0.25, 0] }));
+  g.add(mesh(new RoundedBoxGeometry(0.146, 0.004, 0.205, 1, 0.002), std(0xEDE8DF, 0.9), { p: [0.33, TOP_Y + 0.031, 0.72], r: [0, 0.25, 0] }));
+  g.add(mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.14, 10), std(0xB49CFF, 0.4), { p: [0.4, TOP_Y + 0.037, 0.71], r: [Math.PI / 2, 0, 0.6] }));
+
+  // Écran : pied à plaque, colonne, dalle fine avec dos arrondi
+  g.add(mesh(new RoundedBoxGeometry(0.22, 0.012, 0.15, 3, 0.005), metal, { p: [0, TOP_Y + 0.024, 0.8] }));
+  g.add(mesh(new RoundedBoxGeometry(0.04, 0.24, 0.018, 2, 0.007), metal, { p: [0, TOP_Y + 0.14, 0.84], r: [0.12, 0, 0] }));
+  g.add(mesh(new RoundedBoxGeometry(0.64, 0.39, 0.016, 3, 0.006), plastic, { p: [0, 0.9, 0.818] }));
+  g.add(mesh(new RoundedBoxGeometry(0.4, 0.24, 0.03, 4, 0.012), plastic, { p: [0, 0.89, 0.83] }));   // bosse arrière
   const screen = makeTerminal();
-  const plane = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.36), new THREE.MeshBasicMaterial({ map: screen.texture, toneMapped: false }));
-  plane.position.set(0, 0.9, 0.803);
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(0.616, 0.366), new THREE.MeshBasicMaterial({ map: screen.texture, toneMapped: false }));
+  plane.position.set(0, 0.902, 0.8095);
   plane.rotation.y = Math.PI;
   g.add(plane);
-  const screenLight = new THREE.PointLight(0x9F7BFF, 2.2, 2.2, 1.5);
+  const screenLight = new THREE.PointLight(0x9F7BFF, 1.6, 2.2, 1.5);
   screenLight.position.set(0, 0.95, 0.65);
   g.add(screenLight);
-  const seat = std(0x221E2B, 0.8);
-  g.add(mesh(new RoundedBoxGeometry(0.42, 0.06, 0.4, 3, 0.025), seat, { p: [0, 0.25, -0.02] }));
-  g.add(mesh(new RoundedBoxGeometry(0.4, 0.42, 0.05, 3, 0.025), seat, { p: [0, 0.55, -0.25], r: [-0.12, 0, 0] }));
-  g.add(mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.2, 12), frame, { p: [0, 0.13, -0.02] }));
+
+  // Chaise : assise et dossier galbés, accoudoirs, vérin, pied étoile à roulettes
+  const seatShape = (w, d, h, bend) => {
+    const geo = new RoundedBoxGeometry(w, h, d, 4, Math.min(h, 0.03) * 0.45);
+    const p = geo.attributes.position, v = new THREE.Vector3();
+    for (let i = 0; i < p.count; i++) {
+      v.fromBufferAttribute(p, i);
+      p.setY(i, v.y + bend * (v.x / (w / 2)) ** 2);   // bords relevés
+    }
+    geo.computeVertexNormals();
+    return geo;
+  };
+  g.add(mesh(seatShape(0.44, 0.42, 0.065, 0.015), fabricSeat, { p: [0, 0.26, -0.02] }));
+  g.add(mesh(seatShape(0.42, 0.46, 0.055, 0.02), fabricSeat, { p: [0, 0.58, -0.26], r: [Math.PI / 2 - 0.12, 0, 0] }));
+  g.add(mesh(new RoundedBoxGeometry(0.05, 0.3, 0.02, 2, 0.008), metal, { p: [0, 0.38, -0.25], r: [-0.12, 0, 0] }));   // liaison dossier
+  [-1, 1].forEach((sx) => {
+    g.add(mesh(new RoundedBoxGeometry(0.025, 0.15, 0.025, 2, 0.01), metal, { p: [sx * 0.24, 0.34, -0.06] }));
+    g.add(mesh(new RoundedBoxGeometry(0.05, 0.022, 0.22, 3, 0.01), plastic, { p: [sx * 0.24, 0.42, -0.02] }));
+  });
+  g.add(mesh(new THREE.CylinderGeometry(0.022, 0.026, 0.17, 16), metal, { p: [0, 0.14, -0.02] }));
+  g.add(mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.03, 16), plastic, { p: [0, 0.06, -0.02] }));
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * Math.PI * 2;
-    g.add(mesh(new THREE.BoxGeometry(0.03, 0.025, 0.22), frame, { p: [Math.sin(a) * 0.1, 0.03, -0.02 + Math.cos(a) * 0.1], r: [0, a, 0] }));
+    const arm = new THREE.Group();
+    arm.position.set(0, 0.05, -0.02);
+    arm.rotation.y = a;
+    arm.add(mesh(new RoundedBoxGeometry(0.035, 0.022, 0.24, 2, 0.008), metal, { p: [0, 0, 0.12], r: [0.08, 0, 0] }));
+    arm.add(mesh(new THREE.SphereGeometry(0.022, 14, 10), plastic, { p: [0, -0.025, 0.235] }));
+    g.add(arm);
   }
   return { group: g, screen };
 }
