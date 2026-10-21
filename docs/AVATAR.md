@@ -36,6 +36,9 @@ Tout se règle en haut de `src/three/avatar.js`.
 | La forme du visage (ovale) | `headShape` |
 | La moustache et le bouc (position, taille, densité) | `facialHairMask` |
 | Les sourcils, la bouche | les appels à `sculptStroke` dans `buildAvatar` |
+| La forme du torse, l'ouverture du col | `buildTorsoGeometry` |
+| Les mains et les doigts | `buildHand` |
+| Les chaussures | `buildSneaker`, `soleOutline` |
 | La pose assise | `sitPose` |
 
 Après une modification, recrée les images fixes (section suivante).

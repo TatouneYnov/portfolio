@@ -8,8 +8,8 @@ export const COLORS = {
   skin: 0xE6B496, lip: 0xC98B7A, mouth: 0x6B3A31,
   hair: 0x2A1C15, hairDark: 0x150D0A, streak: 0xEDE8E0, beard: 0x4A372C, brow: 0x2B1E18,
   eye: 0x1C120E,
-  shirt: 0x18161D, placket: 0x2B2732,
-  pants: 0x26242E, shoe: 0xF2F0F5, sole: 0xCFCBD6,
+  shirt: 0x16141B, collar: 0x221F29, placket: 0x221F29, button: 0x3A3542,
+  pants: 0x2C2C33, shoe: 0xF2F0F5, sole: 0xE4E1EA, outsole: 0x9A96A3, lace: 0xC9C5D0,
 };
 
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -374,13 +374,131 @@ function placeOn(target, obj, origin, dir, lift = 0, spin = 0) {
   return true;
 }
 
+// Torse : profil lissé (spline) tourné autour de l'axe, puis sculpté : épaules larges, taille marquée,
+// poitrine un peu bombée devant, dos plus plat. Couleurs par sommet : chemise, et peau dans l'ouverture
+// en V du col.
+function buildTorsoGeometry() {
+  const spline = new THREE.SplineCurve([
+    [0.0, -0.235], [0.18, -0.235], [0.183, -0.2], [0.172, -0.12], [0.178, -0.02], [0.192, 0.07],
+    [0.196, 0.13], [0.18, 0.18], [0.14, 0.218], [0.095, 0.24], [0.06, 0.25], [0.0, 0.253],
+  ].map(([x, y]) => new THREE.Vector2(x, y)));
+  const g = new THREE.LatheGeometry(spline.getPoints(110), 256);
+  const pos = g.attributes.position, colors = [], v = new THREE.Vector3();
+  const cShirt = new THREE.Color(COLORS.shirt), cSkin = new THREE.Color(COLORS.skin), c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    const r = Math.hypot(v.x, v.z) || 1, front = v.z / r;
+    let z = v.z * 0.7;
+    if (front > 0) z *= 1 + 0.07 * front * front * Math.exp(-(((v.y - 0.1) / 0.09) ** 2));   // poitrine
+    else z *= 0.94;                                                                        // dos plus plat
+    pos.setXYZ(i, v.x, v.y, z);
+    // ouverture du col : V de peau devant, du cou jusqu'au premier bouton
+    const vw = 0.006 + 0.42 * (v.y - 0.17);
+    const inV = front > 0.5 ? smooth(vw + 0.0025, vw - 0.0025, Math.abs(v.x)) * smooth(0.168, 0.176, v.y) : 0;   // bord fondu
+    c.copy(cShirt).lerp(cSkin, inV);
+    colors.push(c.r, c.g, c.b);
+  }
+  g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+// Main : paume, quatre doigts à deux phalanges articulées et pouce. Bras le long du corps, la paume
+// regarde le corps (axe x local) ; les doigts sont répartis d'avant en arrière (axe z).
+// Renvoie les articulations pour animer les frappes au clavier : [[base, phalange], …] + pouce.
+function buildHand(hand, sx, material) {
+  const palm = mesh(sphere(20, 16), material, { p: [0, -0.04, 0.004], s: [0.024, 0.048, 0.044] });
+  hand.add(palm);
+  const fingers = [];
+  [[0.03, 0.03, 1.0], [0.01, 0.035, 1.08], [-0.01, 0.033, 1.02], [-0.029, 0.027, 0.88]].forEach(([z, len, k]) => {
+    const base = joint('Finger', hand, [0, -0.076, z]);
+    base.add(mesh(new THREE.CapsuleGeometry(0.0105 * k, len * 0.55, 4, 10), material, { p: [0, -len * 0.42, 0] }));
+    const tip = joint('FingerTip', base, [0, -len * 0.82, 0]);
+    tip.add(mesh(new THREE.CapsuleGeometry(0.0098 * k, len * 0.42, 4, 10), material, { p: [0, -len * 0.32, 0] }));
+    // repos : doigts légèrement repliés vers la paume (côté du corps)
+    base.rotation.z = -sx * 0.25; tip.rotation.z = -sx * 0.35;
+    fingers.push([base, tip]);
+  });
+  const thumb = joint('Thumb', hand, [-sx * 0.012, -0.03, 0.035]);
+  thumb.add(mesh(new THREE.CapsuleGeometry(0.0125, 0.022, 4, 10), material, { p: [0, -0.018, 0] }));
+  const thumbTip = joint('ThumbTip', thumb, [0, -0.036, 0]);
+  thumbTip.add(mesh(new THREE.CapsuleGeometry(0.0115, 0.016, 4, 10), material, { p: [0, -0.012, 0] }));
+  thumb.rotation.set(0.35, 0, -sx * 0.45);
+  thumbTip.rotation.z = -sx * 0.25;
+  return { fingers, thumb: [thumb, thumbTip] };
+}
+
+// Sneaker blanche : semelle intermédiaire claire + semelle d'usure grise, tige arrondie, col de
+// cheville, languette et lacets.
+// Contour d'une semelle vu de dessus, angle a (0 → 2π) : [x (largeur), l (longueur, vers l'avant)].
+// Talon arrondi plus étroit, cambrure, bout arrondi ; décalé de `inset` vers l'intérieur.
+function soleOutline(a, inset = 0) {
+  const c = Math.cos(a), sn = Math.sin(a);
+  let w = 0.062 * (sn > 0 ? 1 : 0.86) * (1 - 0.14 * Math.exp(-(((sn + 0.05) / 0.35) ** 2)));
+  w *= Math.pow(Math.abs(c), 0.75) * Math.sign(c);
+  return [w - Math.sign(w) * inset, 0.128 * Math.sign(sn) * Math.pow(Math.abs(sn), 0.9) - Math.sign(sn) * inset];
+}
+// Normales lissées (les extrusions sortent avec des facettes sur les côtés).
+function smoothed(g) {
+  g.deleteAttribute('normal');
+  g.deleteAttribute('uv');
+  const m = mergeVertices(g, 1e-5);
+  m.computeVertexNormals();
+  return m;
+}
+function soleShape(inset = 0) {
+  const shape = new THREE.Shape();
+  for (let i = 0; i <= 96; i++) {
+    const [x, l] = soleOutline((i / 96) * Math.PI * 2, inset);
+    if (i === 0) shape.moveTo(x, l); else shape.lineTo(x, l);
+  }
+  return shape;
+}
+
+// Sneaker blanche : semelle épaisse aux bords arrondis qui suit la forme du pied, fine semelle d'usure
+// grise ; tige d'une seule pièce qui monte en dôme depuis le contour de la semelle (haute au talon,
+// basse au bout), lacets posés sur le dessus. Le bas du pantalon rentre dans la chaussure.
+const SHOE_Z = 0.045;
+const shoeHeight = (l) => mix(0.03, 0.082, smooth(0.12, -0.1, l));
+function buildSneaker(foot, M) {
+  const sole = smoothed(new THREE.ExtrudeGeometry(soleShape(0.006), { depth: 0.018, bevelEnabled: true, bevelThickness: 0.007, bevelSize: 0.006, bevelSegments: 4, curveSegments: 4 }));
+  foot.add(mesh(sole, M.sole, { p: [0, -0.055, SHOE_Z], r: [Math.PI / 2, 0, 0] }));
+  const outsole = smoothed(new THREE.ExtrudeGeometry(soleShape(0.004), { depth: 0.004, bevelEnabled: true, bevelThickness: 0.002, bevelSize: 0.002, bevelSegments: 2, curveSegments: 4 }));
+  foot.add(mesh(outsole, M.outsole, { p: [0, -0.083, SHOE_Z], r: [Math.PI / 2, 0, 0] }));
+  // tige : anneaux du contour de la semelle jusqu'au sommet du dôme
+  const Y0 = -0.05, RINGS = 14, N = 64;
+  const positions = [], index = [];
+  for (let i = 0; i <= RINGS; i++) {
+    const phi = (i / RINGS) * Math.PI / 2, sp = Math.sin(phi), cp = Math.cos(phi);
+    for (let j = 0; j <= N; j++) {
+      const [x, l] = soleOutline((j / N) * Math.PI * 2, 0.008);
+      positions.push(x * Math.pow(cp, 0.55), Y0 + shoeHeight(l) * Math.pow(sp, 0.85), SHOE_Z + l * (1 - 0.08 * sp));
+    }
+  }
+  for (let i = 0; i < RINGS; i++) {
+    for (let j = 0; j < N; j++) {
+      const a = i * (N + 1) + j, b = a + N + 1;
+      index.push(a, a + 1, b, a + 1, b + 1, b);
+    }
+  }
+  const upper = finishGeometry(positions, index, (i, v) => v.set(v.x, v.y - Y0 + 0.01, (v.z - SHOE_Z) * 0.3));
+  foot.add(mesh(upper, M.shoe));
+  // lacets : barrettes en travers du coup-de-pied, inclinées selon la pente de la tige
+  [-0.03, 0.0, 0.03, 0.06].forEach((l) => {
+    const y = Y0 + shoeHeight(l) + 0.002, slope = (shoeHeight(l + 0.01) - shoeHeight(l - 0.01)) / 0.02;
+    foot.add(mesh(new RoundedBoxGeometry(0.034, 0.005, 0.01, 1, 0.0025), M.lace, { p: [0, y, SHOE_Z + l * 0.95], r: [-Math.atan(slope), 0, 0] }));
+  });
+}
+
 export function buildAvatar() {
   const M = {
     skin: std(COLORS.skin, 0.55), lip: std(COLORS.lip, 0.5),
     hair: std(0xffffff, 0.5, { vertexColors: true }),
     brow: std(COLORS.brow, 0.8),
-    shirt: std(COLORS.shirt, 0.85), placket: std(COLORS.placket, 0.7),
-    pants: std(COLORS.pants, 0.9), shoe: std(COLORS.shoe, 0.5), sole: std(COLORS.sole, 0.7),
+    shirt: std(COLORS.shirt, 0.85), shirtSkin: std(0xffffff, 0.75, { vertexColors: true }), placket: std(COLORS.placket, 0.8), collar: std(COLORS.collar, 0.8, { side: THREE.DoubleSide }),
+    button: std(COLORS.button, 0.35),
+    pants: std(COLORS.pants, 0.9), shoe: std(COLORS.shoe, 0.5), sole: std(COLORS.sole, 0.7), outsole: std(COLORS.outsole, 0.8),
+    lace: std(COLORS.lace, 0.6),
     shine: std(0xffffff, 0.2, { emissive: 0xffffff, emissiveIntensity: 0.6 }),
     eye: std(COLORS.eye, 0.15),
     mouth: std(COLORS.mouth, 0.7),
@@ -392,35 +510,50 @@ export function buildAvatar() {
   const hips = joint('Hips', root, [0, 0.667, 0]);
 
   // Bassin : profil de pantalon
-  const pantsProfile = [[0, -0.12], [0.12, -0.115], [0.165, -0.07], [0.172, 0], [0.17, 0.07], [0, 0.07]]
+  const pantsProfile = [[0, -0.12], [0.12, -0.115], [0.16, -0.07], [0.165, 0], [0.163, 0.07], [0, 0.07]]
     .map(([x, y]) => new THREE.Vector2(x, y));
-  hips.add(mesh(new THREE.LatheGeometry(pantsProfile, 40), M.pants, { s: [1, 1, 0.78] }));
+  hips.add(mesh(new THREE.LatheGeometry(pantsProfile, 40), M.pants, { s: [1, 1, 0.66] }));
 
   const spine = joint('Spine', hips, [0, 0.06, 0]);
   const chest = joint('Chest', spine, [0, 0.14, 0]);
 
-  // Torse : chemise, bas légèrement évasé qui recouvre la ceinture
-  const torsoProfile = [
-    [0, -0.235], [0.183, -0.235], [0.186, -0.2], [0.183, -0.12], [0.19, 0], [0.198, 0.1],
-    [0.192, 0.17], [0.155, 0.225], [0.085, 0.25], [0, 0.255],
-  ].map(([x, y]) => new THREE.Vector2(x, y));
-  const torso = mesh(new THREE.LatheGeometry(torsoProfile, 48), M.shirt, { s: [1, 1, 0.74] });
+  // Torse : silhouette en V (épaules larges, taille plus fine), poitrine légèrement bombée, dos plus
+  // plat. L'ouverture du col (peau) est peinte dans les couleurs par sommet, sans pièce rapportée.
+  const torso = mesh(buildTorsoGeometry(), M.shirtSkin);
   chest.add(torso);
   torso.updateMatrixWorld(true);
-  const onTorso = (obj, x, y, lift = 0.002) => {
-    placeOn(torso, obj, new THREE.Vector3(x, y, 1), new THREE.Vector3(0, 0, -1), lift);
+  const onTorso = (obj, x, y, lift = 0.002, spin = 0) => {
+    placeOn(torso, obj, new THREE.Vector3(x, y, 1), new THREE.Vector3(0, 0, -1), lift, spin);
     chest.add(obj);
+    return obj;
   };
-  // Patte de boutonnage + boutons, posés à plat sur la chemise
-  onTorso(mesh(new THREE.PlaneGeometry(0.016, 0.28), M.placket), 0, -0.02);
-  [0.08, -0.02, -0.12].forEach((y) => onTorso(mesh(new THREE.CircleGeometry(0.008, 16), M.placket), 0, y, 0.004));
-  // Encolure en V (peau, à plat) + col
-  const vNeck = new THREE.Shape();
-  vNeck.moveTo(-0.045, 0.0); vNeck.lineTo(0.045, 0.0); vNeck.lineTo(0, -0.075); vNeck.closePath();
-  onTorso(mesh(new THREE.ShapeGeometry(vNeck), M.skin), 0, 0.225, 0.003);
-  const collarGeo = new RoundedBoxGeometry(0.075, 0.012, 0.055, 2, 0.005);
-  chest.add(mesh(collarGeo, M.shirt, { p: [0.045, 0.228, 0.1], r: [-0.55, 0.3, 0.6] }));
-  chest.add(mesh(collarGeo, M.shirt, { p: [-0.045, 0.228, 0.1], r: [-0.55, -0.3, -0.6] }));
+  // Ourlet du bas de la chemise
+  chest.add(mesh(new THREE.TorusGeometry(0.181, 0.006, 10, 64), M.shirt, { p: [0, -0.232, 0], r: [Math.PI / 2, 0, 0], s: [1, 0.7 * 0.97, 1] }));
+  // Patte de boutonnage en léger relief + boutons
+  onTorso(mesh(new RoundedBoxGeometry(0.026, 0.3, 0.004, 2, 0.0018), M.placket), 0, -0.04, 0.001);
+  const buttonGeo = new THREE.CylinderGeometry(0.0075, 0.0075, 0.004, 16);
+  [0.07, -0.02, -0.11, -0.19].forEach((y) => {
+    const b = new THREE.Group();                          // placeOn oriente le groupe ; le bouton y est couché
+    b.add(mesh(buttonGeo, M.button, { r: [Math.PI / 2, 0, 0] }));
+    onTorso(b, 0, y, 0.004);
+  });
+  // Col de chemise ouvert : pied de col autour du cou qui se rabat vers l'extérieur, ouvert devant,
+  // prolongé par deux pointes couchées le long de l'ouverture en V.
+  const COLLAR_GAP = 0.95;
+  const collarProfile = [[0.104, 0.226], [0.098, 0.242], [0.088, 0.262], [0.078, 0.276], [0.07, 0.279], [0.066, 0.272], [0.066, 0.25]]
+    .map(([x, y]) => new THREE.Vector2(x, y));
+  chest.add(mesh(new THREE.LatheGeometry(collarProfile, 48, COLLAR_GAP / 2, Math.PI * 2 - COLLAR_GAP), M.collar, { s: [1, 1, 0.82] }));
+  const collarPoint = new THREE.Shape();
+  collarPoint.moveTo(-0.004, 0.012);
+  collarPoint.quadraticCurveTo(0.03, 0.016, 0.05, 0.004);
+  collarPoint.quadraticCurveTo(0.042, -0.03, 0.012, -0.062);
+  collarPoint.quadraticCurveTo(-0.006, -0.025, -0.004, 0.012);
+  const collarGeo = new THREE.ExtrudeGeometry(collarPoint, { depth: 0.003, bevelEnabled: true, bevelThickness: 0.002, bevelSize: 0.002, bevelSegments: 2, curveSegments: 10 });
+  [1, -1].forEach((sx) => {
+    const g = new THREE.Group();
+    g.add(mesh(collarGeo, M.collar, { s: [sx, 1, 1] }));
+    onTorso(g, sx * 0.03, 0.222, 0.004, 0);
+  });
 
   // Cou
   const neck = joint('Neck', chest, [0, 0.245, 0]);
@@ -481,33 +614,47 @@ export function buildAvatar() {
   head.add(headMesh);
   head.add(mesh(buildHairGeometry(), M.hair, { p: [HEAD_C.x, HEAD_C.y, HEAD_C.z] }));
 
-  // Bras
+  // Bras : manche courte qui coiffe l'épaule (ourlet), bras et avant-bras sans raccord visible
+  // profil décrit de bas en haut (sinon les faces regardent vers l'intérieur)
+  // manche : simple tube (sans dôme) qui sort de l'épaule du torse ; le haut reste caché dans le torse
+  const sleeveProfile = [
+    [0.054, -0.1], [0.056, -0.124], [0.062, -0.13], [0.067, -0.124], [0.067, -0.11], [0.066, -0.05],
+    [0.062, 0.0], [0.055, 0.03], [0.04, 0.045],
+  ].map(([x, y]) => new THREE.Vector2(x, y));
+  // bras et avant-bras : profils anatomiques (de bas en haut), section un peu aplatie
+  const limb = (pts) => new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x, y)), 28);
+  const upperArmGeo = limb([[0, -0.235], [0.026, -0.232], [0.036, -0.222], [0.039, -0.2], [0.042, -0.15], [0.045, -0.1], [0.046, -0.06], [0.044, -0.02], [0, 0]]);
+  const foreArmGeo = limb([[0, -0.178], [0.022, -0.176], [0.029, -0.17], [0.031, -0.15], [0.036, -0.09], [0.042, -0.045], [0.041, -0.015], [0.034, 0.008], [0, 0.016]]);
+  const sleeveGeo = new THREE.LatheGeometry(sleeveProfile, 40);
   const arms = {};
   [1, -1].forEach((sx) => {
     const side = sx > 0 ? 'L' : 'R';
-    const ua = joint(`UpperArm.${side}`, chest, [sx * 0.205, 0.165, 0]);
-    ua.add(mesh(sphere(20, 16), M.shirt, { s: [0.072, 0.072, 0.072] }));
-    ua.add(mesh(new THREE.CylinderGeometry(0.074, 0.07, 0.14, 20), M.shirt, { p: [0, -0.065, 0] }));
-    ua.add(mesh(capsule(0.054, 0.12), M.skin, { p: [0, -0.12, 0] }));
+    const ua = joint(`UpperArm.${side}`, chest, [sx * 0.19, 0.15, 0]);
+    ua.add(mesh(sleeveGeo, M.shirt, { s: [1, 1, 0.92] }));
+    ua.add(mesh(new THREE.TorusGeometry(0.064, 0.005, 8, 40), M.shirt, { p: [0, -0.127, 0], r: [Math.PI / 2, 0, 0], s: [1, 0.92, 1] }));
+    ua.add(mesh(upperArmGeo, M.skin, { s: [1, 1, 0.88] }));
     const la = joint(`LowerArm.${side}`, ua, [0, -0.22, 0]);
-    la.add(mesh(capsule(0.051, 0.15), M.skin, { p: [0, -0.085, 0] }));
-    const hand = joint(`Hand.${side}`, la, [0, -0.19, 0]);
-    hand.add(mesh(sphere(18, 14), M.skin, { p: [0, -0.025, 0], s: [0.05, 0.06, 0.036] }));
-    hand.add(mesh(sphere(12, 10), M.skin, { p: [-sx * 0.035, -0.005, 0.015], s: [0.018, 0.03, 0.018], r: [0, 0, sx * 0.5] }));
-    arms[side] = { ua, la, hand };
+    la.add(mesh(sphere(16, 12), M.skin, { s: [0.036, 0.036, 0.032] }));   // coude : raccord quand le bras se plie
+    la.add(mesh(foreArmGeo, M.skin, { s: [1, 1, 0.85] }));
+    const hand = joint(`Hand.${side}`, la, [0, -0.17, 0]);
+    const fingers = buildHand(hand, sx, M.skin);
+    arms[side] = { ua, la, hand, fingers };
   });
 
-  // Jambes
+  // Jambes : pantalon anthracite avec revers ; sneakers blanches (semelle en deux couches, col, lacets)
   const legs = {};
+  // cuisse : s'affine de la hanche au genou (profil de bas en haut)
+  const thighGeo = new THREE.LatheGeometry([[0, -0.29], [0.05, -0.285], [0.072, -0.27], [0.076, -0.22], [0.082, -0.12], [0.088, -0.03], [0.086, 0.02], [0.06, 0.05], [0, 0.06]].map(([x, y]) => new THREE.Vector2(x, y)), 32);
   [1, -1].forEach((sx) => {
     const side = sx > 0 ? 'L' : 'R';
     const ul = joint(`UpperLeg.${side}`, hips, [sx * 0.09, -0.04, 0]);
-    ul.add(mesh(capsule(0.083, 0.2), M.pants, { p: [0, -0.13, 0] }));
+    ul.add(mesh(thighGeo, M.pants, { s: [1, 1, 0.92] }));
     const ll = joint(`LowerLeg.${side}`, ul, [0, -0.27, 0]);
-    ll.add(mesh(capsule(0.076, 0.19), M.pants, { p: [0, -0.12, 0] }));
+    ll.add(mesh(new THREE.CylinderGeometry(0.077, 0.072, 0.28, 24), M.pants, { p: [0, -0.13, 0] }));
+    ll.add(mesh(new THREE.SphereGeometry(0.077, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.pants, { p: [0, 0.01, 0] }));
+    ll.add(mesh(new THREE.TorusGeometry(0.072, 0.008, 8, 32), M.pants, { p: [0, -0.262, 0], r: [Math.PI / 2, 0, 0] }));
     const foot = joint(`Foot.${side}`, ll, [0, -0.27, 0]);
-    foot.add(mesh(new RoundedBoxGeometry(0.12, 0.085, 0.23, 3, 0.035), M.shoe, { p: [0, -0.04, 0.045] }));
-    foot.add(mesh(new RoundedBoxGeometry(0.125, 0.025, 0.235, 2, 0.01), M.sole, { p: [0, -0.075, 0.045] }));
+    buildSneaker(foot, M);
     legs[side] = { ul, ll, foot };
   });
 

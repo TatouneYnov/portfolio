@@ -4,7 +4,7 @@
 </head><body>
 <script type="module">
 // Outil de développement : rend une image fixe de l'avatar (fond transparent).
-// ?view=bust|desk|og|face|head&w=900&h=1000 — ouvert via `npm run dev` puis /tools/poster.html
+// ?view=bust|desk|og|face|head|full|hands|shoes|collar&w=900&h=1000 — ouvert via `npm run dev` puis /tools/poster.html
 // Contrôle : &turn=0.6 (rotation de l'avatar en radians, 1.57 = profil), &bg=1 (fond du site au lieu du transparent),
 // &gaze=0.4 (regard vers la droite), &blink=0 (paupières fermées).
 import * as THREE from 'three';
@@ -38,6 +38,14 @@ if (view === 'desk') {
   const d = buildDesk(); scene.add(d.group); d.screen.draw();
   cam.position.set(2.75, 1.65, -0.95).sub(new THREE.Vector3(0.05, 0.86, 0.3)).normalize().multiplyScalar(4.1).add(new THREE.Vector3(0.05, 0.86, 0.3));
   cam.lookAt(0.05, 0.86, 0.3);
+} else if (view === 'full') {
+  cam.position.set(0.3, 0.95, 4.2); cam.lookAt(0, 0.82, 0);
+} else if (view === 'collar') {
+  cam.position.set(0, 1.25, 0.75); cam.lookAt(0, 1.17, 0);
+} else if (view === 'shoes') {
+  cam.position.set(0.55, 0.3, 0.75); cam.lookAt(0.05, 0.06, 0.05);
+} else if (view === 'hands') {
+  cam.position.set(0.55, 0.62, 0.9); cam.lookAt(0.22, 0.58, 0);
 } else if (view === 'head') {
   cam.position.set(0, 1.55, 2.1); cam.lookAt(0, 1.5, 0);
 } else if (view === 'face') {

@@ -1,6 +1,10 @@
 import type * as THREE from 'three';
 
-type Limb = { ua: THREE.Group; la: THREE.Group; hand: THREE.Group };
+type Limb = {
+  ua: THREE.Group; la: THREE.Group; hand: THREE.Group;
+  /** Articulations des doigts ([base, phalange] × 4) et du pouce, pour les frappes au clavier. */
+  fingers: { fingers: [THREE.Group, THREE.Group][]; thumb: [THREE.Group, THREE.Group] };
+};
 type Leg = { ul: THREE.Group; ll: THREE.Group; foot: THREE.Group };
 
 export type Avatar = {
