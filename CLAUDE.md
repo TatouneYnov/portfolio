@@ -312,7 +312,7 @@ Disque lavande ~22 px, opacité 0.9, lerp 0.18. ×2.2 + `mix-blend-mode: differe
 Traits à respecter (photos) : cheveux brun foncé, volumineux sur le dessus, côtés courts (sur l'avatar, la coupe suit désormais les références choisies par Ethan, voir « Avatar ») ; fine moustache et bouc court ; style vestimentaire sombre et simple.
 
 ### Avatar
-Construction, réglages (couleurs, mèche, volume des cheveux) et régénération des images fixes : voir `docs/AVATAR.md`. Ethan a validé la version actuelle (mèche blanche accentuée, volume des cheveux réduit).
+Construction, réglages et régénération des images fixes : voir `docs/AVATAR.md`.
 
 **Refonte « propre et pro » en cours (depuis le 19/10)**, décidée avec Ethan, validée étape par étape (captures avant/après, un commit par étape) : style figurine vinyle premium, proportions inchangées, toujours modélisé en code.
 1. Tête et visage — **fait**. Ethan a gardé la **forme du visage et les yeux d'origine** (billes noires brillantes) ; nouveaux sourcils sculptés, nez couleur peau, oreilles en coquille, bouche (pli + lèvre inférieure), moustache fine et bouc en relief aux bords fondus.
@@ -323,7 +323,7 @@ Construction, réglages (couleurs, mèche, volume des cheveux) et régénératio
 5. Bureau — **fait** (validé le 21/10) : plateau arrondi sur pieds en cadre métal, tapis, clavier à vraies touches (InstancedMesh, barre d'espace côté utilisateur), souris à droite du perso, écran fin sur pied à plaque, chaise de bureau (accoudoirs, pied étoile à roulettes). Décor sobre demandé par Ethan : lampe d'architecte à lumière chaude, plante en pot, carnet et stylo, mug. Rien ne doit dépasser du plateau.
 6. Animations — **fait** (validé le 22/10) : clignement + saccades du regard ; sourire (morphing de la bouche + yeux plissés) au survol de l'avatar dans le hero ; pose assise calculée par optimisation (poignets au-dessus des touches, avant-bras au-dessus du bord du bureau, `SIT_ARM`) et frappes des doigts (`typeFingers`) ; petit salut du bras droit une seule fois après l'intro (`wavePose`, main près du visage pour ne jamais toucher le texte), sauté sous « réduire les animations ». Bouche : **style B** choisi par Ethan (petite bouche nette, plus étroite que la moustache et calée dessous, mouche sous la lèvre ; réglages dans `FACE`).
    Optimisation : avatar ramené de 303 000 à 137 000 triangles (grille des cheveux et du torse allégée, sans perte visible) ; ouverture du col = pièce de peau posée sur le torse (`buildVNeckGeometry`), bord net quelle que soit la finesse du torse.
-Budget : qualité d'abord, optimisation après mesure sur le PC d'Ethan. Images fixes et `og-image.jpg` à refaire à la fin.
+Budget : qualité d'abord, optimisation après mesure sur le PC d'Ethan. **Refonte terminée le 22/10** : images fixes (`avatar-poster`, `desk-poster` et versions réduites, fond transparent) et `og-image.jpg` régénérées avec le nouvel avatar (`tools/poster.html` puis capture avec fond transparent, voir `docs/AVATAR.md`).
 
 ---
 
@@ -558,6 +558,7 @@ object-src 'none';
 ## 17. TODO d'Ethan (état au 17 oct. 2026, fin de soirée)
 
 - [ ] Vérifier sur son PC la fluidité de la 3D (avatar, clavier, bulles) et le nouveau défilement
+- [ ] Regarder les animations du nouvel avatar en vrai (`npm run dev`) : salut après l'intro, sourire au survol, frappes au bureau (impossibles à voir en mouvement sur la machine de test)
 - [ ] Projets collaborateurs (Groupie Tracker, EscapeQuizz, CineList, YSentinelle) : en `draft`, à rédiger depuis le code et les commits d'Ethan
 - [ ] Valider le wording du Bachelor 1
 - [ ] Ajouter ses vacances Ynov de mars à juin 2027 dans `availability.json`

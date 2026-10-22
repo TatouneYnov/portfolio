@@ -56,7 +56,7 @@ Pour les recréer :
 1. Lance `npm run dev`.
 2. Ouvre `http://localhost:5173/tools/poster.html?view=bust&w=900&h=1000` (ou `view=desk&w=1200&h=800`).
    Pour contrôler une retouche : `view=face` (gros plan), `&turn=0.6` (3/4) ou `&turn=1.57` (profil), `&bg=1` (fond du site), `&gaze=0.4`, `&blink=0`.
-3. Fais une capture du canvas sur fond transparent (outil de capture de ton navigateur), puis convertis-la en WebP.
+3. Fais une capture du canvas **sur fond transparent** (sans `&bg=1` ; avec Playwright : `omitBackground: true`, sinon le fond devient blanc), puis convertis-la en WebP.
 4. Pour l'image Open Graph : `tools/og.html`, au format 1200 × 630.
 
 Les versions réduites (`avatar-poster-450.webp`, `desk-poster-600.webp`) servent aux petits écrans.
