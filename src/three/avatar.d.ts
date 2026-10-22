@@ -22,6 +22,8 @@ export type Avatar = {
   setGaze: (yaw: number, pitch: number) => void;
   /** Paupières : 1 ouvertes, 0 fermées. */
   setBlink: (open: number) => void;
+  /** Sourire : 0 neutre, 1 sourire. */
+  setSmile: (v: number) => void;
 };
 
 export type Terminal = { texture: THREE.CanvasTexture; draw: () => void; step: () => void };
@@ -36,3 +38,5 @@ export const JOINT_KEYS: string[];
 export function makePose(): Pose;
 export function idlePose(t: number, P: Pose): void;
 export function sitPose(t: number, P: Pose): void;
+export function wavePose(t: number, P: Pose): void;
+export function typeFingers(avatar: Avatar, t: number, sit: number, openR?: number): void;

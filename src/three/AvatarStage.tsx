@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { buildAvatar, buildDesk, buildLights, JOINT_KEYS, makePose, idlePose, sitPose } from './avatar.js';
+import { buildAvatar, buildDesk, buildLights, JOINT_KEYS, makePose, idlePose, sitPose, wavePose, typeFingers } from './avatar.js';
 import { stageState } from '../lib/stageState';
 import { markWebGLLost } from '../lib/capabilities';
 import { usePageVisible } from '../lib/hooks';
@@ -42,6 +42,10 @@ function lerpRect(a: Rect, b: Rect, t: number, out: Rect) {
   out.w = lerp(a.w, b.w, t);
   out.h = lerp(a.h, b.h, t);
 }
+
+const WAVE_TIME = 1.9;
+const WAVE_KEYS = ['uaR', 'laR', 'hR', 'head'];
+const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function Environment() {
   const { gl, scene } = useThree();
@@ -80,6 +84,7 @@ function Scene() {
     () => ({
       poseIdle: makePose(),
       poseSit: makePose(),
+      poseWave: makePose(),
       hero: { x: 0, y: 0, w: 0, h: 0 } as Rect,
       about: { x: 0, y: 0, w: 0, h: 0 } as Rect,
       desk: { x: 0, y: 0, w: 0, h: 0 } as Rect,
@@ -90,6 +95,9 @@ function Scene() {
       slots: { hero: null as Element | null, about: null as Element | null, desk: null as Element | null },
       look: { yaw: 0, pitch: 0, tYaw: 0, tPitch: 0, px: 0, py: 0, last: -10 },
       sitW: 0,
+      waveT0: -1,
+      smile: 0,
+      sacc: { x: 0, y: 0, next: 1 },
       nextBlink: 3,
       blinkUntil: 0,
       nextLine: 0,
@@ -184,6 +192,17 @@ function Scene() {
     const w = ease(s.sitW);
     idlePose(t, s.poseIdle);
     sitPose(t, s.poseSit);
+    // Salut, une seule fois, juste après l'entrée du hero (bras droit, 1,9 s)
+    if (s.waveT0 < 0 && stageState.intro >= 0.999 && pAbout < 0.05 && !reducedMotion) s.waveT0 = t + 0.15;
+    const wt = s.waveT0 < 0 ? -1 : t - s.waveT0;
+    const ww = wt < 0 || wt > WAVE_TIME ? 0 : ease(clamp01(wt / 0.35)) * ease(clamp01((WAVE_TIME - wt) / 0.45));
+    if (ww > 0) {
+      wavePose(t, s.poseWave);
+      for (const k of WAVE_KEYS) {
+        const a = s.poseIdle[k], b = s.poseWave[k];
+        a[0] = lerp(a[0], b[0], ww); a[1] = lerp(a[1], b[1], ww); a[2] = lerp(a[2], b[2], ww);
+      }
+    }
     for (const k of JOINT_KEYS) {
       const a = s.poseIdle[k];
       const b = s.poseSit[k];
@@ -191,7 +210,8 @@ function Scene() {
     }
     avatar.hips.position.y = lerp(s.poseIdle.hipsY, s.poseSit.hipsY, w);
     const br = (lerp(s.poseIdle.breath, s.poseSit.breath, w) * 0.5 + 0.5) * 0.012;
-    avatar.torso.scale.set(1 + br * 0.6, 1 + br, 0.74 * (1 + br));
+    avatar.torso.scale.set(1 + br * 0.6, 1 + br, 1 + br);   // l'aplatissement du torse est déjà dans sa géométrie
+    typeFingers(avatar, t, w, ww);
 
     // 5. La tête suit le pointeur (sinon balayage lent)
     if (now - s.look.last < 3000) {
@@ -211,7 +231,21 @@ function Scene() {
     avatar.head.rotation.x += s.look.pitch * lw * 0.75;
     avatar.neck.rotation.y += s.look.yaw * lw * 0.25;
     avatar.neck.rotation.x += s.look.pitch * lw * 0.25;
-    avatar.setGaze(s.look.yaw * lw, s.look.pitch * lw);
+    // Saccades : petits sauts du regard, instantanés comme de vrais mouvements d'yeux
+    if (t > s.sacc.next) {
+      s.sacc.x = (Math.random() - 0.5) * 0.16;
+      s.sacc.y = (Math.random() - 0.5) * 0.08;
+      s.sacc.next = t + 0.6 + Math.random() * 1.8;
+    }
+    avatar.setGaze(s.look.yaw * lw + s.sacc.x, s.look.pitch * lw + s.sacc.y);
+
+    // Sourire : pointeur au-dessus de l'avatar dans le hero, et pendant le salut
+    const r = s.hero;
+    const over = now - s.look.last < 3000 && pAbout < 0.3 && w < 0.5 &&
+      s.look.px > r.x && s.look.px < r.x + r.w && s.look.py > r.y && s.look.py < r.y + r.h;
+    const smileTarget = Math.max(over ? 1 : 0, ww);
+    s.smile += (smileTarget - s.smile) * (1 - Math.pow(1 - 0.12, dt * 60));
+    avatar.setSmile(s.smile);
 
     // 6. Clignement
     if (t > s.nextBlink) {
@@ -235,7 +269,7 @@ function Scene() {
       }
     }
 
-    if (debug) Object.assign(debugInfo, { sitW: s.sitW, pDesk, pTravel, rect: { ...s.rect }, visible });
+    if (debug) Object.assign(debugInfo, { sitW: s.sitW, pDesk, pTravel, rect: { ...s.rect }, visible, waveT0: s.waveT0, wave: ww, smile: s.smile });
 
     if (!s.ready) {
       s.ready = true;

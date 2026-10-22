@@ -18,7 +18,7 @@ Les photos brutes ne sont pas dans le repo (`assets-src/` est ignoré par Git) e
 - **Tête** : une seule sphère déformée (crâne rond, menton affiné), donc une surface lisse sans raccord.
 - **Visage** : yeux, nez et oreilles sont posés sur la tête par lancer de rayon. Sourcils et bouche sont des traits sculptés (`sculptStroke`) : section ovale, épaisseur variable, bouts arrondis, projetés sur le visage. Moustache, mouche et bouc forment une fine coque calée sur la tête (`buildFacialHairGeometry`), en relief, dont les bords prennent la couleur de la peau pour se fondre dedans.
 - **Cheveux** : une seule surface continue calée sur la ligne d'implantation (`hairlineAt`). Côtés et arrière ras en dégradé jusqu'à la peau ; sur le dessus, des pointes soudées et irrégulières (`HAIR_SPIKES`, tirées au hasard avec une graine fixe), inclinées vers l'avant et vers la gauche du perso (droite de l'écran). Creux adoucis et plus sombres. Brun presque noir, mèche blanche sur l'avant côté droit du perso.
-- **Animations** : deux poses calculées à chaque image, `idlePose` (respiration, balancement) et `sitPose` (assis, en train de taper). La scène passe de l'une à l'autre en fondu de 0,5 s.
+- **Animations** : poses calculées à chaque image, `idlePose` (respiration, balancement), `sitPose` (assis, mains sur le clavier) et `wavePose` (salut, une fois après l'intro). Fondu debout → assis de 0,5 s. Les doigts tapent (`typeFingers`), les yeux clignent et font de petites saccades, la bouche sourit au survol (`setSmile`, morphing).
 - **Suivi** : la tête et les yeux suivent le pointeur (±35° horizontalement, ±20° verticalement). Sans souris, la tête balaie lentement la scène. La scène passe par `avatar.setGaze(yaw, pitch)` et `avatar.setBlink(ouverture)` : changer les yeux ne demande pas de toucher à `AvatarStage.tsx`.
 
 ## Modifier l'avatar
@@ -34,7 +34,7 @@ Tout se règle en haut de `src/three/avatar.js`.
 | L'épaisseur du dessus | dans `buildHairGeometry`, la ligne `let h = …` |
 | La ligne d'implantation (front, côtés, pattes) | `hairlineAt` |
 | La forme du visage (ovale) | `headShape` |
-| La moustache et le bouc (position, taille, densité) | `facialHairMask` |
+| La bouche, la moustache, la mouche, le bouc (places et largeurs) | `FACE` ; densité de la barbe : `facialHairMask` |
 | Les sourcils, la bouche | les appels à `sculptStroke` dans `buildAvatar` |
 | La forme du torse, l'ouverture du col | `buildTorsoGeometry` |
 | Les mains et les doigts | `buildHand` |
@@ -42,7 +42,8 @@ Tout se règle en haut de `src/three/avatar.js`.
 | L'éclairage (site et images fixes) | `buildLights` |
 | Le bureau, la chaise, le décor | `buildDesk` (le clavier doit rester sous les mains de `sitPose`) |
 | La matière de la peau, des tissus | `M.skin`, `fabric()` dans `buildAvatar` |
-| La pose assise | `sitPose` |
+| La pose assise (mains sur le clavier) | `sitPose`, angles `SIT_ARM` (calculés par optimisation : à refaire si le bureau ou les bras changent) |
+| Le salut, les frappes des doigts | `wavePose` (`WAVE_ARM`), `typeFingers` |
 
 Après une modification, recrée les images fixes (section suivante).
 

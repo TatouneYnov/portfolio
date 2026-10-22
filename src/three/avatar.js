@@ -5,7 +5,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export const COLORS = {
-  skin: 0xE6B496, lip: 0xC98B7A, mouth: 0x6B3A31,
+  skin: 0xE6B496, lip: 0xC07868, mouth: 0x4A221C,
   hair: 0x2A1C15, hairDark: 0x150D0A, streak: 0xEDE8E0, beard: 0x4A372C, brow: 0x2B1E18,
   eye: 0x1C120E,
   shirt: 0x16141B, collar: 0x221F29, placket: 0x221F29, button: 0x3A3542,
@@ -133,7 +133,7 @@ const HAIR_SPIKES = (() => {
 // dessus, des pointes soudées et irrégulières (voir HAIR_SPIKES), inclinées vers l'avant et vers la
 // gauche du perso (la droite de l'écran). Creux adoucis et un peu plus sombres.
 function buildHairGeometry() {
-  const ROWS = 220, COLS = 440;
+  const ROWS = 130, COLS = 260;
   const N = (ROWS + 1) * (COLS + 1);
   const p = new THREE.Vector3(), o = new THREE.Vector3();
   const cHair = new THREE.Color(COLORS.hair), cDark = new THREE.Color(COLORS.hairDark), c = new THREE.Color();
@@ -315,11 +315,14 @@ function buildEarGeometry() {
 }
 
 // Moustache fine, mouche et bouc court : intensité 0 → 1 selon la position sur le visage.
-function facialHairMask(o) {
+// Placement de la bouche et de la barbe (hauteurs y et demi-largeurs, repère du centre de la tête) :
+// bouche plus étroite que la moustache et calée juste dessous, mouche sous la lèvre, bouc sur le menton.
+const FACE = { musY: -0.152, musW: 0.048, soulY: -0.203, mouthY: -0.172, mouthW: 0.033, lipY: -0.182, lipW: 0.022 };
+function facialHairMask(o, st = FACE) {
   if (o.z < 0.02) return { m: 0, h: 0 };
   const ax = Math.abs(o.x);
-  const mus = gauss(o.y + 0.152 + 0.004 * (ax / 0.048) ** 2, 0.006) * smooth(0.054, 0.036, ax) * (1 - 0.4 * gauss(o.x, 0.005));
-  const soul = gauss(o.y + 0.212, 0.011) * gauss(o.x, 0.007);
+  const mus = gauss(o.y - st.musY + 0.004 * (ax / st.musW) ** 2, 0.006) * smooth(st.musW + 0.006, st.musW - 0.012, ax) * (1 - 0.4 * gauss(o.x, 0.005));
+  const soul = gauss(o.y - st.soulY, 0.009) * gauss(o.x, 0.007);
   // bouc : écusson aux coins arrondis sur le bout du menton, poils courts (moins dense que la moustache)
   const sq = ((ax / 0.04) ** 3 + (Math.abs(o.y + 0.292) / 0.034) ** 3) ** (1 / 3);
   const goat = 0.55 * smooth(1.15, 0.55, sq) * smooth(0.02, 0.12, o.z);
@@ -379,16 +382,14 @@ function placeOn(target, obj, origin, dir, lift = 0, spin = 0) {
 }
 
 // Torse : profil lissé (spline) tourné autour de l'axe, puis sculpté : épaules larges, taille marquée,
-// poitrine un peu bombée devant, dos plus plat. Couleurs par sommet : chemise, et peau dans l'ouverture
-// en V du col.
+// poitrine un peu bombée devant, dos plus plat.
 function buildTorsoGeometry() {
   const spline = new THREE.SplineCurve([
     [0.0, -0.235], [0.18, -0.235], [0.183, -0.2], [0.172, -0.12], [0.178, -0.02], [0.192, 0.07],
     [0.196, 0.13], [0.18, 0.18], [0.14, 0.218], [0.095, 0.24], [0.06, 0.25], [0.0, 0.253],
   ].map(([x, y]) => new THREE.Vector2(x, y)));
-  const g = new THREE.LatheGeometry(spline.getPoints(110), 256);
-  const pos = g.attributes.position, colors = [], v = new THREE.Vector3();
-  const cShirt = new THREE.Color(COLORS.shirt), cSkin = new THREE.Color(COLORS.skin), c = new THREE.Color();
+  const g = new THREE.LatheGeometry(spline.getPoints(64), 128);
+  const pos = g.attributes.position, v = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {
     v.fromBufferAttribute(pos, i);
     const r = Math.hypot(v.x, v.z) || 1, front = v.z / r;
@@ -396,15 +397,44 @@ function buildTorsoGeometry() {
     if (front > 0) z *= 1 + 0.07 * front * front * Math.exp(-(((v.y - 0.1) / 0.09) ** 2));   // poitrine
     else z *= 0.94;                                                                        // dos plus plat
     pos.setXYZ(i, v.x, v.y, z);
-    // ouverture du col : V de peau devant, du cou jusqu'au premier bouton
-    const vw = 0.006 + 0.42 * (v.y - 0.17);
-    const inV = front > 0.5 ? smooth(vw + 0.0025, vw - 0.0025, Math.abs(v.x)) * smooth(0.168, 0.176, v.y) : 0;   // bord fondu
-    c.copy(cShirt).lerp(cSkin, inV);
-    colors.push(c.r, c.g, c.b);
   }
-  g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   g.computeVertexNormals();
   return g;
+}
+
+// Ouverture du col : triangle de peau finement maillé, dont chaque sommet est posé sur la surface du
+// torse (lancer de rayon). Bord net ; le haut s'arrête sous le pied de col, qui couvre la jonction.
+function buildVNeckGeometry(torso) {
+  const shape = new THREE.Shape();
+  shape.moveTo(-0.05, 0.247);
+  shape.lineTo(0.05, 0.247);
+  shape.lineTo(0.0, 0.168);
+  shape.closePath();
+  const g = new THREE.ShapeGeometry(shape, 1);
+  // subdivision pour épouser la courbure
+  let geo = g.toNonIndexed();
+  for (let k = 0; k < 4; k++) {
+    const p = geo.attributes.position, out = [];
+    const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+    for (let i = 0; i < p.count; i += 3) {
+      a.fromBufferAttribute(p, i); b.fromBufferAttribute(p, i + 1); c.fromBufferAttribute(p, i + 2);
+      const ab = a.clone().lerp(b, 0.5), bc = b.clone().lerp(c, 0.5), ca = c.clone().lerp(a, 0.5);
+      for (const [x, y, z] of [[a, ab, ca], [ab, b, bc], [ca, bc, c], [ab, bc, ca]]) out.push(...x.toArray(), ...y.toArray(), ...z.toArray());
+    }
+    geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(out, 3));
+  }
+  const p = geo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    _ray.set(_hitO.set(v.x, v.y, 1), _hitD);
+    const hit = _ray.intersectObject(torso, false)[0];
+    if (hit) p.setXYZ(i, v.x, Math.min(v.y, hit.point.y), hit.point.z + 0.0012);
+    else p.setXYZ(i, v.x, v.y, 0);                         // hors du torse : caché dedans
+  }
+  const m = mergeVertices(geo, 1e-6);
+  m.computeVertexNormals();
+  return m;
 }
 
 // Main : paume, quatre doigts à deux phalanges articulées et pouce. Bras le long du corps, la paume
@@ -495,6 +525,7 @@ function buildSneaker(foot, M) {
 }
 
 export function buildAvatar() {
+  const st = FACE;
   const M = {
     // peau satinée : léger reflet doux et chaud sur les bords (sheen), sans brillance plastique
     skin: new THREE.MeshPhysicalMaterial({ color: COLORS.skin, roughness: 0.5, sheen: 0.45, sheenRoughness: 0.55, sheenColor: 0xFFC9B0, clearcoat: 0.08, clearcoatRoughness: 0.6 }),
@@ -502,7 +533,7 @@ export function buildAvatar() {
     hair: std(0xffffff, 0.5, { vertexColors: true }),
     brow: std(COLORS.brow, 0.8),
     // tissu mat : très rugueux, avec un reflet de fibre rasant (sheen) qui dessine les volumes
-    shirt: fabric(COLORS.shirt), shirtSkin: fabric(0xffffff, { vertexColors: true }), placket: std(COLORS.placket, 0.8), collar: fabric(COLORS.collar, { side: THREE.DoubleSide }),
+    shirt: fabric(COLORS.shirt), placket: std(COLORS.placket, 0.8), collar: fabric(COLORS.collar, { side: THREE.DoubleSide }),
     button: std(COLORS.button, 0.35),
     pants: fabric(COLORS.pants), shoe: std(COLORS.shoe, 0.5), sole: std(COLORS.sole, 0.7), outsole: std(COLORS.outsole, 0.8),
     lace: std(COLORS.lace, 0.6),
@@ -525,10 +556,11 @@ export function buildAvatar() {
   const chest = joint('Chest', spine, [0, 0.14, 0]);
 
   // Torse : silhouette en V (épaules larges, taille plus fine), poitrine légèrement bombée, dos plus
-  // plat. L'ouverture du col (peau) est peinte dans les couleurs par sommet, sans pièce rapportée.
-  const torso = mesh(buildTorsoGeometry(), M.shirtSkin);
+  // plat. L'ouverture du col est une pièce de peau posée sur le torse (buildVNeckGeometry).
+  const torso = mesh(buildTorsoGeometry(), M.shirt);
   chest.add(torso);
   torso.updateMatrixWorld(true);
+  chest.add(mesh(buildVNeckGeometry(torso), M.skin));
   const onTorso = (obj, x, y, lift = 0.002, spin = 0) => {
     placeOn(torso, obj, new THREE.Vector3(x, y, 1), new THREE.Vector3(0, 0, -1), lift, spin);
     chest.add(obj);
@@ -603,9 +635,18 @@ export function buildAvatar() {
   // Nez : petit volume doux qui remonte en arête, de la même matière que le visage
   face(mesh(buildNoseGeometry(), M.skin), 0, -0.075, -0.008);
   // Bouche : pli fin avec un coin relevé, lèvre inférieure en léger relief
-  const mouthY = (x) => -0.168 + 0.009 * (x / 0.04) ** 2 + 0.003 * (x / 0.04);
-  head.add(mesh(sculptStroke(headMesh, curvePts(-0.04, 0.042, mouthY, 7), (t) => 0.0021 * Math.sin(Math.PI * t) + 0.0006, () => 0.0012, HEAD_C.y), M.mouth));
-  head.add(mesh(sculptStroke(headMesh, curvePts(-0.026, 0.028, (x) => mouthY(x) - 0.0095 + 0.004 * (x / 0.027) ** 2, 7), (t) => 0.0058 * Math.sin(Math.PI * t) ** 0.7, () => 0.0035, HEAD_C.y), M.lip));
+  // Bouche : sous la moustache et plus étroite qu'elle, lèvre inférieure au-dessus de la mouche.
+  // Sourire : même trait, coins relevés, ajouté en cible de morphing (setSmile).
+  const withSmile = (build) => {
+    const g = build(0), smile = build(1);
+    g.morphAttributes.position = [smile.attributes.position];
+    g.morphAttributes.normal = [smile.attributes.normal];
+    return g;
+  };
+  const bow = (y0, w, up) => (k) => (x) => y0 + (up + 0.01 * k) * (x / w) ** 2 - 0.002 * k;
+  const mouthMesh = mesh(withSmile((k) => sculptStroke(headMesh, curvePts(-st.mouthW - 0.004 * k, st.mouthW + 0.004 * k, bow(st.mouthY, st.mouthW, 0.004)(k), 9), (t) => 0.0034 * Math.sin(Math.PI * t) ** 0.5 + 0.001, () => 0.0016, HEAD_C.y)), M.mouth);
+  const lipMesh = mesh(withSmile((k) => sculptStroke(headMesh, curvePts(-st.lipW, st.lipW, (x) => bow(st.lipY, st.lipW, 0.004)(k)(x) - 0.002 * k, 9), (t) => 0.0068 * Math.sin(Math.PI * t) ** 0.7, () => 0.0038, HEAD_C.y)), M.lip);
+  head.add(mouthMesh, lipMesh);
   // Moustache fine, mouche et bouc court : relief posé sur la peau, bords fondus
   head.add(mesh(buildFacialHairGeometry(), M.facialHair, { p: [HEAD_C.x, HEAD_C.y, HEAD_C.z] }));
 
@@ -673,11 +714,20 @@ export function buildAvatar() {
       e.position.y -= pitch * 0.012;
     }
   };
+  // Sourire : 0 → 1, les yeux se plissent un peu
+  let smile = 0, blinkOpen = 1;
   const setBlink = (open) => {
-    for (const e of eyes) e.scale.y = mix(0.12, 1, open);
+    blinkOpen = open;
+    for (const e of eyes) e.scale.y = mix(0.12, 1, open) * (1 - 0.14 * smile);
+  };
+  const setSmile = (v) => {
+    smile = v;
+    mouthMesh.morphTargetInfluences[0] = v;
+    lipMesh.morphTargetInfluences[0] = v;
+    setBlink(blinkOpen);
   };
 
-  return { root, hips, spine, chest, neck, head, torso, eyes, arms, legs, setGaze, setBlink };
+  return { root, hips, spine, chest, neck, head, torso, eyes, arms, legs, setGaze, setBlink, setSmile };
 }
 
 // ---------- Bureau, chaise, écran ----------
@@ -922,21 +972,62 @@ export function idlePose(t, P) {
   P.breath = b;
 }
 
+// Assis en train de taper : buste penché vers l'écran, poignets au-dessus des touches, paumes vers le
+// bas, avant-bras au-dessus du bord du bureau. Angles des bras trouvés par optimisation numérique
+// (position du poignet, orientation de la main, dégagement du bureau) sur ce squelette précis :
+// si le bureau, le clavier ou les bras changent, il faut les recalculer.
+const SIT_ARM = { ua: [-1.298, -1.185, 0.116], la: [-0.728, -0.201, 0], hand: [0.642, -0.222, 0.05] };
 export function sitPose(t, P) {
   const b = Math.sin(t * 1.7);
   const tapL = Math.max(0, Math.sin(t * 12.3) * Math.sin(t * 3.7 + 1));
   const tapR = Math.max(0, Math.sin(t * 11.1 + 2) * Math.sin(t * 2.9));
   set(P, 'hips', 0, 0, 0);
-  set(P, 'spine', 0.1, 0, 0);
-  set(P, 'chest', 0.06 + 0.01 * b, 0, 0);
+  set(P, 'spine', 0.12, 0, 0);
+  set(P, 'chest', 0.08 + 0.01 * b, 0, 0);
   set(P, 'neck', 0.05, 0, 0);
-  set(P, 'head', 0.14 + 0.02 * Math.sin(t * 2.1), 0.05 * Math.sin(t * 0.4), 0);
-  set(P, 'uaL', -0.75, 0, 0.18); set(P, 'uaR', -0.75, 0, -0.18);
-  set(P, 'laL', -1.0 - 0.08 * tapL, 0, -0.35); set(P, 'laR', -1.0 - 0.08 * tapR, 0, 0.35);
-  set(P, 'hL', 0.3 + 0.15 * tapL, 0, 0); set(P, 'hR', 0.3 + 0.15 * tapR, 0, 0);
+  set(P, 'head', 0.12 + 0.02 * Math.sin(t * 2.1), 0.05 * Math.sin(t * 0.4), 0);
+  [['L', 1, tapL], ['R', -1, tapR]].forEach(([side, sx, tap]) => {
+    const drift = 0.04 * Math.sin(t * 0.7 + sx);                 // les mains glissent un peu sur le clavier
+    const { ua, la, hand } = SIT_ARM;
+    set(P, 'ua' + side, ua[0], sx * ua[1] + drift, sx * ua[2]);
+    set(P, 'la' + side, la[0] - 0.03 * tap, sx * la[1], 0);
+    set(P, 'h' + side, hand[0] + 0.06 * tap, sx * hand[1], sx * hand[2]);
+  });
   set(P, 'ulL', -1.5, 0, 0.06); set(P, 'ulR', -1.5, 0, -0.06);
   set(P, 'llL', 1.5, 0, 0); set(P, 'llR', 1.5, 0, 0);
   set(P, 'fL', 0, 0, 0); set(P, 'fR', 0, 0, 0);
   P.hipsY = 0.405;
   P.breath = b;
+}
+
+// Salut : debout, coude devant l'épaule, avant-bras vertical, main droite du perso à hauteur
+// d'oreille, paume vers l'avant (reste dans l'emplacement de l'avatar, loin du texte). Le bras tourne
+// sur son axe (il pointe vers l'avant) : l'avant-bras balance de gauche à droite.
+// Mêmes remarques que pour la pose assise (angles optimisés sur ce squelette).
+const WAVE_ARM = { ua: [-1.474, -0.037, -0.47], la: [-1.647, 1.099, 0], hand: [-0.052, 0.002, 0.021] };
+export function wavePose(t, P) {
+  idlePose(t, P);
+  const swing = Math.sin(t * 9);
+  const { ua, la, hand } = WAVE_ARM;
+  set(P, 'uaR', ua[0], ua[1] + 0.32 * swing, ua[2]);
+  set(P, 'laR', la[0], la[1], 0);
+  set(P, 'hR', hand[0], hand[1], hand[2] + 0.15 * swing);
+  set(P, 'head', P.head[0], P.head[1], P.head[2] - 0.05);      // petite inclinaison de tête complice
+}
+
+// Doigts : légèrement repliés debout ; assis (sit 0 → 1), arrondis au-dessus des touches et frappes
+// rapides à motif irrégulier ; openR (0 → 1) ouvre la main droite pour le salut. Appelé après la pose,
+// à chaque image.
+export function typeFingers(avatar, t, sit, openR = 0) {
+  for (const [side, sx] of [['L', 1], ['R', -1]]) {
+    const { fingers, thumb } = avatar.arms[side].fingers;
+    fingers.forEach(([base, tip], i) => {
+      const ph = i * 2.1 + (sx > 0 ? 0 : 1.3);
+      const press = Math.pow(Math.max(0, Math.sin(t * (7.3 + i * 1.7) + ph)), 12) * (0.5 + 0.5 * Math.sin(t * 1.3 + ph));
+      const open = sx < 0 ? 1 - openR : 1;                           // salut : main droite grande ouverte
+      base.rotation.z = -sx * (0.25 * open + sit * (0.35 + 0.5 * press));
+      tip.rotation.z = -sx * (0.35 * open + sit * (0.3 + 0.35 * press));
+    });
+    thumb[0].rotation.z = -sx * (0.45 + sit * 0.2 - (sx < 0 ? 0.75 * openR : 0));   // salut : pouce écarté
+  }
 }
