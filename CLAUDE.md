@@ -77,10 +77,11 @@ Fournir un `.env.example`. Ne jamais committer de `.env`.
 
 ## 3. Hébergement et domaine
 
-**Décidé avec Ethan le 23/10 : GitHub Pages, à l'adresse `https://ethanbacquier.github.io`.**
+**Décidé avec Ethan le 23/10 : GitHub Pages, à l'adresse `https://ethanbacquier.github.io`. En ligne depuis le 23/10** (mise en place faite par Ethan ; premier déploiement vérifié : workflow « Déployer sur GitHub Pages » réussi sur le commit `0fbea73`, `npm audit` 0 vulnérabilité, contrôle du contenu OK).
 - Organisation GitHub gratuite **`ethanbacquier`** (créée par Ethan), repo public **`ethanbacquier/ethanbacquier.github.io`** : il reçoit le code de la v2 (`git push site v2:main`, voir README) et se déploie à chaque push sur `main` via `.github/workflows/deploy.yml` (actions officielles `configure-pages`, `upload-pages-artifact`, `deploy-pages`). Settings → Pages → Source : GitHub Actions.
 - **`TatouneYnov/portfolio` garde l'ancien portfolio (Vue) sur `main`, intact** ; la v2 continue d'y être développée sur `v2`. Pas de fusion `v2` → `main` dans ce repo.
-- Valeurs par défaut du build : `VITE_SITE_URL=https://ethanbacquier.github.io`, `VITE_BASE=/`. Pas de `CNAME` (adresse `github.io`). Variable de repo `FORM_KEY` pour Web3Forms.
+- Valeurs par défaut du build : `VITE_SITE_URL=https://ethanbacquier.github.io`, `VITE_BASE=/`. Pas de `CNAME` (adresse `github.io`). Variable de repo `FORM_KEY` pour Web3Forms : **pas encore créée** (build du 23/10 avec `VITE_FORM_KEY` vide → bloc mailto « Écris-moi directement » en ligne).
+- **Mettre à jour le site** : le site ne bouge pas tout seul quand on pousse sur `v2` ; il faut ensuite `git push site v2:main` (remote `site` = `ethanbacquier/ethanbacquier.github.io`).
 - Domaine perso (`ethanbacquier.fr`) : plus tard, facultatif (Settings → Pages → Custom domain + variable `SITE_URL`).
 - GitHub Pages n'envoie pas d'en-têtes HTTP : `_headers` (toujours généré, pour Cloudflare Pages / Netlify) y est ignoré, la CSP passe en `<meta>`. Ne jamais annoncer HSTS ni `frame-ancestors` sur le site.
 - **Obligations légales** : `public/mentions-legales.html` (LCEN : éditeur non professionnel sans adresse personnelle, hébergeur GitHub, Inc., 88 Colin P. Kelly Jr. St., San Francisco, CA 94107, États-Unis — adresse tirée de la déclaration de confidentialité de GitHub) et `public/confidentialite.html` (base légale art. 6.1.b RGPD, Web3Forms et Gmail hors UE, journaux IP de GitHub Pages, droits, CNIL). À mettre à jour si l'hébergeur change. Aucun cookie : pas de bandeau. `check:content` vérifie aussi ces pages annexes.
@@ -503,7 +504,7 @@ object-src 'none';
 - `llms.txt`, `404.html`, `confidentialite.html` (RGPD : formulaire de contact) générés ou présents dans `public/`.
 - Open Graph + Twitter card (`og-image.jpg`), canonical, favicon « EB » (SVG + PNG 32/180), `robots.txt`, `sitemap.xml` (générés depuis `VITE_SITE_URL`).
 - JSON-LD `@graph` : `Person` (`@id` …/#person, alternateName « Tatoune », affiliation Ynov, `sameAs` GitHub, LinkedIn, TryHackMe, HTB) + `WebSite`.
-- Audit `seo-audit` du 17/10 sur le build local avec les en-têtes de `_headers` : 91/100 (A). À refaire une fois en ligne : `seomator audit <url> --crawl --format llm`, puis avec `--mobile`.
+- Audit `seo-audit` du 17/10 sur le build local avec les en-têtes de `_headers` : 91/100 (A). À refaire maintenant que le site est en ligne (pas faisable depuis le conteneur cloud du 23/10 : son proxy bloque `ethanbacquier.github.io`) : `seomator audit <url> --crawl --format llm`, puis avec `--mobile`.
 
 ---
 
@@ -557,7 +558,7 @@ object-src 'none';
 - **Fait** : « Utilisé : … » sur les touches, boutons du hero, alternance B3 mise en avant, « Ce que j'ai appris », encart sécurité, emplacement témoignages.
 - **Écarté pour l'instant** (ne pas réintroduire sans demande) : rapports d'exercices détaillés (enquêtes type alerte → recherche → conclusion), bloc « En ce moment », statistiques de visite (le site reste **zéro tracker**), page sécurité dédiée (un encart suffit).
 
-## 17. TODO d'Ethan (mis à jour le 23 oct. 2026)
+## 17. TODO d'Ethan (mis à jour le 23 oct. 2026, après la mise en ligne)
 
 - [ ] Vérifier sur son PC la fluidité de la 3D (avatar, clavier, bulles) et le nouveau défilement
 - [ ] Regarder les animations du nouvel avatar en vrai (`npm run dev`) : salut après l'intro, sourire au survol, frappes au bureau (impossibles à voir en mouvement sur la machine de test)
@@ -568,7 +569,9 @@ object-src 'none';
 - [ ] Captures des projets (16:10)
 - [ ] CV PDF puis `cv.available: true` (un ancien `CV_Bacquier_Ethan.pdf` existe sur la branche `main` : à vérifier avant de le réutiliser)
 - [ ] Créer une clé Web3Forms (`VITE_FORM_KEY`)
-- [ ] Créer l'organisation GitHub gratuite `ethanbacquier`, le repo public vide `ethanbacquier.github.io`, activer Pages (source : GitHub Actions), puis `git push site v2:main` (étapes dans le README)
+- [x] Créer l'organisation GitHub gratuite `ethanbacquier`, le repo public `ethanbacquier.github.io`, activer Pages (source : GitHub Actions), puis `git push site v2:main` — **fait le 23/10, site en ligne**
+- [ ] Ouvrir https://ethanbacquier.github.io sur PC et sur téléphone pour un dernier coup d'œil (vérifié côté GitHub, pas affichable depuis le conteneur cloud)
+- [ ] Relancer l'audit SEO sur le site en ligne (§13)
 - [ ] Ajouter la variable de repo `FORM_KEY` une fois la clé Web3Forms créée
 - [ ] Confirmer l'accord du cabinet infirmier et du VBVB pour être cités comme projets
 - [ ] Plus tard, facultatif : domaine perso `ethanbacquier.fr`
