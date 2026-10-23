@@ -7,7 +7,7 @@ Ce fichier est la référence du projet. Il reprend le brief initial **et** les 
 ## 0. Règles de travail (à lire avant toute modification)
 
 - **Environnement d'Ethan : Windows / PowerShell.** Jamais de chaînage `&&` dans les scripts npm, le README ou les instructions. Une commande par ligne.
-- **Git** : on travaille sur la branche `v2` du repo `TatouneYnov/portfolio`. La branche `main` contient l'ancien portfolio (Vue) et ne doit pas être touchée tant qu'Ethan n'a pas validé la v2. Pas de force-push.
+- **Git** : on travaille sur la branche `v2` du repo `TatouneYnov/portfolio`. Depuis le 23/10 (demande d'Ethan), `main` porte la v2 (avance rapide depuis `v2`) ; l'ancien portfolio (Vue) est conservé sur la branche `v1`, à ne pas toucher. Pas de force-push.
 - **Skills à utiliser** : `build-awwwards-quality-sites` (système visuel et motion) et `frontend-design` (skill de design associé). Pour l'audit final : `seo-audit` (SEOmator) sur le site en ligne.
 - **Honnêteté absolue sur le contenu** : ne jamais inventer d'expérience, de certification, de stat, de client, de rôle ou de stack. Une info manquante est masquée ou remplacée par un état propre (« bientôt »), jamais affichée en « TODO », « lorem » ou lien `#`.
 - **Ethan n'a jamais fait l'École 42.** Ne pas le mentionner nulle part. Parcours = Ynov uniquement.
@@ -79,7 +79,7 @@ Fournir un `.env.example`. Ne jamais committer de `.env`.
 
 **Décidé avec Ethan le 23/10 : GitHub Pages, à l'adresse `https://ethanbacquier.github.io`. En ligne depuis le 23/10** (mise en place faite par Ethan ; premier déploiement vérifié : workflow « Déployer sur GitHub Pages » réussi sur le commit `0fbea73`, `npm audit` 0 vulnérabilité, contrôle du contenu OK).
 - Organisation GitHub gratuite **`ethanbacquier`** (créée par Ethan), repo public **`ethanbacquier/ethanbacquier.github.io`** : il reçoit le code de la v2 (`git push site v2:main`, voir README) et se déploie à chaque push sur `main` via `.github/workflows/deploy.yml` (actions officielles `configure-pages`, `upload-pages-artifact`, `deploy-pages`). Settings → Pages → Source : GitHub Actions.
-- **`TatouneYnov/portfolio` garde l'ancien portfolio (Vue) sur `main`, intact** ; la v2 continue d'y être développée sur `v2`. Pas de fusion `v2` → `main` dans ce repo.
+- **`TatouneYnov/portfolio`** : depuis le 23/10, `main` = la v2 ; l'ancien portfolio (Vue) est gardé intact sur la branche **`v1`**. On développe toujours sur `v2`, puis `main` est avancée sur `v2`.
 - Valeurs par défaut du build : `VITE_SITE_URL=https://ethanbacquier.github.io`, `VITE_BASE=/`. Pas de `CNAME` (adresse `github.io`). Variable de repo `FORM_KEY` pour Web3Forms : **pas encore créée** (build du 23/10 avec `VITE_FORM_KEY` vide → bloc mailto « Écris-moi directement » en ligne).
 - **Mettre à jour le site** : le site ne bouge pas tout seul quand on pousse sur `v2` ; il faut ensuite `git push site v2:main` (remote `site` = `ethanbacquier/ethanbacquier.github.io`).
 - Domaine perso (`ethanbacquier.fr`) : plus tard, facultatif (Settings → Pages → Custom domain + variable `SITE_URL`).
@@ -277,7 +277,7 @@ Structure suggérée :
 --accent-strong: #7C3AED; /* lueurs, ligne de timeline */
 --glow: radial-gradient(circle, rgb(109 40 217 / .35), transparent 70%);
 ```
-Site **dark-only** (assumé).
+**Thème clair** (ajouté le 23/10 à la demande d'Ethan) : le site suit le réglage de l'OS (`prefers-color-scheme`), sombre par défaut, sans bouton ni script. Tokens clairs dans `main.css` (`@media (prefers-color-scheme: light)`), `pages.css` et deux `<meta name="theme-color">`. Clair : `--bg #F6F4FB`, `--bg-2 #FFFFFF`, `--text #17121F`, `--muted #5C5571`, `--accent #6D28D9` (AA vérifié). Toute nouvelle couleur passe par un token (pas de `rgb()` codé en dur, utiliser `color-mix` avec les tokens). Scènes 3D : canevas transparents ; seul le socle des bulles change en clair (pas de mélange additif). Les images fixes et l'image Open Graph restent celles du thème sombre.
 
 ### Typo
 - Display : **Archivo** expanded (`wdth` 112–125), 600–800, UPPERCASE pour les gros titres
@@ -567,7 +567,7 @@ object-src 'none';
 - [ ] Ajouter ses vacances Ynov de mars à juin 2027 dans `availability.json`
 - [ ] Photo de volley (`volley.webp`)
 - [ ] Captures des projets (16:10)
-- [ ] CV PDF puis `cv.available: true` (un ancien `CV_Bacquier_Ethan.pdf` existe sur la branche `main` : à vérifier avant de le réutiliser)
+- [ ] CV PDF puis `cv.available: true` (un ancien `CV_Bacquier_Ethan.pdf` existe sur la branche `v1` (ancien portfolio) : à vérifier avant de le réutiliser)
 - [ ] Créer une clé Web3Forms (`VITE_FORM_KEY`)
 - [x] Créer l'organisation GitHub gratuite `ethanbacquier`, le repo public `ethanbacquier.github.io`, activer Pages (source : GitHub Actions), puis `git push site v2:main` — **fait le 23/10, site en ligne**
 - [ ] Ouvrir https://ethanbacquier.github.io sur PC et sur téléphone pour un dernier coup d'œil (vérifié côté GitHub, pas affichable depuis le conteneur cloud)

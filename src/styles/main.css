@@ -1,5 +1,6 @@
 /* =========================================================================
-   « L'analyste dans le noir » — site dark-only
+   « L'analyste dans le noir » — thème sombre par défaut, thème clair si l'OS
+   est réglé en clair (prefers-color-scheme), sans bouton ni script.
    Mise en page : sections pleine largeur sur fond noir violacé, un emplacement
    réservé pour l'avatar dans le hero, À propos et Ce que je fais.
    ========================================================================= */
@@ -15,6 +16,11 @@
   --accent-strong: #7c3aed;
   --ok: #7ee2b8;
   --danger: #ff8fa3;
+  --accent-hover: #c9b7ff;
+  --dim: #6f6886; /* jours fériés et passés */
+  --line-hover: #4a3c66;
+  --shadow: rgb(0 0 0 / 0.5);
+  --cat-base: #ffffff; /* teinte mélangée aux couleurs de catégorie pour le nom des outils */
   --glow: radial-gradient(circle, rgb(109 40 217 / 0.35) 0%, rgb(109 40 217 / 0.1) 42%, transparent 70%);
 
   --font-display: 'Archivo Variable', 'Archivo', 'Arial Narrow', system-ui, sans-serif;
@@ -27,6 +33,29 @@
   --radius: 14px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   color-scheme: dark;
+}
+/* Thème clair : mêmes rôles, contrastes AA vérifiés sur --bg (texte 16:1, --muted 6,4:1, --accent 6,6:1) */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f6f4fb;
+    --bg-2: #ffffff;
+    --bg-3: #eeeaf6;
+    --line: #e1dbee;
+    --line-2: #cbc2df;
+    --text: #17121f;
+    --muted: #5c5571;
+    --accent: #6d28d9;
+    --accent-strong: #7c3aed;
+    --accent-hover: #5b21b6;
+    --ok: #0b7a54;
+    --danger: #be1f47;
+    --dim: #a59fb5;
+    --line-hover: #a99cc8;
+    --shadow: rgb(46 26 92 / 0.16);
+    --cat-base: #17121f;
+    --glow: radial-gradient(circle, rgb(124 58 237 / 0.2) 0%, rgb(124 58 237 / 0.06) 42%, transparent 70%);
+    color-scheme: light;
+  }
 }
 
 /* ---------- Base ---------- */
@@ -249,7 +278,7 @@ main {
   color: var(--bg);
 }
 .btn--primary:hover {
-  background: #c9b7ff;
+  background: var(--accent-hover);
 }
 .btn--primary:disabled {
   opacity: 0.7;
@@ -332,7 +361,7 @@ main {
   letter-spacing: 0.02em;
   text-decoration: none;
   color: var(--text);
-  background: rgb(7 5 12 / 0.6);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
   transition: background-color 0.2s, color 0.2s;
 }
 .badge:hover {
@@ -345,16 +374,16 @@ main {
   flex: none;
   border-radius: 50%;
   background: var(--ok);
-  box-shadow: 0 0 0 0 rgb(126 226 184 / 0.6);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent);
   animation: pulse 2.4s ease-out infinite;
 }
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgb(126 226 184 / 0.55);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 55%, transparent);
   }
   70%,
   100% {
-    box-shadow: 0 0 0 10px rgb(126 226 184 / 0);
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--ok) 0%, transparent);
   }
 }
 .pill {
@@ -391,7 +420,7 @@ main {
 .frame {
   position: relative;
   border: 1px dashed var(--line-2);
-  background: rgb(14 10 24 / 0.72);
+  background: color-mix(in srgb, var(--bg-2) 72%, transparent);
 }
 .frame__c {
   position: absolute;
@@ -573,7 +602,7 @@ main {
   padding: 8px 14px;
   border: 1px solid transparent;
   border-radius: 999px;
-  background: rgb(7 5 12 / 0.55);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
   font-family: var(--font-mono);
   font-size: 12.5px;
   letter-spacing: 0.06em;
@@ -605,7 +634,7 @@ main {
 }
 .site-nav a:hover {
   color: var(--accent);
-  background: rgb(14 10 24 / 0.7);
+  background: color-mix(in srgb, var(--bg-2) 70%, transparent);
 }
 .menu-toggle {
   display: none;
@@ -615,7 +644,7 @@ main {
   place-items: center;
   border: 1px solid var(--line-2);
   border-radius: 50%;
-  background: rgb(7 5 12 / 0.7);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
 }
 .menu-toggle svg {
   width: 22px;
@@ -675,7 +704,7 @@ html.menu-open {
   padding: 14px 8px;
   border: 1px solid var(--line-2);
   border-radius: 999px;
-  background: rgb(7 5 12 / 0.7);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
   font-family: var(--font-mono);
   font-size: 11.5px;
   letter-spacing: 0.24em;
@@ -1491,7 +1520,7 @@ a.cv-tab:hover {
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
   background: var(--bg-2);
-  box-shadow: 0 30px 80px rgb(0 0 0 / 0.5);
+  box-shadow: 0 30px 80px var(--shadow);
   transform: translateX(calc(-100% - 48px));
   opacity: 0;
   visibility: hidden;
@@ -1715,8 +1744,8 @@ a.cv-tab:hover {
 }
 .day--morning .day__fill,
 .day__fill--morning {
-  background: repeating-linear-gradient(135deg, rgb(180 156 255 / 0.32) 0 2px, rgb(180 156 255 / 0.06) 2px 6px);
-  border: 1px solid rgb(180 156 255 / 0.35);
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 32%, transparent) 0 2px, color-mix(in srgb, var(--accent) 6%, transparent) 2px 6px);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }
 .day--full .day__fill,
 .day__fill--full {
@@ -1748,7 +1777,7 @@ a.cv-tab:hover {
 .day--holiday .day__num,
 .day--past .day__num,
 .day--out .day__num {
-  color: #6f6886;
+  color: var(--dim);
 }
 .day[aria-label]:hover::after {
   content: attr(aria-label);
@@ -1823,14 +1852,14 @@ a.cv-tab:hover {
 .field input:hover,
 .field select:hover,
 .field textarea:hover {
-  border-color: #4a3c66;
+  border-color: var(--line-hover);
 }
 .field input:focus-visible,
 .field select:focus-visible,
 .field textarea:focus-visible {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgb(180 156 255 / 0.25);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 .field [aria-invalid='true'] {
   border-color: var(--danger);
@@ -1859,7 +1888,7 @@ a.cv-tab:hover {
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgb(7 5 12 / 0.3);
+  border: 2px solid color-mix(in srgb, var(--bg) 30%, transparent);
   border-top-color: var(--bg);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -1884,11 +1913,11 @@ a.cv-tab:hover {
   margin-top: 2px;
 }
 .notice--ok {
-  border-color: rgb(126 226 184 / 0.5);
+  border-color: color-mix(in srgb, var(--ok) 50%, transparent);
   color: var(--ok);
 }
 .notice--error {
-  border-color: rgb(255 143 163 / 0.5);
+  border-color: color-mix(in srgb, var(--danger) 50%, transparent);
   color: var(--danger);
 }
 .notice a {
@@ -2067,7 +2096,7 @@ button.quick-link:hover .arrow {
   color: var(--text);
 }
 .credits::backdrop {
-  background: rgb(7 5 12 / 0.75);
+  background: color-mix(in srgb, var(--bg) 75%, transparent);
 }
 .credits__inner {
   display: grid;
@@ -2247,6 +2276,6 @@ button.quick-link:hover .arrow {
   background: var(--cat);
 }
 .toolbox__name[data-cat] {
-  color: color-mix(in srgb, var(--cat) 55%, #ffffff);
+  color: color-mix(in srgb, var(--cat) 55%, var(--cat-base));
 }
 

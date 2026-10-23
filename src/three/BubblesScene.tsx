@@ -57,13 +57,16 @@ function makeBubbleTexture(label: string): THREE.CanvasTexture {
   return tex;
 }
 
+// Thème clair de l'OS : une lueur additive disparaît sur fond clair, on passe en mélange normal et en violet plus foncé
+const isLight = () => window.matchMedia('(prefers-color-scheme: light)').matches;
+
 function makeLabelTexture(text: string): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 96;
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
   ctx.font = '400 34px "JetBrains Mono", ui-monospace, monospace';
-  ctx.fillStyle = '#B49CFF';
+  ctx.fillStyle = isLight() ? '#6D28D9' : '#B49CFF';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   (ctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = '6px';
@@ -129,6 +132,7 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
   const textures = useMemo(() => Object.fromEntries(projects.map((p) => [p.id, makeBubbleTexture(p.bubbleLabel || p.name)])), [projects]);
   const dockLabel = useMemo(() => makeLabelTexture('DÉPOSER ICI'), []);
   const sphere = useMemo(() => new THREE.SphereGeometry(1, 48, 32), []);
+  const light = useMemo(isLight, []);
   const haloTex = useMemo(() => {
     const c = document.createElement('canvas');
     c.width = c.height = 256;
@@ -364,12 +368,12 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
       <group position={frame.dock.toArray()}>
         <mesh ref={halo} position={[0, 0, -0.6]}>
           <planeGeometry args={[1, 1]} />
-          <meshBasicMaterial map={haloTex} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+          <meshBasicMaterial map={haloTex} transparent depthWrite={false} blending={light ? THREE.NormalBlending : THREE.AdditiveBlending} opacity={light ? 0.5 : 1} toneMapped={false} />
         </mesh>
         <group ref={ring}>
           <mesh>
             <torusGeometry args={[dockRadius, 0.035, 16, 96]} />
-            <meshStandardMaterial ref={ringMat} color="#B49CFF" emissive="#8B5CF6" emissiveIntensity={2.4} toneMapped={false} />
+            <meshStandardMaterial ref={ringMat} color={light ? '#7C3AED' : '#B49CFF'} emissive={light ? '#6D28D9' : '#8B5CF6'} emissiveIntensity={2.4} toneMapped={false} />
           </mesh>
         </group>
         <mesh position={[0, -dockRadius - 0.38, 0]}>
