@@ -29,8 +29,23 @@ check(/href="#"/, 'Lien vide', body);
 check(/(?:\+33|\b0)[1-9](?:[ .-]?\d{2}){4}\b/, 'Numéro de téléphone');
 check(/École 42|Ecole 42/i, 'Mention interdite');
 
+// Pages annexes : présentes et sans placeholder ni téléphone (la loi impose les mentions légales)
+for (const page of ['mentions-legales.html', 'confidentialite.html', '404.html', 'merci.html']) {
+  let src;
+  try {
+    src = readFileSync(new URL(`../dist/${page}`, import.meta.url), 'utf8');
+  } catch {
+    problems.push(`Page manquante : ${page}`);
+    continue;
+  }
+  const t = src.replace(/<[^>]+>/g, ' ');
+  check(/\bTODO\b|lorem ipsum/i, `Placeholder dans ${page}`, t);
+  check(/(?:\+33|\b0)[1-9](?:[ .-]?\d{2}){4}\b/, `Numéro de téléphone dans ${page}`, t);
+  check(/href="#"/, `Lien vide dans ${page}`, src);
+}
+
 if (problems.length) {
   console.error('✗ Contenu à corriger :\n- ' + problems.join('\n- '));
   process.exit(1);
 }
-console.log('✓ Aucun placeholder visible, aucun numéro de téléphone');
+console.log('✓ Aucun placeholder visible, aucun numéro de téléphone (page d\'accueil et pages annexes)');

@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import Icons from 'unplugin-icons/vite';
 import { buildCsp } from './scripts/csp.mjs';
 
-const DEFAULT_SITE_URL = 'https://ethanbacquier.fr';
+const DEFAULT_SITE_URL = 'https://ethanbacquier.github.io';
 
 /**
  * Remplace les jetons __SITE_URL__ / __BASE__ dans index.html

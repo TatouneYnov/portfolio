@@ -45,7 +45,7 @@ Ancien plan : bilingue FR/EN, hero en graphe réseau, write-ups CTF, terminal in
 ### Variables d'environnement
 | Variable | Rôle | Défaut |
 |---|---|---|
-| `VITE_SITE_URL` | URL absolue du site (canonical, OG, JSON-LD, sitemap) | `https://ethanbacquier.fr` |
+| `VITE_SITE_URL` | URL absolue du site (canonical, OG, JSON-LD, sitemap) | `https://ethanbacquier.github.io` |
 | `VITE_BASE` | `base` Vite | `/` |
 | `VITE_FORM_KEY` | Clé d'accès Web3Forms | vide → fallback mailto |
 
@@ -77,13 +77,13 @@ Fournir un `.env.example`. Ne jamais committer de `.env`.
 
 ## 3. Hébergement et domaine
 
-- Domaine visé : **ethanbacquier.fr** (pas encore acheté). Hébergeur **pas encore choisi** : tout doit rester configurable par `VITE_SITE_URL` / `VITE_BASE`.
-- Livrer **les deux** options de déploiement :
-  1. `.github/workflows/deploy.yml` : déploiement GitHub Pages (actions officielles `configure-pages`, `upload-pages-artifact`, `deploy-pages`) + `public/CNAME` généré si `VITE_SITE_URL` n'est pas un domaine github.io.
-  2. `public/_headers` (compatible Cloudflare Pages et Netlify) avec les vrais en-têtes HTTP.
-- README : expliquer les deux voies, et que GitHub Pages ne permet pas d'en-têtes HTTP (donc pas de HSTS ni `frame-ancestors`), d'où la recommandation Cloudflare Pages une fois le domaine acheté.
-
----
+**Décidé avec Ethan le 23/10 : GitHub Pages, à l'adresse `https://ethanbacquier.github.io`.**
+- Organisation GitHub gratuite **`ethanbacquier`** (créée par Ethan), repo public **`ethanbacquier/ethanbacquier.github.io`** : il reçoit le code de la v2 (`git push site v2:main`, voir README) et se déploie à chaque push sur `main` via `.github/workflows/deploy.yml` (actions officielles `configure-pages`, `upload-pages-artifact`, `deploy-pages`). Settings → Pages → Source : GitHub Actions.
+- **`TatouneYnov/portfolio` garde l'ancien portfolio (Vue) sur `main`, intact** ; la v2 continue d'y être développée sur `v2`. Pas de fusion `v2` → `main` dans ce repo.
+- Valeurs par défaut du build : `VITE_SITE_URL=https://ethanbacquier.github.io`, `VITE_BASE=/`. Pas de `CNAME` (adresse `github.io`). Variable de repo `FORM_KEY` pour Web3Forms.
+- Domaine perso (`ethanbacquier.fr`) : plus tard, facultatif (Settings → Pages → Custom domain + variable `SITE_URL`).
+- GitHub Pages n'envoie pas d'en-têtes HTTP : `_headers` (toujours généré, pour Cloudflare Pages / Netlify) y est ignoré, la CSP passe en `<meta>`. Ne jamais annoncer HSTS ni `frame-ancestors` sur le site.
+- **Obligations légales** : `public/mentions-legales.html` (LCEN : éditeur non professionnel sans adresse personnelle, hébergeur GitHub, Inc., 88 Colin P. Kelly Jr. St., San Francisco, CA 94107, États-Unis — adresse tirée de la déclaration de confidentialité de GitHub) et `public/confidentialite.html` (base légale art. 6.1.b RGPD, Web3Forms et Gmail hors UE, journaux IP de GitHub Pages, droits, CNIL). À mettre à jour si l'hébergeur change. Aucun cookie : pas de bandeau. `check:content` vérifie aussi ces pages annexes.
 
 ## 4. Contenu centralisé (`src/data/`)
 
@@ -420,7 +420,7 @@ Encart « Comment ce site est sécurisé » au-dessus (liste dans `Footer.tsx`, 
 
 Témoignages (`Testimonials.tsx`, entre Projets et Disponibilités) : affichés seulement si `testimonials.json` contient des entrées réelles avec `consent: true`. Jamais de témoignage inventé.
 
-Pied : « © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confidentialité » (`confidentialite.html`) · « Crédits » (modale `<dialog>`, liste en dur dans `Footer.tsx`, à garder alignée avec `CREDITS.md` : avatar et scènes en code, polices, icônes Solar / Simple Icons, bibliothèques) · « Retour en haut ↑ ».
+Pied : « © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confidentialité » (`confidentialite.html`) · « Mentions légales » (`mentions-legales.html`) · « Crédits » (modale `<dialog>`, liste en dur dans `Footer.tsx`, à garder alignée avec `CREDITS.md` : avatar et scènes en code, polices, icônes Solar / Simple Icons, bibliothèques) · « Retour en haut ↑ ».
 
 ---
 
@@ -546,7 +546,9 @@ object-src 'none';
 - Couleurs de catégorie en double (JSON pour la 3D, CSS `[data-cat]` pour le HTML) : la CSP interdit les attributs `style` dans le HTML pré-rendu.
 - Onglet CV vertical masqué sur mobile ; le CV est dans le menu.
 - Le formulaire Web3Forms n'apparaît qu'avec `VITE_FORM_KEY` ; sinon bloc « Écris-moi directement ».
-- Rendus de l'avatar découpés (scissor) à son emplacement, avec un fondu en bas de l'emplacement pour masquer la coupe.
+- Rendus de l'avatar découpés (scissor) à son emplacement, avec un fondu en bas de l'emplacement pour masquer la coupe : depuis le 23/10, ce fondu est dessiné dans la scène 3D (bande `buildFade` collée à la caméra, hero et À propos), plus en CSS.
+- **Canvas de l'avatar au-dessus du contenu** (`.stage` en `z-index: 2`, `main` en 1), corrigé le 23/10 : avant, la lueur violette du hero (dans `main`) se dessinait par-dessus le visage et le teintait en mauve sur le site (pas dans les images de `tools/poster.html`). Sans risque pour le texte : rendu découpé à l'emplacement. Le canvas reste sous l'en-tête (50), l'onglet CV (40), le toast (90), le curseur (150) et le loader (200).
+- Titres découpés (`SplitHeading`) : une espace entre les lignes, pour que le texte brut se lise « Ethan Bacquier » (moteurs de recherche, copier-coller).
 - Mot rotatif du hero : le CSS décale le 2e mot (repli sans JS) ; le JS remet ce décalage à zéro (`y: 0`) avant d'animer en `yPercent`.
 - Canvas de l'avatar **effacé quand il se met en pause** (`ClearWhenPaused`) et quand aucun emplacement n'est visible : après un saut de défilement, la dernière image (avatar au bureau) restait figée par-dessus la section Outils.
 - Mesures de défilement : la machine de test du 17/10 au soir n'a que 2 cœurs, les chiffres absolus ne sont comparables qu'avec un build de référence mesuré sur la même machine.
@@ -555,7 +557,7 @@ object-src 'none';
 - **Fait** : « Utilisé : … » sur les touches, boutons du hero, alternance B3 mise en avant, « Ce que j'ai appris », encart sécurité, emplacement témoignages.
 - **Écarté pour l'instant** (ne pas réintroduire sans demande) : rapports d'exercices détaillés (enquêtes type alerte → recherche → conclusion), bloc « En ce moment », statistiques de visite (le site reste **zéro tracker**), page sécurité dédiée (un encart suffit).
 
-## 17. TODO d'Ethan (état au 17 oct. 2026, fin de soirée)
+## 17. TODO d'Ethan (mis à jour le 23 oct. 2026)
 
 - [ ] Vérifier sur son PC la fluidité de la 3D (avatar, clavier, bulles) et le nouveau défilement
 - [ ] Regarder les animations du nouvel avatar en vrai (`npm run dev`) : salut après l'intro, sourire au survol, frappes au bureau (impossibles à voir en mouvement sur la machine de test)
@@ -566,7 +568,10 @@ object-src 'none';
 - [ ] Captures des projets (16:10)
 - [ ] CV PDF puis `cv.available: true` (un ancien `CV_Bacquier_Ethan.pdf` existe sur la branche `main` : à vérifier avant de le réutiliser)
 - [ ] Créer une clé Web3Forms (`VITE_FORM_KEY`)
-- [ ] Acheter `ethanbacquier.fr` et choisir l'hébergeur (recommandé : Cloudflare Pages)
+- [ ] Créer l'organisation GitHub gratuite `ethanbacquier`, le repo public vide `ethanbacquier.github.io`, activer Pages (source : GitHub Actions), puis `git push site v2:main` (étapes dans le README)
+- [ ] Ajouter la variable de repo `FORM_KEY` une fois la clé Web3Forms créée
+- [ ] Confirmer l'accord du cabinet infirmier et du VBVB pour être cités comme projets
+- [ ] Plus tard, facultatif : domaine perso `ethanbacquier.fr`
 - [ ] Mettre à jour `training.json` de temps en temps
 - [ ] Stack du site VBVB ; lien live du cabinet quand il est en ligne
 - [ ] Demander de vrais témoignages (prof Ynov, coach de volley, cabinet infirmier) avec accord de publication → `testimonials.json`

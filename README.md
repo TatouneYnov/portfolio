@@ -2,7 +2,7 @@
 
 Portfolio d'Ethan Bacquier, étudiant en B2 cybersécurité à Ynov Lyon, à la recherche d'un stage de 170 h.
 
-Le site est construit avec Vite, React 18, TypeScript et Three.js (React Three Fiber). L'animation passe par GSAP + ScrollTrigger, le défilement doux par Lenis. Tout est statique : il se déploie sur GitHub Pages, Cloudflare Pages ou Netlify.
+Le site est construit avec Vite, React 18, TypeScript et Three.js (React Three Fiber). L'animation passe par GSAP + ScrollTrigger, le défilement doux par Lenis. Tout est statique : il est publié sur GitHub Pages (https://ethanbacquier.github.io) et peut aussi se déployer sur Cloudflare Pages ou Netlify.
 
 Il reste lisible sans JavaScript (pré-rendu au build) et sans WebGL, ainsi qu'avec le réglage « réduire les animations » : des images fixes remplacent alors la 3D.
 
@@ -100,40 +100,70 @@ La clé Web3Forms est publique par conception : elle permet seulement d'envoyer 
 
 ## Déployer
 
-L'adresse du site se règle par deux variables. Par défaut, le site vise `https://ethanbacquier.fr` à la racine.
+Le site est publié sur **GitHub Pages**, à l'adresse **https://ethanbacquier.github.io**. Le code vit dans le repo `ethanbacquier/ethanbacquier.github.io`, qui appartient à l'organisation GitHub gratuite `ethanbacquier`. Le workflow `.github/workflows/deploy.yml` construit et publie le site à chaque push sur `main`.
 
-| Variable | Rôle | Exemple |
+L'ancien portfolio reste dans `TatouneYnov/portfolio`, sans changement.
+
+### Première mise en ligne (une seule fois)
+
+1. Sur GitHub, clique sur ton avatar, puis **Your organizations → New organization** et choisis le plan **Free**. Nom de l'organisation : `ethanbacquier`.
+2. Dans l'organisation, crée un repo **public** nommé exactement `ethanbacquier.github.io`, sans README ni licence (il doit être vide).
+3. Dans ce repo : **Settings → Pages → Build and deployment → Source : GitHub Actions**.
+4. Facultatif : **Settings → Secrets and variables → Actions → onglet Variables**, ajoute `FORM_KEY` avec ta clé Web3Forms. Sans elle, le formulaire est remplacé par un lien e-mail.
+5. Pousse le code depuis ton dossier du projet, dans PowerShell, une commande par ligne :
+
+```powershell
+git checkout v2
+```
+
+```powershell
+git pull origin v2
+```
+
+```powershell
+git remote add site https://github.com/ethanbacquier/ethanbacquier.github.io.git
+```
+
+```powershell
+git push site v2:main
+```
+
+6. Dans l'onglet **Actions** du nouveau repo, attends que « Déployer sur GitHub Pages » passe au vert (2 à 3 minutes). Le site est alors en ligne.
+
+Ensuite, pour publier une modification :
+
+```powershell
+git push site v2:main
+```
+
+### Variables (facultatives)
+
+| Variable GitHub | Rôle | Par défaut |
 |---|---|---|
-| `VITE_SITE_URL` | URL publique (canonical, Open Graph, sitemap) | `https://ethanbacquier.fr` |
-| `VITE_BASE` | chemin de base | `/` (domaine perso) ou `/portfolio/` (`tatouneynov.github.io/portfolio`) |
+| `SITE_URL` | URL publique (canonical, Open Graph, sitemap, `security.txt`) | `https://ethanbacquier.github.io` |
+| `BASE` | chemin de base | `/` |
+| `FORM_KEY` | clé Web3Forms | vide (lien e-mail) |
 
-### Option 1 : Cloudflare Pages (recommandé avec un domaine perso)
+Pour passer plus tard à un domaine perso (par ex. `ethanbacquier.fr`) : saisis-le dans **Settings → Pages → Custom domain**, puis mets `SITE_URL` à `https://ethanbacquier.fr`.
 
-Cloudflare Pages applique le fichier `_headers` généré au build. Tu obtiens donc les vrais en-têtes de sécurité : CSP complète avec `frame-ancestors`, HSTS, `X-Content-Type-Options`, `Permissions-Policy`. Les recruteurs cyber regardent ce genre de détail.
+### Limites de GitHub Pages
 
-1. Sur dash.cloudflare.com : Workers & Pages → Create → Pages → connecte le repo GitHub.
-2. Commande de build : `npm run build`. Dossier de sortie : `dist`.
-3. Variables d'environnement : `VITE_SITE_URL`, `VITE_FORM_KEY`.
-4. Custom domains → ajoute `ethanbacquier.fr`.
+GitHub Pages n'envoie pas d'en-têtes HTTP personnalisés : le fichier `_headers` généré au build y est ignoré. La CSP est donc appliquée en `<meta>` dans la page, mais `frame-ancestors`, `X-Frame-Options` et HSTS personnalisé ne s'appliquent pas. GitHub force tout de même le HTTPS (case **Enforce HTTPS**). Le site n'annonce rien de ce qui n'est pas réellement en place.
 
-Netlify fonctionne pareil et lit le même `_headers`.
+Pour avoir les vrais en-têtes, il suffit de déployer le même dossier `dist` sur Cloudflare Pages ou Netlify : ils lisent `_headers` tels quels.
 
-### Option 2 : GitHub Pages
+### Obligations légales
 
-Le workflow `.github/workflows/deploy.yml` construit et publie le site à chaque push sur `main`.
-
-1. Sur GitHub : Settings → Pages → Source : **GitHub Actions**.
-2. Settings → Secrets and variables → Actions → onglet **Variables** : ajoute `SITE_URL`, `BASE` et `FORM_KEY`.
-3. Avec un domaine perso, renseigne-le dans Settings → Pages. Le build crée aussi le fichier `CNAME`.
-
-Limite : GitHub Pages n'envoie pas d'en-têtes HTTP personnalisés. La CSP est alors en `<meta>`, mais `frame-ancestors`, HSTS et `X-Frame-Options` manquent. C'est pour cette raison que Cloudflare Pages est recommandé une fois le domaine acheté.
+- **Mentions légales** (`public/mentions-legales.html`) : éditeur (publication non professionnelle, donc sans adresse personnelle, comme le permet la LCEN) et hébergeur (GitHub, Inc.). À mettre à jour si tu changes d'hébergeur.
+- **Confidentialité** (`public/confidentialite.html`) : formulaire (Web3Forms, Gmail), journaux de GitHub Pages, durée de conservation, droits RGPD.
+- **Aucun cookie** : pas de bandeau de consentement à prévoir.
 
 ---
 
 ## Sécurité
 
 - CSP stricte : aucun script inline, aucun CDN tiers, polices et icônes hébergées sur le site. `'wasm-unsafe-eval'` sert uniquement au moteur physique (Rapier, en WebAssembly).
-- Aucun cookie, aucun traceur. Une page `confidentialite.html` explique le traitement des données du formulaire.
+- Aucun cookie, aucun traceur. `confidentialite.html` explique le traitement des données, `mentions-legales.html` identifie l'éditeur et l'hébergeur.
 - Liens externes en `rel="noopener noreferrer"`.
 - `security.txt` régénéré à chaque build, avec une date d'expiration à un an.
 - `npm audit` est lancé dans le workflow de déploiement (échec sur les vulnérabilités hautes).

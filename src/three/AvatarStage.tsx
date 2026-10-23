@@ -47,6 +47,30 @@ const WAVE_TIME = 1.9;
 const WAVE_KEYS = ['uaR', 'laR', 'hR', 'head'];
 const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Fondu au bas de l'emplacement (hero et À propos) : bande collée à la caméra, dessinée en dernier,
+// qui rend l'avatar progressivement transparent (couleur et alpha multipliés par 1 - a, canevas en
+// alpha prémultiplié). Remplace un dégradé CSS qui, sous le canevas, ne masquait plus la découpe.
+const FADE_HEIGHT = 0.22;
+function buildFade() {
+  const material = new THREE.ShaderMaterial({
+    uniforms: { strength: { value: 1 } },
+    vertexShader: 'varying float vY; void main() { vY = uv.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'uniform float strength; varying float vY; void main() { float a = strength * (1.0 - smoothstep(0.0, 1.0, vY)); gl_FragColor = vec4(0.0, 0.0, 0.0, a); }',
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+    blending: THREE.CustomBlending,
+    blendSrc: THREE.ZeroFactor,
+    blendDst: THREE.OneMinusSrcAlphaFactor,
+    blendSrcAlpha: THREE.ZeroFactor,
+    blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
+  });
+  const fade = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material);
+  fade.renderOrder = 999;
+  fade.frustumCulled = false;
+  return fade;
+}
+
 function Environment() {
   const { gl, scene } = useThree();
   useEffect(() => {
@@ -64,10 +88,11 @@ function Environment() {
 }
 
 function Scene() {
-  const { camera, size, gl } = useThree();
+  const { camera, size, gl, scene } = useThree();
   const avatar = useMemo(() => buildAvatar(), []);
   const lights = useMemo(() => buildLights(), []);
   const desk = useMemo(() => buildDesk(), []);
+  const fade = useMemo(() => buildFade(), []);
   const J = useMemo(
     () => ({
       hips: avatar.hips, spine: avatar.spine, chest: avatar.chest, neck: avatar.neck, head: avatar.head,
@@ -125,6 +150,18 @@ function Scene() {
     (camera as THREE.PerspectiveCamera & { manual?: boolean }).manual = true;
   }, [camera]);
 
+  // La bande de fondu suit la caméra : elle doit faire partie de la scène pour être dessinée
+  useEffect(() => {
+    camera.add(fade);
+    scene.add(camera);
+    return () => {
+      camera.remove(fade);
+      scene.remove(camera);
+      fade.geometry.dispose();
+      (fade.material as THREE.Material).dispose();
+    };
+  }, [camera, scene, fade]);
+
   useFrame((state, delta) => {
     const cam = camera as THREE.PerspectiveCamera;
     const dt = Math.min(delta, 0.05);
@@ -181,6 +218,16 @@ function Scene() {
     cam.aspect = aspect;
     cam.setViewOffset(s.rect.w, s.rect.h, -s.rect.x, -s.rect.y, size.width, size.height);
     cam.updateProjectionMatrix();
+
+    // Fondu : le cadre non décalé de la caméra correspond exactement à l'emplacement (setViewOffset).
+    // Bande sur les 22 % du bas, débordant de 12 % sur les côtés comme la découpe ; s'efface vers le bureau.
+    const fd = cam.near * 1.5;
+    const halfH = fd * halfTan;
+    const halfW = halfH * aspect;
+    fade.position.set(0, -halfH * (1 - FADE_HEIGHT), -fd);
+    fade.scale.set(halfW * 2 * 1.24 + 0.001, halfH * 2 * FADE_HEIGHT, 1);
+    (fade.material as THREE.ShaderMaterial).uniforms.strength.value = 1 - pTravel;
+    fade.visible = pTravel < 0.999;
 
     // 3. Entrée : l'avatar monte légèrement
     avatar.root.position.y = -0.08 * (1 - ease(clamp01(stageState.intro)));

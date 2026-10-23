@@ -19,7 +19,10 @@ export function SplitHeading({ as: Tag = 'h2', id, className = '', lines }: Prop
   return (
     <Tag id={id} className={`split ${className}`} aria-label={label}>
       {lines.map((line, li) => (
-        <span key={li} className={`split__line${line.accent ? ' tone-2' : ''}`} aria-hidden="true">
+        <Fragment key={li}>
+          {/* espace entre les lignes : le texte brut (moteurs de recherche, copier-coller) reste « Ethan Bacquier » */}
+          {li > 0 ? ' ' : null}
+          <span className={`split__line${line.accent ? ' tone-2' : ''}`} aria-hidden="true">
           {line.text.split(' ').map((word, wi) => (
             <Fragment key={wi}>
               {wi > 0 ? ' ' : null}
@@ -28,7 +31,8 @@ export function SplitHeading({ as: Tag = 'h2', id, className = '', lines }: Prop
               </span>
             </Fragment>
           ))}
-        </span>
+          </span>
+        </Fragment>
       ))}
     </Tag>
   );

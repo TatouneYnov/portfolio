@@ -778,10 +778,13 @@ a.cv-tab:hover {
 }
 
 /* ---------- Scène de l'avatar ---------- */
+/* Au-dessus du contenu (main, z-index 1) : sinon la lueur violette du hero, qui fait partie du contenu,
+   se dessine par-dessus le visage et le teinte. Sans risque pour le texte : le rendu est découpé à
+   l'emplacement de l'avatar, où aucun texte ne passe. Reste sous l'en-tête, le curseur et le loader. */
 .stage {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 2;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.8s ease;
@@ -2247,13 +2250,3 @@ button.quick-link:hover .arrow {
   color: color-mix(in srgb, var(--cat) 55%, #ffffff);
 }
 
-/* Fondu sous l'avatar : la découpe du rendu 3D ne se voit pas */
-.avatar-slot--hero::after,
-.avatar-slot--about::after {
-  content: '';
-  position: absolute;
-  inset: auto -12% 0;
-  height: 22%;
-  background: linear-gradient(to bottom, rgb(7 5 12 / 0), var(--bg));
-  pointer-events: none;
-}

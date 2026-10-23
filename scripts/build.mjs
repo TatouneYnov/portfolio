@@ -12,7 +12,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const dist = path.join(root, 'dist');
 const ssrOut = path.join(root, '.ssr');
 const env = loadEnv('production', root, 'VITE_');
-const siteUrl = (env.VITE_SITE_URL || 'https://ethanbacquier.fr').replace(/\/$/, '');
+const siteUrl = (env.VITE_SITE_URL || 'https://ethanbacquier.github.io').replace(/\/$/, '');
 const base = env.VITE_BASE || '/';
 
 const step = (msg) => console.log(`\n▸ ${msg}`);

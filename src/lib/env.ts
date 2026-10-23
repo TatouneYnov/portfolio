@@ -1,6 +1,6 @@
 declare const __SITE_URL__: string;
 
-export const SITE_URL: string = typeof __SITE_URL__ === 'string' ? __SITE_URL__ : 'https://ethanbacquier.fr';
+export const SITE_URL: string = typeof __SITE_URL__ === 'string' ? __SITE_URL__ : 'https://ethanbacquier.github.io';
 export const BASE: string = import.meta.env.BASE_URL || '/';
 export const isBrowser = typeof window !== 'undefined';
 

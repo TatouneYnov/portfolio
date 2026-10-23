@@ -61,6 +61,9 @@ export function Footer() {
           <a className="text-link" href={asset('confidentialite.html')}>
             Politique de confidentialité
           </a>
+          <a className="text-link" href={asset('mentions-legales.html')}>
+            Mentions légales
+          </a>
           <button type="button" className="text-link" onClick={() => dialog.current?.showModal()}>
             Crédits
           </button>
