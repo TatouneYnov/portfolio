@@ -128,7 +128,14 @@ export function Hero() {
             </span>
           </p>
           <p className="sr-only">{profile.rotatingSrOnly}</p>
-          <p className="hero__status">{profile.status}</p>
+          <p className="hero__status">
+            {profile.heroStatus.split(' · ').map((part, i) => (
+              <span key={part}>
+                {i > 0 && ' · '}
+                {part}
+              </span>
+            ))}
+          </p>
         </div>
       </div>
       <div className="scroll-hint" aria-hidden="true">

@@ -47,11 +47,11 @@ export function Training() {
   const htb = training.hackthebox;
 
   const thmStats: Stat[] = [
-    isFilled(thm.topPercent) && { label: 'Classement', value: thm.topPercent as number, prefix: 'Top ', suffix: ' %' },
+    isFilled(thm.topPercent) && { label: 'Classement', value: thm.topPercent as number, prefix: 'Top\u00a0', suffix: '\u00a0%' },
     isFilled(thm.highestLeague) && { label: 'Meilleure ligue', value: thm.highestLeague as string },
     isFilled(thm.roomsCompleted) && { label: 'Rooms terminées', value: thm.roomsCompleted as unknown as number },
     isFilled(thm.questionsAnswered) && { label: 'Questions résolues', value: thm.questionsAnswered as number },
-    isFilled(thm.highestStreak) && { label: 'Meilleure série', value: thm.highestStreak as number, suffix: ' j' },
+    isFilled(thm.highestStreak) && { label: 'Meilleure série', value: thm.highestStreak as number, suffix: '\u00a0j' },
   ].filter(Boolean) as Stat[];
 
   const htbStats: Stat[] = [
@@ -64,7 +64,7 @@ export function Training() {
   return (
     <section ref={root} id="entrainement" className="training section" aria-labelledby="training-title">
       <div className="container">
-        <div className="section-head">
+        <div className="section-head section-head--mirror">
           <SplitHeading
             id="training-title"
             className="display display--lg training__title"

@@ -135,10 +135,15 @@ function Keyboard({ skills, categories, active, press, highlight, onHover, scrol
   useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera;
     const aspect = size.width / size.height;
-    const needW = layout.width + 1.4;
-    const needH = layout.depth + 2.2;
+    // Emprise du socle à la rotation maximale (-0.32 ± 0.14 rad au défilement), sinon les coins sortent du canevas
+    const a = 0.46;
+    const w = layout.width + 0.78;
+    const d = layout.depth + 0.78;
+    const needW = w * Math.cos(a) + d * Math.sin(a) + 0.4;
+    // Vu en plongée (~50°), la profondeur apparaît raccourcie d'environ 20 %
+    const needH = (w * Math.sin(a) + d * Math.cos(a)) * 0.8 + 1;
     const half = THREE.MathUtils.degToRad(cam.fov / 2);
-    const dist = Math.max(needH / 2 / Math.tan(half), needW / 2 / (Math.tan(half) * aspect)) * 1.05;
+    const dist = Math.max(needH / 2 / Math.tan(half), needW / 2 / (Math.tan(half) * aspect)) * 1.06;
     const dir = new THREE.Vector3(0, 0.78, 0.62).normalize();
     cam.position.copy(dir.multiplyScalar(dist));
     cam.lookAt(0, -0.2, 0);

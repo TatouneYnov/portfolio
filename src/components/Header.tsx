@@ -13,6 +13,9 @@ const NAV = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  // Fond de l'en-tête dès qu'on quitte le haut de page ; onglet CV masqué quand le pied de page est visible
+  const [scrolled, setScrolled] = useState(false);
+  const [footerVisible, setFooterVisible] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -36,8 +39,21 @@ export function Header() {
     };
   }, [open]);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    const footer = document.querySelector('.site-footer');
+    const io = footer ? new IntersectionObserver(([entry]) => setFooterVisible(entry.isIntersecting)) : null;
+    if (footer && io) io.observe(footer);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      io?.disconnect();
+    };
+  }, []);
+
   return (
-    <header className="site-header">
+    <header className={`site-header${scrolled ? ' site-header--scrolled' : ''}${footerVisible ? ' site-header--footer' : ''}`}>
       <div className="site-header__inner">
         <a className="monogram" href="#top" aria-label="EB, Ethan Bacquier : retour en haut">
           EB

@@ -16,6 +16,9 @@ const BubblesScene = lazy(() => import('../three/BubblesScene'));
 
 export type DockRequest = { id: string; n: number } | null;
 
+// Le projet à la plus grosse bulle (Hera) prend 2 colonnes dans la grille statique
+const featuredSize = Math.max(...projects.map((p) => p.size));
+
 export function Projects() {
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -127,7 +130,7 @@ export function Projects() {
         <div className="container">
           <ul className="projects__grid">
             {projects.map((p) => (
-              <li key={p.id} className="project-card">
+              <li key={p.id} className={`project-card${p.size === featuredSize ? ' project-card--featured' : ''}`}>
                 <ProjectDetails project={p} headingLevel="h3" />
               </li>
             ))}

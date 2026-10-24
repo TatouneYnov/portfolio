@@ -119,7 +119,7 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
     const halfH = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * cam.position.z;
     const halfW = halfH * (size.width / size.height);
     const portrait = size.width < 720;
-    const unit = Math.min(halfW, halfH) * (portrait ? 0.2 : 0.17);
+    const unit = Math.min(halfW, halfH) * (portrait ? 0.2 : 0.23);
     return {
       halfW,
       halfH,

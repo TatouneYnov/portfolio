@@ -104,7 +104,7 @@ Tout le texte modifiable sans toucher au code.
 
 ### 4.1 profile.json
 - Nom : **Ethan Bacquier** · pseudo **Tatoune**
-- Statut : **Étudiant en B2 Cybersécurité · Ynov Campus Lyon (2026–2027)**
+- Statut : **Étudiant en B2 Cybersécurité · Ynov Campus Lyon (2026–2027)** (`status`, utilisé dans `llms.txt`) ; version courte du hero `heroStatus` : « B2 · Ynov Campus Lyon · 2026–27 » (évite de répéter « Étudiant en cybersécurité » juste sous le mot rotatif)
 - Badge du hero : « Stage 170 h dès nov. 2026 · Alternance B3 en 2027 » (affiché sur 2 lignes, coupé sur « · »)
 - Recherche : stage de 170 h cette année **et** alternance en B3 (rentrée 2027, rythme **1 semaine à l'école / 2 semaines en entreprise**). Les recruteurs s'intéressent souvent plus aux alternants : l'alternance est mise en avant (badge, Disponibilités, timeline, formulaire).
 - Intérêts : DFIR et CTI en priorité, ouvert à l'infra
@@ -344,7 +344,7 @@ Budget : qualité d'abord, optimisation après mesure sur le PC d'Ethan. **Refon
 
 ### 2. Hero (100vh)
 3 colonnes desktop, avatar au centre (buste, épaules → haut du crâne), lueur radiale derrière.
-- Gauche : « Salut, moi c'est » (Inter, `--accent`) puis « ETHAN / BACQUIER » (h1 unique, Archivo 700 expanded, `clamp(2rem, 4vw, 3.6rem)`)
+- Gauche : « Salut, moi c'est » (Inter, `--accent`) puis « ETHAN / BACQUIER » (h1 unique, Archivo 700 expanded, `clamp(2rem, 4.6vw, 4.4rem)`, colonne gauche élargie : grille `1.1fr / 1.15fr / 0.92fr`)
 - Droite : « Étudiant en » puis mot rotatif « CYBERSÉCURITÉ » ↔ « INFRA ». Sortant : monte de 100 % dans un masque en passant en `--accent` et en perdant l'opacité ; entrant : arrive du bas en `--text`. Cycle 2.6 s, `power3.inOut` 0.7 s. `aria-live="off"` + span sr-only « Étudiant en cybersécurité et infrastructure ».
 - Badge : « ● Stage 170 h dès nov. 2026 / Alternance B3 en 2027 » (2 lignes, 2e en `--accent`, point vert doux qui pulse) → scroll vers Disponibilités
 - Sous le badge : boutons « Me contacter » (plein) et « Voir mes projets » (contour). Un 3e bouton « CV » quand `cv.available` passera à `true`.
@@ -553,6 +553,15 @@ object-src 'none';
 - Mot rotatif du hero : le CSS décale le 2e mot (repli sans JS) ; le JS remet ce décalage à zéro (`y: 0`) avant d'animer en `yPercent`.
 - Canvas de l'avatar **effacé quand il se met en pause** (`ClearWhenPaused`) et quand aucun emplacement n'est visible : après un saut de défilement, la dernière image (avatar au bureau) restait figée par-dessus la section Outils.
 - Mesures de défilement : la machine de test du 17/10 au soir n'a que 2 cœurs, les chiffres absolus ne sont comparables qu'avec un build de référence mesuré sur la même machine.
+
+### Revue design du 24/10 (corrections faites)
+- **En-tête** : fond `--bg` à 82 % + flou dès qu'on quitte le haut de page (`site-header--scrolled`), posé sur `::before` (un `backdrop-filter` sur l'en-tête deviendrait le bloc conteneur du menu mobile et de l'onglet CV en `position: fixed`). L'onglet CV se masque quand le pied de page est visible (`site-header--footer`).
+- **Clavier 3D** : le cadrage tient compte de la rotation du socle (jusqu'à 0,46 rad) et du raccourci de la plongée ; plus de coin coupé. Scène mobile `min(96vw, 420px)`.
+- **Rythme** : sections en `clamp(72px, 10vh, 120px)` ; « À propos » garde `clamp(96px, 14vh, 168px)` en bas (sinon l'avatar collant atteint le titre « Ce que je fais »). Titres de section réduits (`display--xxl` 7.6rem max, `--xl` 6rem, `--lg` 4.4rem) pour que le nom du hero redevienne le titre le plus fort. Sous 1024 px, le hero prend la hauteur de son contenu.
+- « Terrain d'entraînement » en en-tête miroir (`section-head--mirror`, ≥ 768 px). Cartes TryHackMe / HTB en `1.3fr / 1fr`, boutons alignés en bas, valeurs « Top 7 % » / « 8 j » avec espaces insécables.
+- Bulles : `unit` paysage 0.23 (au lieu de 0.17), scène `clamp(480px, 70vh, 720px)`. Grille statique : la plus grosse bulle (Hera) prend 2 colonnes (`project-card--featured`).
+- Contact sans formulaire : la carte « Écris-moi directement » s'étire à la hauteur des liens rapides, contenu centré.
+- Lisibilité : plus aucun texte sous 12 px ; liens texte à 32 px de haut minimum (cible tactile), soulignement par `text-decoration` ; liens du pied de page qui passent à la ligne ; calendrier : hachures plus marquées, jours grisés bordés.
 
 ### Pistes examinées le 17/10 (grill « améliorations »)
 - **Fait** : « Utilisé : … » sur les touches, boutons du hero, alternance B3 mise en avant, « Ce que j'ai appris », encart sécurité, emplacement témoignages.
