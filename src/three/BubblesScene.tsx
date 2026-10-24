@@ -25,13 +25,15 @@ type Props = {
 };
 
 const DRAG_THRESHOLD = 6; // px parcourus avant de considérer qu'on glisse (sinon : clic)
+const TOUCH_DRAG_THRESHOLD = 10; // au doigt, un tap bouge toujours un peu
 
 /** Texture « nacre » avec le nom du projet, centrée sur la face avant de la sphère. */
 function makeBubbleTexture(label: string): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
-  canvas.width = 1024;
-  canvas.height = 512;
+  canvas.width = 2048;
+  canvas.height = 1024;
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+  ctx.scale(2, 2); // texture 2× : dessin dans le repère d'origine 1024 × 512
   const g = ctx.createLinearGradient(0, 0, 0, 512);
   g.addColorStop(0, '#FBF9FF');
   g.addColorStop(0.5, '#F1ECFA');
@@ -53,7 +55,7 @@ function makeBubbleTexture(label: string): THREE.CanvasTexture {
   });
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
+  tex.anisotropy = 8;
   return tex;
 }
 
@@ -238,7 +240,7 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
     const onMove = (e: PointerEvent) => {
       const p = press.current;
       if (!p) return;
-      if (!p.dragging && !p.touch && Math.hypot(e.clientX - p.x, e.clientY - p.y) > DRAG_THRESHOLD) {
+      if (!p.dragging && Math.hypot(e.clientX - p.x, e.clientY - p.y) > (p.touch ? TOUCH_DRAG_THRESHOLD : DRAG_THRESHOLD)) {
         p.dragging = true;
         setCursor('grabbing');
         showTip(null);
@@ -287,6 +289,27 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [frame, dockRadius]);
+
+  // Au doigt : un toucher qui commence sur une bulle l'attrape (la page ne défile pas) ;
+  // ailleurs sur la scène, le défilement vertical reste natif (touch-action: pan-y)
+  useEffect(() => {
+    const el = gl.domElement;
+    const hits: THREE.Object3D[] = [];
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      const rect = el.getBoundingClientRect();
+      tmp.ndc.set(((t.clientX - rect.left) / rect.width) * 2 - 1, -((t.clientY - rect.top) / rect.height) * 2 + 1);
+      tmp.raycaster.setFromCamera(tmp.ndc, camera);
+      hits.length = 0;
+      balls.current.forEach((b, id) => {
+        if (b.mesh && id !== dockedRef.current) hits.push(b.mesh);
+      });
+      if (tmp.raycaster.intersectObjects(hits, false).length) e.preventDefault();
+    };
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    return () => el.removeEventListener('touchstart', onTouchStart);
+  }, [gl, camera, tmp]);
 
   // ?debug : positions écran des bulles et du socle (tests automatisés)
   useEffect(() => {
@@ -461,12 +484,13 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
 export default function BubblesScene(props: Props) {
   const { paused, maxBubbles, onLost, projects, ...rest } = props;
   const list = projects.slice(0, maxBubbles);
-  const dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.25 : 1.75);
+  // Netteté pleine (DPR 2) : à 1,25 les noms des bulles étaient flous sur les écrans de téléphone (3×)
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
   return (
     <Canvas
       className="projects__canvas"
       dpr={dpr}
-      gl={{ antialias: dpr < 2, alpha: true, powerPreference: 'high-performance' }}
+      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       camera={{ fov: 32, near: 0.1, far: 100, position: [0, 0, 12] }}
       frameloop={paused ? 'never' : 'always'}
       onCreated={({ gl }) => {

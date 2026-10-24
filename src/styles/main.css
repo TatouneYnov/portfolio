@@ -861,6 +861,11 @@ a.cv-tab:hover {
   width: 100% !important;
   height: 100% !important;
 }
+/* Le conteneur créé par React Three Fiber se remet en pointer-events: auto : sans cette règle, le canevas
+   plein écran de l'avatar (au-dessus de main) avale les clics et les touchers de toute la page */
+.stage * {
+  pointer-events: none !important;
+}
 .avatar-slot {
   position: relative;
   width: 100%;
@@ -2280,7 +2285,7 @@ button.quick-link:hover .arrow {
     grid-template-columns: minmax(0, 1fr);
   }
   .toolbox__stage {
-    height: min(96vw, 420px);
+    height: min(72vw, 340px);
   }
   .projects__stage {
     height: min(150vw, 680px);

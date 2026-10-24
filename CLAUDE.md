@@ -376,12 +376,12 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
 
 ### 6. Ma boîte à outils (clavier 3D)
 « MA BOÎTE » / « À OUTILS » + « (astuce : survole ou appuie sur une touche) ».
-- Clavier isométrique, socle noir mat arrondi avec liseré violet, `ContactShadows`. Keycaps `RoundedBox` en 4 rangées décalées (rangées de 5 sur mobile), dans l'ordre de `skills.json` ; la lettre du raccourci est imprimée en haut à gauche de chaque touche.
+- Clavier isométrique, socle noir mat arrondi avec liseré violet, `ContactShadows`. Keycaps `RoundedBox` en 4 rangées décalées (7-7-6-6), **aussi sur mobile** (en rangées de 5, le clavier devenait un carré qui ne ressemblait plus à un clavier), dans l'ordre de `skills.json` ; la lettre du raccourci est imprimée en haut à gauche de chaque touche. Rotation du socle `TURN` (bureau -0,26 rad, mobile -0,08 rad, plus droite faute de largeur) ; le cadrage recule la caméra juste assez pour que le socle tienne entier.
 - Couleurs par catégorie + légende cliquable (surbrillance de la catégorie).
 - Dessus de keycap : logo blanc (texture SVG → canvas) ou monogramme Archivo.
-- Survol / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde de lumière sur le socle ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (Archivo 800, couleur de la catégorie) + quip (Inter) + catégorie. Avant toute touche : « 26 outils ».
+- Survol / toucher ou clic (`onPointerDown`, indispensable sur téléphone où il n'y a pas de survol) / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde de lumière sur le socle ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (Archivo 800, couleur de la catégorie) + quip (Inter) + catégorie. Avant toute touche : « 26 outils ».
 - Hotkeys : seulement si la section est visible **et** qu'aucun champ n'a le focus ; jamais avec Ctrl/Alt/Meta.
-- Rotation y ±8° au scroll (scrub).
+- Rotation y au scroll (scrub), amplitude réduite : ±5° bureau, ±3° mobile.
 - `<ul>` réelle des compétences dans le DOM (bouton « Voir en liste ») ; c'est la version affichée sous reduced-motion, sans WebGL et sans JS.
 - **Rien d'autre que des keycaps sur le clavier** (aucun personnage, aucune mascotte).
 
@@ -393,7 +393,7 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
 **Interaction validée par Ethan le 17/10 (priorité : qu'un recruteur ouvre un projet sans effort)** :
 - **Clic (ou tap) sur une bulle = la bulle file dans le socle et la fiche s'ouvre.** Seuil de 6 px avant de considérer un glisser.
 - Survol : la bulle grossit légèrement, reste immobile, curseur main, info-bulle « Ouvrir · nom du projet ». **Pas de sphère « pousseur » au survol** (elle éjectait les bulles hors de portée).
-- Glisser : la bulle tenue devient cinématique et suit exactement le pointeur (repousse les autres), le socle s'agrandit et s'illumine quand elle passe au-dessus ; lâcher dans le socle (pointeur ou bulle à moins de 1,5 × son rayon) = ouverture ; ailleurs = la bulle repart avec l'élan du geste. Sur tactile : tap uniquement (le glisser vertical fait défiler la page).
+- Glisser : la bulle tenue devient cinématique et suit exactement le pointeur (repousse les autres), le socle s'agrandit et s'illumine quand elle passe au-dessus ; lâcher dans le socle (pointeur ou bulle à moins de 1,5 × son rayon) = ouverture ; ailleurs = la bulle repart avec l'élan du geste. Sur tactile (depuis le 24/10) : un toucher qui **commence sur une bulle** l'attrape (`touchstart` non passif + `preventDefault` après lancer de rayon), on peut la glisser dans le socle (seuil 10 px, sinon c'est un tap qui l'ouvre) ; un toucher qui commence ailleurs fait défiler la page.
 - **Rangée de boutons toujours visible sous la scène** (« Ou choisis directement : Hera · Cabinet infirmier · VBVB · Power 4 · RedQuest »), état actif sur le projet ouvert.
 - Fiche : s'ouvre **à gauche** sur grand écran (la bulle déposée reste visible dans le socle à droite), bottom sheet sur mobile.
 - Rapier, gravité faible vers un attracteur centre-gauche. Sphères nacrées (`MeshPhysicalMaterial` blanc cassé, clearcoat 1, roughness 0.25, iridescence violette légère) avec décal du nom/logo du projet. Taille = `size` (Hera ×1.6).
@@ -460,7 +460,7 @@ Pied : « © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confident
 
 ## 11. Performance
 
-- DPR max 1.75 (1.25 mobile), antialias seulement si DPR < 2.
+- DPR : avatar max 1.75 (1.25 mobile), antialias seulement si DPR < 2 (grand canevas plein écran). Clavier et bulles : DPR max 2 partout et antialias (petits canevas ; à 1,25 ils étaient flous sur les téléphones 3×). Textures des touches en 512 px, des bulles en 2048 × 1024, anisotropie 8.
 - Canvases en pause (`frameloop="never"`) hors écran et quand `document.hidden`.
 - Pendant les 2 s de chargement : import des modules clavier et bulles + init du WebAssembly Rapier ; compilation de l'avatar et du bureau (caché) derrière l'écran de chargement. Après : montage échelonné des scènes au repos, avec `Warmup` (textures envoyées, `gl.compile`, rendu à blanc sans frustum culling, et une image complète via `advance()` pour l'ombre du clavier). Preload de l'image fixe du hero seulement.
 - Mesures du 17/10 (navigateur de test sans GPU) : pendant le défilement, plus aucune compilation de shader ; une seule tâche longue de 58 ms, contre 4 à 5 s avant correction. JS initial ~120 Ko gzip.
@@ -548,6 +548,7 @@ object-src 'none';
 - Onglet CV vertical masqué sur mobile ; le CV est dans le menu.
 - Le formulaire Web3Forms n'apparaît qu'avec `VITE_FORM_KEY` ; sinon bloc « Écris-moi directement ».
 - Rendus de l'avatar découpés (scissor) à son emplacement, avec un fondu en bas de l'emplacement pour masquer la coupe : depuis le 23/10, ce fondu est dessiné dans la scène 3D (bande `buildFade` collée à la caméra, hero et À propos), plus en CSS.
+- **Canvas de l'avatar transparent aux clics** (corrigé le 24/10) : le conteneur créé par React Three Fiber se remet en `pointer-events: auto`, donc depuis le 23/10 le canevas plein écran de l'avatar (au-dessus de `main`) avalait les clics et les touchers de **toute la page** (boutons, clavier, bulles). Règle `.stage * { pointer-events: none !important }` ; l'avatar n'écoute que `window` (suivi du pointeur), il n'a pas besoin des événements R3F. Test : `document.elementFromPoint` au centre d'un bouton doit renvoyer le bouton, pas un `CANVAS`.
 - **Canvas de l'avatar au-dessus du contenu** (`.stage` en `z-index: 2`, `main` en 1), corrigé le 23/10 : avant, la lueur violette du hero (dans `main`) se dessinait par-dessus le visage et le teintait en mauve sur le site (pas dans les images de `tools/poster.html`). Sans risque pour le texte : rendu découpé à l'emplacement. Le canvas reste sous l'en-tête (50), l'onglet CV (40), le toast (90), le curseur (150) et le loader (200).
 - Titres découpés (`SplitHeading`) : une espace entre les lignes, pour que le texte brut se lise « Ethan Bacquier » (moteurs de recherche, copier-coller).
 - Mot rotatif du hero : le CSS décale le 2e mot (repli sans JS) ; le JS remet ce décalage à zéro (`y: 0`) avant d'animer en `yPercent`.

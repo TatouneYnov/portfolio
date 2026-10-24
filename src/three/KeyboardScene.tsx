@@ -25,46 +25,41 @@ const KEY = 0.86;
 const PITCH = 1.0;
 const DIM = new THREE.Color('#2A2533');
 
-function rowsFor(count: number, mobile: boolean): number[] {
-  if (mobile) {
-    const rows: number[] = [];
-    let left = count;
-    while (left > 0) {
-      rows.push(Math.min(5, left));
-      left -= 5;
-    }
-    return rows;
-  }
+// Toujours 4 rangées décalées (7-7-6-6), aussi sur mobile : en rangées de 5 le clavier devenait un carré
+function rowsFor(count: number): number[] {
   const base = Math.floor(count / 4);
   const extra = count % 4;
   return [0, 1, 2, 3].map((i) => base + (i < extra ? 1 : 0));
 }
 
+// Rotation du socle : position de base et amplitude au défilement (plus droite sur mobile, où la largeur manque)
+const TURN = { desktop: { base: -0.26, swing: 0.6 }, mobile: { base: -0.08, swing: 0.35 } };
+
 /** Texture du dessus de touche : logo blanc (ou monogramme) + lettre du raccourci. */
 function makeCapTexture(skill: Skill): THREE.CanvasTexture {
-  const size = 256;
+  const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 4;
+  texture.anisotropy = 8;
 
   const drawHotkey = () => {
-    ctx.font = '500 34px "JetBrains Mono", ui-monospace, monospace';
+    ctx.font = '500 68px "JetBrains Mono", ui-monospace, monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.62)';
     ctx.textBaseline = 'top';
-    ctx.fillText(skill.hotkey.toUpperCase(), 22, 18);
+    ctx.fillText(skill.hotkey.toUpperCase(), 44, 36);
   };
   const drawMono = () => {
     const text = skill.mono;
-    const fontSize = text.length <= 2 ? 92 : text.length <= 3 ? 74 : text.length <= 4 ? 58 : 44;
+    const fontSize = 2 * (text.length <= 2 ? 92 : text.length <= 3 ? 74 : text.length <= 4 ? 58 : 44);
     ctx.font = `800 ${fontSize}px "Archivo Variable", "Archivo", system-ui, sans-serif`;
     (ctx as CanvasRenderingContext2D & { fontStretch?: string }).fontStretch = 'expanded';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(text, size / 2, size / 2 + 10);
+    ctx.fillText(text, size / 2, size / 2 + 20);
     ctx.textAlign = 'left';
   };
 
@@ -74,7 +69,7 @@ function makeCapTexture(skill: Skill): THREE.CanvasTexture {
     const img = new Image();
     img.onload = () => {
       const s = size * 0.5;
-      ctx.drawImage(img, (size - s) / 2, (size - s) / 2 + 8, s, s);
+      ctx.drawImage(img, (size - s) / 2, (size - s) / 2 + 16, s, s);
       drawHotkey();
       texture.needsUpdate = true;
     };
@@ -109,20 +104,21 @@ function Keyboard({ skills, categories, active, press, highlight, onHover, scrol
 
   // Disposition en rangées, décalées comme un vrai clavier
   const layout = useMemo(() => {
-    const rows = rowsFor(skills.length, mobile);
-    const width = Math.max(...rows.map((n, r) => n * PITCH + (mobile ? 0 : r * 0.25)));
+    const rows = rowsFor(skills.length);
+    const width = Math.max(...rows.map((n, r) => n * PITCH + r * 0.25));
     const depth = rows.length * PITCH;
     const items: { skill: Skill; x: number; z: number }[] = [];
     let i = 0;
     rows.forEach((n, r) => {
-      const offset = mobile ? (5 - n) * PITCH * 0.5 : r * 0.25;
+      const offset = r * 0.25;
       for (let c = 0; c < n; c++) {
         const skill = skills[i++];
         items.push({ skill, x: -width / 2 + offset + c * PITCH + PITCH / 2, z: -depth / 2 + r * PITCH + PITCH / 2 });
       }
     });
     return { items, width, depth };
-  }, [skills, mobile]);
+  }, [skills]);
+  const turn = mobile ? TURN.mobile : TURN.desktop;
 
   const baseGeo = useMemo(() => new RoundedBoxGeometry(layout.width + 0.7, 0.32, layout.depth + 0.7, 4, 0.14), [layout]);
   const rimGeo = useMemo(() => new RoundedBoxGeometry(layout.width + 0.78, 0.05, layout.depth + 0.78, 3, 0.02), [layout]);
@@ -131,24 +127,23 @@ function Keyboard({ skills, categories, active, press, highlight, onHover, scrol
     rimGeo.dispose();
   }, [baseGeo, rimGeo]);
 
-  // Cadrage : la caméra recule pour que le clavier tienne dans la largeur
+  // Cadrage : la caméra recule juste assez pour que le socle tienne entier à sa rotation maximale
   useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera;
     const aspect = size.width / size.height;
-    // Emprise du socle à la rotation maximale (-0.32 ± 0.14 rad au défilement), sinon les coins sortent du canevas
-    const a = 0.46;
+    const a = Math.abs(turn.base) + turn.swing * 0.14;
     const w = layout.width + 0.78;
     const d = layout.depth + 0.78;
-    const needW = w * Math.cos(a) + d * Math.sin(a) + 0.4;
+    const needW = w * Math.cos(a) + d * Math.sin(a) + 0.3;
     // Vu en plongée (~50°), la profondeur apparaît raccourcie d'environ 20 %
-    const needH = (w * Math.sin(a) + d * Math.cos(a)) * 0.8 + 1;
+    const needH = (w * Math.sin(a) + d * Math.cos(a)) * 0.8 + 0.8;
     const half = THREE.MathUtils.degToRad(cam.fov / 2);
-    const dist = Math.max(needH / 2 / Math.tan(half), needW / 2 / (Math.tan(half) * aspect)) * 1.06;
+    const dist = Math.max(needH / 2 / Math.tan(half), needW / 2 / (Math.tan(half) * aspect)) * 1.03;
     const dir = new THREE.Vector3(0, 0.78, 0.62).normalize();
     cam.position.copy(dir.multiplyScalar(dist));
     cam.lookAt(0, -0.2, 0);
     cam.updateProjectionMatrix();
-  }, [camera, size, layout]);
+  }, [camera, size, layout, turn]);
 
   useEffect(() => () => {
     capGeo.dispose();
@@ -207,11 +202,11 @@ function Keyboard({ skills, categories, active, press, highlight, onHover, scrol
   }, [highlight]);
 
   useFrame(() => {
-    if (board.current) board.current.rotation.y = -0.32 + scroll.rotation;
+    if (board.current) board.current.rotation.y = turn.base + scroll.rotation * turn.swing;
   });
 
   return (
-    <group ref={board} rotation={[0, -0.32, 0]}>
+    <group ref={board} rotation={[0, turn.base, 0]}>
       {/* Socle mat + liseré de lumière violette */}
       <mesh position={[0, -0.36, 0]} geometry={baseGeo} receiveShadow>
         <meshStandardMaterial color="#0D0A14" roughness={0.85} metalness={0.1} />
@@ -258,6 +253,13 @@ function Keyboard({ skills, categories, active, press, highlight, onHover, scrol
               onPointerOut={() => {
                 setPressed(skill.id, false);
               }}
+              onPointerDown={(e) => {
+                // Toucher (mobile) ou clic : pas de survol au doigt, on affiche l'outil et on enfonce la touche
+                e.stopPropagation();
+                onHover(skill.id);
+                setPressed(skill.id, true);
+                if (e.nativeEvent.pointerType !== 'mouse') window.setTimeout(() => setPressed(skill.id, false), 220);
+              }}
             >
               <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0} roughness={0.42} metalness={0.05} />
             </mesh>
@@ -273,12 +275,13 @@ function Keyboard({ skills, categories, active, press, highlight, onHover, scrol
 
 export default function KeyboardScene(props: Props) {
   const { paused, onLost, ...rest } = props;
-  const dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.25 : 1.75);
+  // Petit canevas : on peut se permettre la pleine netteté (DPR 2) et l'anticrénelage, même sur mobile
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
   return (
     <Canvas
       className="toolbox__canvas"
       dpr={dpr}
-      gl={{ antialias: dpr < 2, alpha: true, powerPreference: 'high-performance' }}
+      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       camera={{ fov: 26, near: 0.1, far: 80, position: [0, 9, 8] }}
       frameloop={paused ? 'never' : 'always'}
       shadows
