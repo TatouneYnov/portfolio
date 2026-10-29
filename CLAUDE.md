@@ -195,7 +195,7 @@ En tête : `"_note": "Ne garde que les outils que tu sais expliquer en entretien
 Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogramme si pas de logo), hotkey (lettre unique), quip, usedIn[]`.
 `usedIn` = où Ethan s'est servi de l'outil (réponses d'Ethan du 17/10), affiché « Utilisé : … » sous la phrase, dans le texte du clavier et dans la liste. Valeurs : « Cours à Ynov », « TryHackMe / HTB », « Projets perso », ou un exercice précis (Wireshark → Machine Cap (HTB) ; Nmap → Machines Cap et Nexus (HTB) ; Metasploit → Room Blue (THM) ; John/Hashcat → Room Blue (THM), badge Hash Cracker ; Go → Power 4 Web, RedQuest ; HTML/CSS et JS → Cabinet infirmier, Refonte du VBVB ; Vue → Mon ancien portfolio, Hera (panel admin) ; JavaScript → aussi Hera (panel admin) ; Python et Docker → aussi Hera (prototype Garmin), d'après le code de ses repos ; Git → Tous mes projets GitHub). Ne jamais ajouter un lieu qu'Ethan n'a pas confirmé. Noms longs d'un seul mot (> 8 lettres) : taille réduite (`toolbox__name--long`). Ton complice, jamais vantard. 17 logos Simple Icons existent ; AD, Réseau, Nmap, Gobuster, John/Hashcat, Volatility, Autopsy, CyberChef et MITRE ATT&CK utilisent leur monogramme.
 
-**Prog & web** (`prog`, violet `#7C3AED`)
+**Prog & web** (`prog`, aubergine `#6A4766`)
 - Python — « Le couteau suisse : un script et le problème est réglé. »
 - Go — « Mon serveur de Puissance 4 tourne là-dessus. »
 - Bash — « Une ligne. Qui fait tout. Presque. »
@@ -205,7 +205,7 @@ Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogram
 - Vue — « Mon ancien portfolio, c'était lui. »
 - Git — « git commit -m "ça marche (je crois)" »
 
-**Système & infra** (`infra`, indigo `#4F46E5`)
+**Système & infra** (`infra`, ardoise `#5E6B85`)
 - Linux — « Mon terrain de jeu préféré. »
 - Windows — « Il faut connaître le terrain qu'on défend. »
 - Docker — « Ça marche sur ma machine. Et sur la tienne aussi, maintenant. »
@@ -213,7 +213,7 @@ Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogram
 - Active Directory — « Le royaume des GPO. Et des chemins d'attaque. »
 - Réseau (TCP/IP) — « Trois poignées de main avant de se parler. »
 
-**Offensif / CTF** (`offensive`, magenta `#C026D3`)
+**Offensif / CTF** (`offensive`, vieux rose `#B07A86`)
 - Kali Linux — « La caisse à outils, version dragon. »
 - Nmap — « Toc toc. Qui est là ? 65 535 portes à tester. »
 - Burp Suite — « Je m'interpose. Poliment. »
@@ -221,7 +221,7 @@ Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogram
 - Gobuster — « Il frappe à toutes les URL du site. »
 - John / Hashcat — « Ton mot de passe ? Plus pour longtemps. »
 
-**DFIR / CTI / Blue team** (`blue`, lavande `#A78BFA`)
+**DFIR / CTI / Blue team** (`blue`, lilas `#8F86B3`)
 - Wireshark — « Je lis des paquets comme d'autres lisent des romans. »
 - Volatility — « La RAM se souvient de tout. »
 - Autopsy — « On ouvre l'image disque, on remonte le temps. »
@@ -376,10 +376,14 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
 
 ### 6. Ma boîte à outils (clavier 3D)
 « MA BOÎTE » / « À OUTILS » + « (astuce : survole ou appuie sur une touche) ».
-- Clavier isométrique, socle noir mat arrondi avec liseré violet, `ContactShadows`. Keycaps `RoundedBox` en 4 rangées décalées (7-7-6-6), **aussi sur mobile** (en rangées de 5, le clavier devenait un carré qui ne ressemblait plus à un clavier), dans l'ordre de `skills.json` ; la lettre du raccourci est imprimée en haut à gauche de chaque touche. Rotation du socle `TURN` (bureau -0,26 rad, mobile -0,08 rad, plus droite faute de largeur) ; le cadrage recule la caméra juste assez pour que le socle tienne entier.
-- Couleurs par catégorie + légende cliquable (surbrillance de la catégorie).
-- Dessus de keycap : logo blanc (texture SVG → canvas) ou monogramme Archivo.
-- Survol / toucher ou clic (`onPointerDown`, indispensable sur téléphone où il n'y a pas de survol) / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde de lumière sur le socle ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (Archivo 800, couleur de la catégorie) + quip (Inter) + catégorie. Avant toute touche : « 26 outils ».
+- **Clavier compact réel** (refait le 29/10 avec Ethan, décisions issues d'un grill) dans `KeyboardScene.tsx` :
+  - **Boîtier en noyer moyen** (brun noisette, veinage fin dessiné en code `makeWalnutTexture`, finition satinée huilée), **penché** (`TILT` ≈ 6°, plus haut à l'arrière, fond plat), **rebord fin** (`RIM` ≈ 1/3 de touche), bords arrondis ; les touches sont dans un **renfoncement** sur une **plaque gris anthracite mate**. Ethan a refusé : socle noir plat, liseré néon violet, marge large, lueur violette entre les touches, fond violet, bois plus clair (« miel »).
+  - **Disposition `ROWS`** (9,5 unités × 5 rangées) : échap · 7 outils · effacer / tab · 7 outils · $ / verr maj · 6 outils · entrée / maj · 6 outils · maj / ctrl · alt · barre d'espace · alt gr · fn. Les 26 outils occupent les touches de lettres dans l'ordre de `skills.json` (si on ajoute un outil, il faut ajouter une place dans `ROWS`). Les touches de modification sont décoratives (gris taupe `MOD_COLOR`, libellé discret en bas à gauche, sans survol). Même disposition sur mobile.
+  - **Touches réalistes** (`makeKeyGeometry`) : base plus large que le dessus, dessus creusé d'avant en arrière (cuvette cylindrique), finition mate ; grille régulière arrondie à la main (`RoundedBoxGeometry` n'a pas de sommets au centre des faces). Logos et monogrammes en **blanc cassé** (`INK`) sur une étiquette courbée comme la cuvette ; la lettre du raccourci est en haut à gauche.
+  - Rotation du socle `TURN` (bureau -0,26 rad, mobile -0,08 rad) ; le cadrage recule la caméra juste assez pour que le boîtier tienne entier. Lumières neutres et chaudes (le bois doit rester brun), violet seulement en contre-jour. `ContactShadows` hors du groupe qui tourne, sous le biseau du fond.
+- Couleurs par catégorie en **tons poudrés mats** (aubergine `#6A4766`, ardoise `#5E6B85`, vieux rose `#B07A86`, lilas `#8F86B3`), identiques dans `skills.json` et `main.css` (`[data-cat]`), + légende cliquable (surbrillance de la catégorie).
+- Dessus de keycap : logo (texture SVG → canvas, repeint en blanc cassé) ou monogramme Archivo.
+- Survol / toucher ou clic (`onPointerDown`, indispensable sur téléphone où il n'y a pas de survol) / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde discrète sur la plaque ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (Archivo 800, couleur de la catégorie) + quip (Inter) + catégorie. Avant toute touche : « 26 outils ».
 - Hotkeys : seulement si la section est visible **et** qu'aucun champ n'a le focus ; jamais avec Ctrl/Alt/Meta.
 - Rotation y au scroll (scrub), amplitude réduite : ±5° bureau, ±3° mobile.
 - `<ul>` réelle des compétences dans le DOM (bouton « Voir en liste ») ; c'est la version affichée sous reduced-motion, sans WebGL et sans JS.
@@ -440,7 +444,7 @@ Pied : « © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confident
 ## 9. Responsive
 
 - Breakpoints : ≥ 1200 desktop · 768–1199 tablette · < 768 mobile
-- Mobile : hero en colonne (avatar en haut), pas de curseur custom, tête en balayage auto, pas de pin, colonne « À propos » sans avatar, timeline 1 colonne ligne à gauche, clavier en rangées de 5 avec le texte au-dessus, bulles tap uniquement + fiche en bottom sheet, calendrier 1 mois (swipe + boutons), formulaire pleine largeur, onglet CV vertical masqué (CV dans le menu).
+- Mobile : hero en colonne (avatar en haut), pas de curseur custom, tête en balayage auto, pas de pin, colonne « À propos » sans avatar, timeline 1 colonne ligne à gauche, clavier compact complet (même disposition que sur ordinateur, touches ~32 px) avec le texte au-dessus, bulles tap uniquement + fiche en bottom sheet, calendrier 1 mois (swipe + boutons), formulaire pleine largeur, onglet CV vertical masqué (CV dans le menu).
 - Aucun scroll horizontal de page, gouttière ≥ 16 px.
 - Appareils faibles (`hardwareConcurrency ≤ 4` ou `deviceMemory ≤ 4`) : images fixes à la place de l'avatar 3D, 5 bulles max.
 
@@ -460,7 +464,7 @@ Pied : « © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confident
 
 ## 11. Performance
 
-- DPR : avatar max 1.75 (1.25 mobile), antialias seulement si DPR < 2 (grand canevas plein écran). Clavier et bulles : DPR max 2 partout et antialias (petits canevas ; à 1,25 ils étaient flous sur les téléphones 3×). Textures des touches en 512 px, des bulles en 2048 × 1024, anisotropie 8.
+- DPR : avatar max 1.75 (1.25 mobile), antialias seulement si DPR < 2 (grand canevas plein écran). Clavier et bulles : DPR max 2 partout et antialias (petits canevas ; à 1,25 ils étaient flous sur les téléphones 3×). Textures des touches en 512 px (512 × 256 par unité pour les touches de modification), des bulles en 2048 × 1024, anisotropie 8.
 - Canvases en pause (`frameloop="never"`) hors écran et quand `document.hidden`.
 - Pendant les 2 s de chargement : import des modules clavier et bulles + init du WebAssembly Rapier ; compilation de l'avatar et du bureau (caché) derrière l'écran de chargement. Après : montage échelonné des scènes au repos, avec `Warmup` (textures envoyées, `gl.compile`, rendu à blanc sans frustum culling, et une image complète via `advance()` pour l'ombre du clavier). Preload de l'image fixe du hero seulement.
 - Mesures du 17/10 (navigateur de test sans GPU) : pendant le défilement, plus aucune compilation de shader ; une seule tâche longue de 58 ms, contre 4 à 5 s avant correction. JS initial ~120 Ko gzip.

@@ -2327,18 +2327,19 @@ button.quick-link:hover .arrow {
   }
 }
 
-/* Couleurs des catégories (identiques à src/data/skills.json, utilisées par le clavier 3D) */
+/* Couleurs des catégories, tons poudrés (identiques à src/data/skills.json, utilisées par le clavier 3D) :
+   aubergine, ardoise, vieux rose, lilas */
 [data-cat='prog'] {
-  --cat: #7c3aed;
+  --cat: #6a4766;
 }
 [data-cat='infra'] {
-  --cat: #4f46e5;
+  --cat: #5e6b85;
 }
 [data-cat='offensive'] {
-  --cat: #c026d3;
+  --cat: #b07a86;
 }
 [data-cat='blue'] {
-  --cat: #a78bfa;
+  --cat: #8f86b3;
 }
 .legend__swatch[data-cat] {
   background: var(--cat);

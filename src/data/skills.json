@@ -1,10 +1,10 @@
 {
   "_note": "Ne garde que les outils que tu sais expliquer en entretien. usedIn = où tu t'en es servi (affiché « Utilisé : … »).",
   "categories": [
-    { "id": "prog", "label": "Prog & web", "color": "#7C3AED" },
-    { "id": "infra", "label": "Système & infra", "color": "#4F46E5" },
-    { "id": "offensive", "label": "Offensif / CTF", "color": "#C026D3" },
-    { "id": "blue", "label": "DFIR / CTI / Blue team", "color": "#A78BFA" }
+    { "id": "prog", "label": "Prog & web", "color": "#6A4766" },
+    { "id": "infra", "label": "Système & infra", "color": "#5E6B85" },
+    { "id": "offensive", "label": "Offensif / CTF", "color": "#B07A86" },
+    { "id": "blue", "label": "DFIR / CTI / Blue team", "color": "#8F86B3" }
   ],
   "skills": [
     {"id": "python", "label": "Python", "category": "prog", "icon": "simple-icons:python", "mono": "PY", "hotkey": "p", "quip": "Le couteau suisse : un script et le problème est réglé.", "usedIn": ["Cours à Ynov", "TryHackMe / HTB", "Projets perso", "Hera (prototype Garmin)"]},
