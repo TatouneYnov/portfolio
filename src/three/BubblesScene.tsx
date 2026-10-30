@@ -180,7 +180,8 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
     const unit = Math.min(halfW, halfH) * (portrait ? 0.27 : 0.2);
     const px = (2 * halfH) / Math.max(1, size.height); // 1 px CSS en unités monde
     const margin = unit * 0.3;
-    const plateY = -halfH + unit * 1.05;
+    // Centre du plateau : sa demi-hauteur apparente, son épaisseur et « Déposer ici » tiennent au-dessus du bas
+    const plateY = -halfH + unit * 0.75 + unit * 0.32 + px * 60;
     const top = halfH - topInset * px - margin;
     const floor = plateY + unit * 0.75; // au-dessus du plateau (dont le bord arrière dépasse d'environ 0,5 unité)
     return {
@@ -217,25 +218,6 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
     return new THREE.CanvasTexture(c);
   }, []);
 
-  // Dessus du plateau : verre dépoli plus clair vers l'arrière, reflet le long du bord avant
-  const plateTex = useMemo(() => {
-    const c = document.createElement('canvas');
-    c.width = c.height = 256;
-    const ctx = c.getContext('2d') as CanvasRenderingContext2D;
-    const g = ctx.createLinearGradient(0, 0, 0, 256);
-    g.addColorStop(0, light ? 'rgba(255,255,255,0.85)' : 'rgba(200,185,255,0.30)');
-    g.addColorStop(1, light ? 'rgba(236,230,255,0.55)' : 'rgba(120,100,200,0.18)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 256, 256);
-    const s2 = ctx.createRadialGradient(128, 70, 10, 128, 70, 140);
-    s2.addColorStop(0, light ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.18)');
-    s2.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = s2;
-    ctx.fillRect(0, 0, 256, 256);
-    const tex = new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    return tex;
-  }, [light]);
   const shadowTex = useMemo(() => {
     const c = document.createElement('canvas');
     c.width = c.height = 128;
@@ -247,7 +229,6 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
     ctx.fillRect(0, 0, 128, 128);
     return new THREE.CanvasTexture(c);
   }, []);
-  useEffect(() => () => plateTex.dispose(), [plateTex]);
 
   useEffect(
     () => () => {
@@ -269,6 +250,8 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
   const maxRadius = Math.max(...projects.map((p) => p.size)) * frame.unit;
   const dockRadius = maxRadius * 1.18;
   const FLAT = 0.26; // plateau vu légèrement de dessus : cercle aplati en ellipse
+  const TILT = Math.asin(FLAT); // inclinaison du cylindre qui donne cet aplatissement
+  const plateH = frame.unit * 0.32; // épaisseur du plateau
   // Bulle déposée : posée sur le plateau (son centre dépend de sa taille)
   const restY = (id: string) => frame.dock.y + (balls.current.get(id)?.radius ?? maxRadius) * 1.02;
   // Zone de dépôt : au-dessus du plateau, là où repose la bulle
@@ -509,7 +492,7 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
     glow.current = THREE.MathUtils.damp(glow.current, overDock ? 1 : 0, overDock ? 10 : 3, dt);
     const pulse = 1 + Math.sin(state.clock.elapsedTime * 1.6) * 0.04;
     if (ring.current) ring.current.scale.setScalar(1 + glow.current * 0.06);
-    if (ringMat.current) ringMat.current.emissiveIntensity = (light ? 0.5 : 0.9) + glow.current * 2.2;
+    if (ringMat.current) ringMat.current.emissiveIntensity = (light ? 0.5 : 0.35) + glow.current * 2.2;
     if (halo.current) halo.current.scale.set(dockRadius * 3.2 * pulse, dockRadius * 3.2 * FLAT * 2.2 * pulse, 1);
     if (haloMat.current) haloMat.current.opacity = (light ? 0.25 : 0.4) + glow.current * 0.6;
   });
@@ -528,29 +511,53 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial ref={haloMat} map={haloTex} transparent depthWrite={false} blending={light ? THREE.NormalBlending : THREE.AdditiveBlending} toneMapped={false} />
         </mesh>
-        <mesh position={[0, -frame.unit * 0.16, -0.3]} scale={[dockRadius * 1.25, dockRadius * FLAT * 1.5, 1]}>
+        <mesh position={[0, -plateH - frame.unit * 0.12, -0.3]} scale={[dockRadius * 1.35, dockRadius * FLAT * 1.6, 1]}>
           <circleGeometry args={[1, 64]} />
           <meshBasicMaterial map={shadowTex} transparent depthWrite={false} toneMapped={false} opacity={light ? 0.5 : 0.8} />
         </mesh>
-        {/* Épaisseur du plateau, puis dessus en verre dépoli */}
-        <mesh position={[0, -frame.unit * 0.09, -0.2]} scale={[dockRadius, dockRadius * FLAT, 1]}>
-          <circleGeometry args={[1, 96]} />
-          <meshBasicMaterial color={light ? '#9C86E6' : '#5B4A9E'} transparent opacity={light ? 0.45 : 0.55} depthWrite={false} />
-        </mesh>
-        <mesh position={[0, 0, -0.1]} scale={[dockRadius, dockRadius * FLAT, 1]}>
-          <circleGeometry args={[1, 96]} />
-          <meshBasicMaterial map={plateTex} transparent depthWrite={false} toneMapped={false} />
-        </mesh>
-        <group ref={ring} position={[0, 0, -0.05]}>
-          <mesh scale={[1, FLAT, 1]}>
-            <torusGeometry args={[dockRadius, frame.unit * 0.022, 12, 128]} />
-            <meshStandardMaterial ref={ringMat} color={light ? '#8B6CF0' : '#B49CFF'} emissive={light ? '#7C5CE0' : '#9F86FF'} emissiveIntensity={0.6} toneMapped={false} />
+        {/* Plateau en verre, en volume : cylindre incliné vers la caméra (on voit le dessus et la tranche) */}
+        <group rotation={[TILT, 0, 0]} position={[0, -plateH / 2, 0]}>
+          <mesh renderOrder={0}>
+            <cylinderGeometry args={[dockRadius, dockRadius * 1.03, plateH, 96, 1]} />
+            {/* Tranche, dessus, dessous */}
+            <meshPhysicalMaterial
+              attach="material-0"
+              color={light ? '#8B73E6' : '#6B58C8'}
+              transparent
+              opacity={light ? 0.72 : 0.7}
+              roughness={0.18}
+              clearcoat={1}
+              clearcoatRoughness={0.1}
+              envMapIntensity={1.4}
+            />
+            <meshPhysicalMaterial
+              attach="material-1"
+              color={light ? '#CFC2FF' : '#251C55'}
+              transparent
+              opacity={light ? 0.5 : 0.82}
+              roughness={0.32}
+              clearcoat={0.6}
+              clearcoatRoughness={0.3}
+              envMapIntensity={1.2}
+            />
+            <meshBasicMaterial attach="material-2" visible={false} />
           </mesh>
+          {/* Arête lumineuse du dessus (s'allume à l'approche d'une bulle) et biseau intérieur */}
+          <group ref={ring} position={[0, plateH / 2 + 0.002, 0]}>
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[dockRadius, frame.unit * 0.02, 12, 128]} />
+              <meshStandardMaterial ref={ringMat} color={light ? '#8B6CF0' : '#7C5CE0'} emissive={light ? '#7C5CE0' : '#9F86FF'} emissiveIntensity={0.6} toneMapped={false} />
+            </mesh>
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[dockRadius * 0.8, frame.unit * 0.008, 8, 128]} />
+              <meshBasicMaterial color="#FFFFFF" transparent opacity={light ? 0.7 : 0.25} depthWrite={false} />
+            </mesh>
+          </group>
         </group>
         {/* « Déposer ici » à taille fixe à l'écran (texte d'environ 13 px) */}
-        <mesh position={[0, -dockRadius * FLAT - frame.px * 26, 0]} scale={[frame.px * 200, frame.px * 37.5, 1]}>
+        <mesh position={[0, -dockRadius * 1.03 * FLAT - plateH - frame.px * 24, dockRadius * Math.cos(TILT)]} scale={[frame.px * 200, frame.px * 37.5, 1]} renderOrder={5}>
           <planeGeometry args={[1, 1]} />
-          <meshBasicMaterial map={dockLabel} transparent depthWrite={false} toneMapped={false} />
+          <meshBasicMaterial map={dockLabel} transparent depthWrite={false} depthTest={false} toneMapped={false} />
         </mesh>
       </group>
 
