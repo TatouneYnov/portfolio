@@ -10,4 +10,4 @@ a:focus-visible{outline:2px solid #B49CFF;outline-offset:3px}
 .prose p{color:#C9C3DA}
 .prose a{font-family:inherit;font-size:inherit}
 .meta{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:#8C84A3!important}
-@media (prefers-color-scheme:light){body{color-scheme:light;background:#F6F4FB;color:#17121F}.label,.meta{color:#5C5571!important}h1,a{color:#6D28D9}a:focus-visible{outline-color:#6D28D9}.prose h2{color:#17121F}.prose p{color:#3B3550}}
+@media (prefers-color-scheme:light){body{color-scheme:light;background:#ECE8F6;color:#17121F}.label,.meta{color:#524B67!important}h1,a{color:#6025C9}a:focus-visible{outline-color:#6025C9}.prose h2{color:#17121F}.prose p{color:#3B3550}}

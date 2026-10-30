@@ -57,7 +57,7 @@ Fournir un `.env.example`. Ne jamais committer de `.env`.
 | `src/App.tsx` | Assemble les sections, démarre le mouvement, monte la scène de l'avatar, lance le préchargement 3D |
 | `src/data/*.json` | Tout le contenu (§4) |
 | `src/sections/*.tsx` | Une section par fichier (Hero, About, WhatIDo, Journey, Toolbox, Training, Projects, Availability, Contact, Footer) |
-| `src/components/` | Loader, Header, Cursor, Toast, SplitHeading (titres mot par mot), Frame (cadre à équerres) |
+| `src/components/` | Loader, Header, Cursor, Toast, SplitHeading (titres mot par mot), Frame (cadre à équerres), Backdrop (fond à lueurs) |
 | `src/lib/motion.ts` | GSAP + ScrollTrigger + Lenis, ancres internes (`scrollToHash`) |
 | `src/lib/stageState.ts` | Progression partagée scroll → scène de l'avatar (`intro`, `about`, `travel`, `desk`) |
 | `src/lib/warm.ts` | Préchargement des modules 3D, montage anticipé des scènes (`useIdleMount`) |
@@ -277,7 +277,8 @@ Structure suggérée :
 --accent-strong: #7C3AED; /* lueurs, ligne de timeline */
 --glow: radial-gradient(circle, rgb(109 40 217 / .35), transparent 70%);
 ```
-**Thème clair** (ajouté le 23/10 à la demande d'Ethan) : le site suit le réglage de l'OS (`prefers-color-scheme`), sombre par défaut, sans bouton ni script. Tokens clairs dans `main.css` (`@media (prefers-color-scheme: light)`), `pages.css` et deux `<meta name="theme-color">`. Clair : `--bg #F6F4FB`, `--bg-2 #FFFFFF`, `--text #17121F`, `--muted #5C5571`, `--accent #6D28D9` (AA vérifié). Toute nouvelle couleur passe par un token (pas de `rgb()` codé en dur, utiliser `color-mix` avec les tokens). Scènes 3D : canevas transparents ; seul le socle des bulles change en clair (pas de mélange additif). Les images fixes et l'image Open Graph restent celles du thème sombre.
+**Thème clair** (ajouté le 23/10 à la demande d'Ethan) : le site suit le réglage de l'OS (`prefers-color-scheme`), sombre par défaut, sans bouton ni script. Tokens clairs dans `main.css` (`@media (prefers-color-scheme: light)`), `pages.css` et deux `<meta name="theme-color">`. Clair (retravaillé le 30/10, « trop blanc » avant) : **lavande brumeuse**, `--bg #ECE8F6`, `--bg-2 #FFFFFF`, `--text #17121F`, `--muted #524B67`, `--accent #6025C9`, cartes en verre blanc à 55 % (AA vérifié jusqu'au cœur des lueurs).
+**Fond de page** (`src/components/Backdrop.tsx`, 30/10, les deux thèmes) : calque fixe sous `main` avec trois grandes lueurs radiales (`--orb-a/b/c` ; clair : lavande en haut à gauche, pêche à droite, lilas bleuté en bas ; sombre : violet, prune, bleu nuit à 9–16 %, à peine visibles) qui dérivent au défilement (un seul scrub GSAP sur toute la page, fixe sous « réduire les animations »), + grain SVG fixe (`--grain-opacity`) contre les bandes des dégradés. Toute nouvelle couleur passe par un token (pas de `rgb()` codé en dur, utiliser `color-mix` avec les tokens). Scènes 3D : canevas transparents ; seul le socle des bulles change en clair (pas de mélange additif). Les images fixes et l'image Open Graph restent celles du thème sombre.
 
 ### Typo (refonte « Apple » du 30/10)
 - **Police système partout**, aucune majuscule forcée : titres en minuscules (« Ma boîte / à outils »), très gras (700–800), lettres serrées.

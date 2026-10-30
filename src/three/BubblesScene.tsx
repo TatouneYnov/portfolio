@@ -67,7 +67,7 @@ function makeLabelTexture(text: string): THREE.CanvasTexture {
   canvas.height = 96;
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
   ctx.font = '600 34px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Roboto, system-ui, sans-serif';
-  ctx.fillStyle = isLight() ? '#6D28D9' : '#B49CFF';
+  ctx.fillStyle = isLight() ? '#6025C9' : '#B49CFF';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(text, 256, 48);

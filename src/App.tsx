@@ -3,6 +3,7 @@ import { Loader } from './components/Loader';
 import { Header } from './components/Header';
 import { Toast } from './components/Toast';
 import { Cursor } from './components/Cursor';
+import { Backdrop } from './components/Backdrop';
 import { Hero } from './sections/Hero';
 import { About } from './sections/About';
 import { WhatIDo } from './sections/WhatIDo';
@@ -60,6 +61,7 @@ export function App() {
         Aller au contenu
       </a>
       <Loader onDone={onLoaded} />
+      <Backdrop />
       <Header />
       <main id="contenu">
         <Hero />
