@@ -2758,7 +2758,7 @@ button.quick-link:active {
     white-space: nowrap;
   }
   .toolbox__stage {
-    height: min(66vw, 340px);
+    height: min(76vw, 400px);
     margin-inline: calc(-1 * var(--gutter));
   }
   /* Canevas bord à bord de l'écran : pas de fondu (il rognerait le coin du boîtier) */

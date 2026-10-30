@@ -225,7 +225,7 @@ function makeModTexture(label: string, units: number): THREE.CanvasTexture {
 }
 
 // Rotation du socle : position de base et amplitude au défilement (plus droite sur mobile, où la largeur manque)
-const TURN = { desktop: { base: -0.26, swing: 0.6 }, mobile: { base: -0.08, swing: 0.35 } };
+const TURN = { desktop: { base: -0.26, swing: 0.6 }, mobile: { base: -0.04, swing: 0.35 } };
 
 /** Texture du dessus de touche : logo blanc (ou monogramme) + lettre du raccourci. */
 function makeCapTexture(skill: Skill): THREE.CanvasTexture {
@@ -372,17 +372,18 @@ function Keyboard({ skills, categories, active, press, highlight, onHover, scrol
     const a = Math.abs(turn.base) + turn.swing * 0.14;
     const w = box.outerW;
     const d = box.outerD;
-    // + marge pour l'ombre douce et le fondu des bords du canevas
-    const needW = w * Math.cos(a) + d * Math.sin(a) + 0.6;
-    // Vu en plongée (~50°), la profondeur apparaît raccourcie d'environ 20 %
-    const needH = (w * Math.sin(a) + d * Math.cos(a)) * 0.8 + 0.8;
+    // + marge pour l'ombre douce et le fondu des bords du canevas (sur téléphone, canevas bord à bord : marge réduite)
+    const needW = w * Math.cos(a) + d * Math.sin(a) + (mobile ? 0.25 : 0.6);
+    // Plongée ~50° (sur téléphone ~62° : touches moins écrasées, plus grandes à l'écran) ;
+    // la profondeur apparaît raccourcie d'autant
+    const dir = new THREE.Vector3(0, 0.78, mobile ? 0.42 : 0.62).normalize();
+    const needH = (w * Math.sin(a) + d * Math.cos(a)) * dir.y + 0.8;
     const half = THREE.MathUtils.degToRad(cam.fov / 2);
     const dist = Math.max(needH / 2 / Math.tan(half), needW / 2 / (Math.tan(half) * aspect)) * 1.03;
-    const dir = new THREE.Vector3(0, 0.78, 0.62).normalize();
     cam.position.copy(dir.multiplyScalar(dist));
     cam.lookAt(0, -0.2, 0);
     cam.updateProjectionMatrix();
-  }, [camera, size, box, turn]);
+  }, [camera, size, box, turn, mobile]);
 
   useEffect(() => () => {
     capGeo.dispose();
