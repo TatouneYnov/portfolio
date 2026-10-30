@@ -3,7 +3,7 @@
  * - Au repos : points discrets, qui s'estompent vers les bords de l'écran.
  * - La zone sous la souris s'allume en --accent et se soulève.
  * - Un clic (ou un toucher) dans le vide lance une onde.
- * - Le défilement fait passer une vague. La grille défile à mi-vitesse (profondeur).
+ * - La grille défile à mi-vitesse (profondeur).
  * `still` (réduire les animations, appareil modeste) : rien ne bouge, seule la lueur sous la souris apparaît en fondu.
  * Le dessin ne tourne que lorsqu'il y a quelque chose à animer ; sinon la dernière image reste affichée.
  */
@@ -43,8 +43,6 @@ export function startDotGrid(canvas: HTMLCanvasElement, still: boolean): () => v
 
   const ptr = { x: 0, y: 0, on: false };
   let glow = 0; // présence de la lumière sous la souris (0 → 1, en fondu)
-  let energy = 0; // énergie de la vague de défilement
-  let lastScroll = window.scrollY;
   const ripples: Ripple[] = [];
   let t = 0;
   let last = 0;
@@ -89,8 +87,6 @@ export function startDotGrid(canvas: HTMLCanvasElement, still: boolean): () => v
     ctx!.fillStyle = accent;
 
     for (let y = offset - GAP; y < H + GAP; y += GAP) {
-      const pageY = y + scroll * PARALLAX;
-      const wave = energy > 0.005 ? energy * Math.pow(0.5 + 0.5 * Math.sin(pageY * 0.012 - t * 5), 10) : 0;
       const ey = (y - cy) / (H * 0.62);
       for (let x = ((W % GAP) + GAP) / 2; x < W; x += GAP) {
         // Fondu vers les bords : ellipse, plein au centre, nul au-delà
@@ -109,7 +105,7 @@ export function startDotGrid(canvas: HTMLCanvasElement, still: boolean): () => v
           const d = Math.hypot(x - r.x, y - r.y);
           I += Math.max(0, 1 - Math.abs(d - age * RIPPLE_SPEED) / 36) * Math.max(0, 1 - age / RIPPLE_LIFE);
         }
-        I = Math.min(1, I + wave * 0.6);
+        I = Math.min(1, I);
 
         const a = baseAlpha * fade + 0.8 * I;
         if (a < 0.004) continue;
@@ -133,9 +129,6 @@ export function startDotGrid(canvas: HTMLCanvasElement, still: boolean): () => v
     last = now;
     t += dt;
 
-    const scroll = window.scrollY;
-    if (!still) energy = Math.min(1, energy * 0.94 + Math.abs(scroll - lastScroll) * 0.012);
-    lastScroll = scroll;
     const target = ptr.on ? 1 : 0;
     glow += (target - glow) * Math.min(1, dt * (still ? 6 : 10));
     if (Math.abs(target - glow) < 0.002) glow = target;
@@ -144,7 +137,7 @@ export function startDotGrid(canvas: HTMLCanvasElement, still: boolean): () => v
     draw();
 
     // On continue tant que quelque chose bouge ; sinon l'image reste telle quelle
-    const busy = ripples.length > 0 || energy > 0.005 || glow !== target;
+    const busy = ripples.length > 0 || glow !== target;
     if (busy) request();
     else last = 0;
   }
