@@ -372,7 +372,8 @@ function Keyboard({ skills, categories, active, press, highlight, onHover, scrol
     const a = Math.abs(turn.base) + turn.swing * 0.14;
     const w = box.outerW;
     const d = box.outerD;
-    const needW = w * Math.cos(a) + d * Math.sin(a) + 0.3;
+    // + marge pour l'ombre douce et le fondu des bords du canevas
+    const needW = w * Math.cos(a) + d * Math.sin(a) + 0.6;
     // Vu en plongée (~50°), la profondeur apparaît raccourcie d'environ 20 %
     const needH = (w * Math.sin(a) + d * Math.cos(a)) * 0.8 + 0.8;
     const half = THREE.MathUtils.degToRad(cam.fov / 2);
