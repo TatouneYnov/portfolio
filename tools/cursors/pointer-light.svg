@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <filter id="s" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="1" stdDeviation="0.9" flood-color="#000" flood-opacity="0.32"/>
+    </filter>
+    <g id="f" transform="translate(2.4 1.6) scale(0.86)"><rect x="11.2" y="2.5" width="4.2" height="15" rx="2.1"/><rect x="15.4" y="10.2" width="4.2" height="9" rx="2.1"/><rect x="19.6" y="11" width="4" height="8" rx="2"/><rect x="23.6" y="12.4" width="3.7" height="7" rx="1.85"/><path d="M11.2 15 H27.3 V22 a6 6 0 0 1 -6 6 H16 a5 5 0 0 1 -4 -2 L6 19.4 a2.3 2.3 0 0 1 3.3 -3.2 L11.2 18 Z"/></g>
+    <mask id="edge"><use href="#f" fill="#fff" stroke="#fff" stroke-width="3.2" stroke-linejoin="round"/></mask>
+    <mask id="fill"><use href="#f" fill="#fff" stroke="#fff" stroke-width="0.5" stroke-linejoin="round"/></mask>
+  </defs>
+  <g filter="url(#s)">
+    <rect width="32" height="32" fill="#FFFFFF" mask="url(#edge)"/>
+    <rect width="32" height="32" fill="#17121F" mask="url(#fill)"/>
+  </g>
+  <g transform="translate(2.4 1.6) scale(0.86)" fill="none" stroke="#FFFFFF" stroke-width="1.1" stroke-linecap="round"><path d="M15.4 13.6v3M19.6 14.2v2.6M23.6 15.4v2"/></g>
+</svg>

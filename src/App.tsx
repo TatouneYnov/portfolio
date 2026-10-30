@@ -2,7 +2,6 @@ import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { Loader } from './components/Loader';
 import { Header } from './components/Header';
 import { Toast } from './components/Toast';
-import { Cursor } from './components/Cursor';
 import { Backdrop } from './components/Backdrop';
 import { Hero } from './sections/Hero';
 import { About } from './sections/About';
@@ -81,7 +80,6 @@ export function App() {
           <AvatarStage onLost={() => setStage(false)} />
         </Suspense>
       )}
-      {mounted && <Cursor />}
       <Toast />
     </>
   );

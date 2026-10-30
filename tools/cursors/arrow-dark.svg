@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <filter id="s" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="1" stdDeviation="0.9" flood-color="#000" flood-opacity="0.32"/>
+    </filter>
+    <g id="f" transform=""><path d="M6 3.5 L6 21.6 L10.6 17.4 L13.7 24.6 L16.7 23.3 L13.7 16.2 L19.9 16.2 Z"/></g>
+    <mask id="edge"><use href="#f" fill="#fff" stroke="#fff" stroke-width="3.2" stroke-linejoin="round"/></mask>
+    <mask id="fill"><use href="#f" fill="#fff" stroke="#fff" stroke-width="0.5" stroke-linejoin="round"/></mask>
+  </defs>
+  <g filter="url(#s)">
+    <rect width="32" height="32" fill="#17121F" mask="url(#edge)"/>
+    <rect width="32" height="32" fill="#F4F1FA" mask="url(#fill)"/>
+  </g>
+  <g transform="" fill="none" stroke="#17121F" stroke-width="1.1" stroke-linecap="round"></g>
+</svg>
