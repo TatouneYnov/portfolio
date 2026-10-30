@@ -37,7 +37,7 @@
   --orb-b: rgb(176 70 150 / 0.09); /* prune, à droite */
   --orb-c: rgb(70 80 210 / 0.1); /* bleu nuit, en bas */
   --grain-opacity: 0.06;
-  --grid-alpha: 0.13; /* opacité des points de la grille au repos (dotGrid.ts) ; allumés : --accent */
+  --grid-alpha: 0.2; /* opacité des points de la grille au repos (dotGrid.ts) ; allumés : --accent */
   --grid-blend: lighter; /* en sombre, les points allumés s'additionnent à la lumière */
 
   /* Polices du système (SF Pro sur Apple, Segoe UI sur Windows, Roboto sur Android) : rien à télécharger,
@@ -92,7 +92,7 @@
     --orb-b: rgb(255 190 160 / 0.55);
     --orb-c: rgb(150 170 255 / 0.38);
     --grain-opacity: 0.05;
-    --grid-alpha: 0.16;
+    --grid-alpha: 0.24;
     --grid-blend: source-over;
     color-scheme: light;
   }

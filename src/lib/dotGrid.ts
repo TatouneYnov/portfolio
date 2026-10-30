@@ -92,7 +92,7 @@ export function startDotGrid(canvas: HTMLCanvasElement, still: boolean): () => v
         // Fondu vers les bords : ellipse, plein au centre, nul au-delà
         const ex = (x - cx) / (W * 0.62);
         const e = Math.sqrt(ex * ex + ey * ey);
-        const fade = e < 0.5 ? 1 : Math.max(0, 1 - (e - 0.5) / 0.55);
+        const fade = e < 0.6 ? 1 : Math.max(0, 1 - (e - 0.6) / 0.6);
 
         let I = 0;
         if (glow > 0.001) {
