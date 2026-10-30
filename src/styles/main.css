@@ -1018,64 +1018,46 @@ html.menu-open {
 }
 
 /* ---------- Curseur ---------- */
-.has-cursor,
-.has-cursor * {
-  cursor: none !important;
+/* Le curseur du système reste affiché ; seules les zones à geste changent sa forme. */
+[data-cursor='pointer'],
+[data-cursor='pointer'] * {
+  cursor: pointer;
 }
-.has-cursor input,
-.has-cursor textarea,
-.has-cursor select {
-  cursor: auto !important;
+[data-cursor='grabbing'],
+[data-cursor='grabbing'] * {
+  cursor: grabbing;
 }
-.has-cursor input,
-.has-cursor textarea {
-  cursor: text !important;
-}
-.has-cursor [data-cursor='grab'],
-.has-cursor [data-cursor='grab'] * {
-  cursor: grab !important;
-}
-.has-cursor [data-cursor='pointer'],
-.has-cursor [data-cursor='pointer'] * {
-  cursor: pointer !important;
-}
-.has-cursor [data-cursor='grabbing'],
-.has-cursor [data-cursor='grabbing'] * {
-  cursor: grabbing !important;
-}
+/* Halo (Cursor.tsx) : au-dessus du fond, sous le contenu (main et pied de page en z-index 1) */
 .cursor {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 150;
+  z-index: 0;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.3s;
 }
 .cursor.is-visible {
   opacity: 1;
 }
-.cursor__dot {
+.cursor__halo {
   position: absolute;
-  width: 22px;
-  height: 22px;
-  margin: -11px 0 0 -11px;
+  width: 140px;
+  height: 140px;
+  margin: -70px 0 0 -70px;
   border-radius: 50%;
-  background: var(--accent);
-  opacity: 0.9;
-  transition: transform 0.25s var(--ease-out), opacity 0.2s;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 34%, transparent) 0%, transparent 70%);
+  opacity: 0.55;
+  transition: transform 0.3s var(--ease-out), opacity 0.3s;
 }
-.cursor[data-mode='hover'] .cursor__dot {
-  transform: scale(2.2);
-  mix-blend-mode: difference;
+.cursor.is-hover .cursor__halo {
+  transform: scale(0.6);
   opacity: 1;
 }
-.cursor[data-mode='grab'] .cursor__dot,
-.cursor[data-mode='pointer'] .cursor__dot,
-.cursor[data-mode='grabbing'] .cursor__dot,
-.cursor[data-mode='native'] .cursor__dot {
-  opacity: 0;
-  transform: scale(0.4);
+@media (prefers-reduced-motion: reduce) {
+  .cursor.is-hover .cursor__halo {
+    transform: none;
+  }
 }
 
 /* ---------- Toast ---------- */

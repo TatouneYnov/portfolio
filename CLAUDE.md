@@ -295,8 +295,8 @@ Structure suggérée :
 - **Cartes du contenu** en verre (`.frame` / `.glass-card`) : « Ce que je fais », tuiles d'entraînement, calendrier, « Hors écran », fiches projets, contact, alternance. Le cadre pointillé à équerres a disparu.
 - `prefers-reduced-transparency` et `prefers-contrast: more` : surfaces pleines, sans flou (contours nets en contraste élevé).
 
-### Curseur custom (desktop, `pointer: fine` uniquement)
-Disque lavande ~22 px, opacité 0.9, lerp 0.18. ×2.2 + `mix-blend-mode: difference` au survol des éléments interactifs. Au-dessus d'une bulle : main (`data-cursor="pointer"`), main fermée pendant le glisser (`grabbing`) ; ailleurs sur la scène des bulles : le disque. Curseur natif conservé sur les champs de formulaire.
+### Curseur (desktop, `pointer: fine` uniquement)
+**Refait le 30/10 à la demande d'Ethan** (l'ancien disque lavande qui remplaçait la flèche avait du retard et ne lui plaisait pas) : **le vrai curseur du système reste affiché partout**, sans aucun retard. Il est accompagné d'un **halo lavande doux** (`Cursor.tsx`, ~140 px, dégradé radial en `--accent`) qui le rattrape en ~0,15 s (lissage indépendant de la fréquence d'images), placé **sous le contenu** (au-dessus du fond seulement : le texte reste net). Au survol d'un lien ou d'un bouton, le halo se resserre (×0,6) et s'intensifie. Sous « réduire les animations » : halo collé à la souris, sans changement de taille. Bulles : main (`data-cursor="pointer"`), main fermée pendant le glisser (`grabbing`). Ne pas réintroduire de curseur qui remplace la flèche.
 
 ---
 
