@@ -271,12 +271,15 @@ main {
   bottom: -40vmax;
   background: radial-gradient(circle, var(--orb-c) 0%, transparent 65%);
 }
-/* Grille de points (dotGrid.ts) : vide sans JS */
+/* Grille de points (dotGrid.ts) : vide sans JS.
+   Calque à part : sinon, sous un canevas 3D (clavier, bulles), le navigateur la redessine dans un autre
+   calque où les points disparaissent, et on voit un trait vertical au bord du canevas */
 .backdrop__grid {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  will-change: transform;
 }
 /* Grain fixe (bruit SVG en niveaux de gris) : texture discrète, et plus de bandes dans les dégradés */
 .backdrop__grain {
@@ -1581,6 +1584,9 @@ html.menu-open {
 .toolbox__canvas {
   position: absolute !important;
   inset: 0;
+  /* L'ombre douce sous le clavier peut toucher les bords du canevas : fondu sur les côtés, pas de coupure nette */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 14px, #000 calc(100% - 14px), transparent);
 }
 .toolbox__bar {
   display: flex;
@@ -2744,6 +2750,11 @@ button.quick-link:active {
   .toolbox__stage {
     height: min(66vw, 340px);
     margin-inline: calc(-1 * var(--gutter));
+  }
+  /* Canevas bord à bord de l'écran : pas de fondu (il rognerait le coin du boîtier) */
+  .toolbox__canvas {
+    -webkit-mask-image: none;
+    mask-image: none;
   }
   .projects__stage {
     height: min(150vw, 680px);
