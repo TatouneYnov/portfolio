@@ -22,6 +22,8 @@ type Props = {
   maxBubbles: number;
   wrapper: RefObject<HTMLDivElement>;
   tip: RefObject<HTMLDivElement>;
+  /** Hauteur (px) du titre posé sur la scène : les bulles ne passent jamais dessous */
+  topInset: number;
   onLost: () => void;
 };
 
@@ -148,13 +150,14 @@ function Environment() {
 type BallState = { body: RapierRigidBody | null; mesh: THREE.Group | null; radius: number };
 type Press = { id: string; x: number; y: number; touch: boolean; dragging: boolean };
 
-function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 'paused' | 'maxBubbles' | 'onLost'>) {
+function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Omit<Props, 'paused' | 'maxBubbles' | 'onLost'>) {
   const { camera, size, gl } = useThree();
   const { rapier } = useRapier();
   const balls = useRef(new Map<string, BallState>());
   const ring = useRef<THREE.Group>(null);
   const ringMat = useRef<THREE.MeshStandardMaterial>(null);
   const halo = useRef<THREE.Mesh>(null);
+  const haloMat = useRef<THREE.MeshBasicMaterial>(null);
   const press = useRef<Press | null>(null);
   const hovered = useRef<string | null>(null);
   const dockedRef = useRef<string | null>(null);
@@ -167,21 +170,29 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
     [],
   );
 
-  // Géométrie de la scène selon la taille de l'écran (unités monde au plan z = 0)
+  // Géométrie de la scène selon la taille de l'écran (unités monde au plan z = 0) :
+  // socle en bas au centre ; les bulles flottent entre le titre (en haut) et le socle, sans sortir des bords
   const frame = useMemo(() => {
     const cam = camera as THREE.PerspectiveCamera;
     const halfH = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * cam.position.z;
     const halfW = halfH * (size.width / size.height);
     const portrait = size.width < 720;
-    const unit = Math.min(halfW, halfH) * (portrait ? 0.2 : 0.23);
+    const unit = Math.min(halfW, halfH) * (portrait ? 0.27 : 0.2);
+    const px = (2 * halfH) / Math.max(1, size.height); // 1 px CSS en unités monde
+    const margin = unit * 0.3;
+    const plateY = -halfH + unit * 1.05;
+    const top = halfH - topInset * px - margin;
+    const floor = plateY + unit * 0.75; // au-dessus du plateau (dont le bord arrière dépasse d'environ 0,5 unité)
     return {
       halfW,
       halfH,
       unit,
-      attractor: portrait ? new THREE.Vector3(0, halfH * 0.32, 0) : new THREE.Vector3(-halfW * 0.28, 0, 0),
-      dock: portrait ? new THREE.Vector3(0, -halfH * 0.58, 0) : new THREE.Vector3(halfW * 0.5, -halfH * 0.04, 0),
+      px,
+      dock: new THREE.Vector3(0, plateY, 0),
+      bounds: { left: -halfW + margin, right: halfW - margin, top, floor },
+      center: new THREE.Vector3(0, (top + floor) / 2, 0),
     };
-  }, [camera, size]);
+  }, [camera, size, topInset]);
 
   const light = useTheme() === 'light';
   const textures = useMemo(
@@ -206,15 +217,48 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
     return new THREE.CanvasTexture(c);
   }, []);
 
+  // Dessus du plateau : verre dépoli plus clair vers l'arrière, reflet le long du bord avant
+  const plateTex = useMemo(() => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
+    const ctx = c.getContext('2d') as CanvasRenderingContext2D;
+    const g = ctx.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0, light ? 'rgba(255,255,255,0.85)' : 'rgba(200,185,255,0.30)');
+    g.addColorStop(1, light ? 'rgba(236,230,255,0.55)' : 'rgba(120,100,200,0.18)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 256, 256);
+    const s2 = ctx.createRadialGradient(128, 70, 10, 128, 70, 140);
+    s2.addColorStop(0, light ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.18)');
+    s2.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = s2;
+    ctx.fillRect(0, 0, 256, 256);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }, [light]);
+  const shadowTex = useMemo(() => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const ctx = c.getContext('2d') as CanvasRenderingContext2D;
+    const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, 'rgba(40,20,90,0.35)');
+    g.addColorStop(1, 'rgba(40,20,90,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(c);
+  }, []);
+  useEffect(() => () => plateTex.dispose(), [plateTex]);
+
   useEffect(
     () => () => {
       haloTex.dispose();
+      shadowTex.dispose();
       sphere.dispose();
       namePlane.dispose();
       glint.dispose();
       glintPlane.dispose();
     },
-    [haloTex, sphere, namePlane, glint, glintPlane],
+    [haloTex, shadowTex, sphere, namePlane, glint, glintPlane],
   );
   // Noms et liseré refaits à chaque changement de thème
   useEffect(() => () => Object.values(textures).forEach((t) => t.dispose()), [textures]);
@@ -224,6 +268,13 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
 
   const maxRadius = Math.max(...projects.map((p) => p.size)) * frame.unit;
   const dockRadius = maxRadius * 1.18;
+  const FLAT = 0.26; // plateau vu légèrement de dessus : cercle aplati en ellipse
+  // Bulle déposée : posée sur le plateau (son centre dépend de sa taille)
+  const restY = (id: string) => frame.dock.y + (balls.current.get(id)?.radius ?? maxRadius) * 1.02;
+  // Zone de dépôt : au-dessus du plateau, là où repose la bulle
+  const nearDock = (x: number, y: number) => Math.hypot(x - frame.dock.x, y - (frame.dock.y + maxRadius * 0.8)) < dockRadius * 1.4;
+  // Phases propres à chaque bulle pour la dérive en apesanteur
+  const phases = useMemo(() => projects.map((_, i) => i * 2.399), [projects]);
 
   const clientToWorld = (cx: number, cy: number, out: THREE.Vector3) => {
     const rect = gl.domElement.getBoundingClientRect();
@@ -260,7 +311,7 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
     b.setBodyType(rapier.RigidBodyType.Dynamic, true);
     if (push) {
       const t = b.translation();
-      tmp.dir.set(frame.attractor.x - t.x, frame.attractor.y - t.y, 0).normalize().multiplyScalar(b.mass() * 6);
+      tmp.dir.set(frame.center.x - t.x, frame.center.y - t.y, 0).normalize().multiplyScalar(b.mass() * 4);
       b.applyImpulse({ x: tmp.dir.x, y: tmp.dir.y, z: 0 }, true);
     }
   };
@@ -278,7 +329,7 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
     dockedRef.current = id;
     showTip(null);
     gsap.killTweensOf(proxy.current);
-    gsap.to(proxy.current, { x: frame.dock.x, y: frame.dock.y, duration, ease: 'power3.out' });
+    gsap.to(proxy.current, { x: frame.dock.x, y: restY(id), duration, ease: 'power3.out' });
     glow.current = 1;
     onDock(id);
   };
@@ -326,8 +377,7 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
       const b = balls.current.get(p.id)?.body;
       const t = b?.translation();
       const pt = clientToWorld(e.clientX, e.clientY, tmp.v);
-      const near = (x: number, y: number) => Math.hypot(x - frame.dock.x, y - frame.dock.y) < dockRadius * 1.5;
-      if ((pt && near(pt.x, pt.y)) || (t && near(t.x, t.y))) {
+      if ((pt && nearDock(pt.x, pt.y)) || (t && nearDock(t.x, t.y))) {
         dock(p.id, 0.4);
         return;
       }
@@ -395,6 +445,8 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
     };
   }, [camera, frame, gl]);
 
+  const index = useMemo(() => new Map(projects.map((p, i) => [p.id, i])), [projects]);
+
   useFrame((state, delta) => {
     const dt = Math.min(delta, 0.05);
     const p = press.current;
@@ -409,7 +461,9 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
       if (ball.mesh) ball.mesh.scale.setScalar(THREE.MathUtils.damp(ball.mesh.scale.x, target, 14, dt));
 
       if (id === dockedRef.current) {
-        b.setNextKinematicTranslation({ x: proxy.current.x, y: proxy.current.y, z: 0 });
+        // Posée sur le socle, elle flotte à peine
+        const bob = Math.sin(state.clock.elapsedTime * 1.3) * frame.unit * 0.04;
+        b.setNextKinematicTranslation({ x: proxy.current.x, y: proxy.current.y + bob, z: 0 });
         return;
       }
 
@@ -421,7 +475,7 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
         const ny = t.y + (w.y - t.y) * a;
         if (dt > 0) throwVel.current.lerp(tmp.v.set((nx - t.x) / dt, (ny - t.y) / dt, 0), 0.35);
         b.setNextKinematicTranslation({ x: nx, y: ny, z: 0 });
-        overDock = Math.hypot(t.x - frame.dock.x, t.y - frame.dock.y) < dockRadius * 1.5 || Math.hypot(w.x - frame.dock.x, w.y - frame.dock.y) < dockRadius * 1.5;
+        overDock = nearDock(t.x, t.y) || nearDock(w.x, w.y);
         return;
       }
       // Une bulle survolée reste immobile pour qu'on puisse cliquer dessus
@@ -430,17 +484,34 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
         b.setLinvel({ x: lv.x * 0.85, y: lv.y * 0.85, z: 0 }, true);
         return;
       }
-      // Attraction douce vers le nuage
-      tmp.dir.set(frame.attractor.x - t.x, frame.attractor.y - t.y, 0).multiplyScalar(b.mass() * 0.9 * dt);
-      b.applyImpulse({ x: tmp.dir.x, y: tmp.dir.y, z: 0 }, true);
+      // Apesanteur : dérive lente propre à chaque bulle, retenue par des bords souples
+      // (côtés, dessous du titre, dessus du socle)
+      const ph = phases[index.get(id) ?? 0];
+      const time = state.clock.elapsedTime;
+      const r = ball.radius;
+      const { left, right, top, floor } = frame.bounds;
+      let fx = Math.sin(time * 0.31 + ph) * 0.3;
+      let fy = Math.cos(time * 0.23 + ph * 1.7) * 0.3;
+      const ox = t.x - r < left ? left - (t.x - r) : t.x + r > right ? right - (t.x + r) : 0;
+      const oy = t.y - r < floor ? floor - (t.y - r) : t.y + r > top ? top - (t.y + r) : 0;
+      fx += ox * 40;
+      fy += oy * 40;
+      if (ox || oy) {
+        // Dehors : on freine aussi la vitesse qui l'emmène plus loin (lancer, éjection du socle)
+        const lv = b.linvel();
+        b.setLinvel({ x: lv.x * ox < 0 ? lv.x * 0.8 : lv.x, y: lv.y * oy < 0 ? lv.y * 0.8 : lv.y, z: 0 }, true);
+      }
+      const m = b.mass() * dt;
+      b.applyImpulse({ x: fx * m, y: fy * m, z: 0 }, true);
     });
 
     // Le socle s'illumine quand une bulle glissée passe au-dessus, et brièvement au dépôt
     glow.current = THREE.MathUtils.damp(glow.current, overDock ? 1 : 0, overDock ? 10 : 3, dt);
-    const pulse = 1 + Math.sin(state.clock.elapsedTime * 1.6) * 0.06;
-    if (ring.current) ring.current.scale.setScalar(1 + glow.current * 0.14);
-    if (ringMat.current) ringMat.current.emissiveIntensity = 2.4 + glow.current * 3;
-    if (halo.current) halo.current.scale.setScalar(maxRadius * 3.4 * pulse * (1 + glow.current * 0.35));
+    const pulse = 1 + Math.sin(state.clock.elapsedTime * 1.6) * 0.04;
+    if (ring.current) ring.current.scale.setScalar(1 + glow.current * 0.06);
+    if (ringMat.current) ringMat.current.emissiveIntensity = (light ? 0.5 : 0.9) + glow.current * 2.2;
+    if (halo.current) halo.current.scale.set(dockRadius * 3.2 * pulse, dockRadius * 3.2 * FLAT * 2.2 * pulse, 1);
+    if (haloMat.current) haloMat.current.opacity = (light ? 0.25 : 0.4) + glow.current * 0.6;
   });
 
   return (
@@ -450,30 +521,47 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
       <directionalLight position={[3, 5, 6]} intensity={2.2} color="#FFF6EE" />
       <directionalLight position={[-6, -2, -4]} intensity={2.4} color="#7C3AED" />
 
-      {/* Socle de dépôt */}
+      {/* Socle de dépôt : plateau de verre dépoli vu légèrement de dessus, liseré lavande qui s'allume
+          quand une bulle approche */}
       <group position={frame.dock.toArray()}>
         <mesh ref={halo} position={[0, 0, -0.6]}>
           <planeGeometry args={[1, 1]} />
-          <meshBasicMaterial map={haloTex} transparent depthWrite={false} blending={light ? THREE.NormalBlending : THREE.AdditiveBlending} opacity={light ? 0.5 : 1} toneMapped={false} />
+          <meshBasicMaterial ref={haloMat} map={haloTex} transparent depthWrite={false} blending={light ? THREE.NormalBlending : THREE.AdditiveBlending} toneMapped={false} />
         </mesh>
-        <group ref={ring}>
-          <mesh>
-            <torusGeometry args={[dockRadius, 0.035, 16, 96]} />
-            <meshStandardMaterial ref={ringMat} color={light ? '#7C3AED' : '#B49CFF'} emissive={light ? '#6D28D9' : '#8B5CF6'} emissiveIntensity={2.4} toneMapped={false} />
+        <mesh position={[0, -frame.unit * 0.16, -0.3]} scale={[dockRadius * 1.25, dockRadius * FLAT * 1.5, 1]}>
+          <circleGeometry args={[1, 64]} />
+          <meshBasicMaterial map={shadowTex} transparent depthWrite={false} toneMapped={false} opacity={light ? 0.5 : 0.8} />
+        </mesh>
+        {/* Épaisseur du plateau, puis dessus en verre dépoli */}
+        <mesh position={[0, -frame.unit * 0.09, -0.2]} scale={[dockRadius, dockRadius * FLAT, 1]}>
+          <circleGeometry args={[1, 96]} />
+          <meshBasicMaterial color={light ? '#9C86E6' : '#5B4A9E'} transparent opacity={light ? 0.45 : 0.55} depthWrite={false} />
+        </mesh>
+        <mesh position={[0, 0, -0.1]} scale={[dockRadius, dockRadius * FLAT, 1]}>
+          <circleGeometry args={[1, 96]} />
+          <meshBasicMaterial map={plateTex} transparent depthWrite={false} toneMapped={false} />
+        </mesh>
+        <group ref={ring} position={[0, 0, -0.05]}>
+          <mesh scale={[1, FLAT, 1]}>
+            <torusGeometry args={[dockRadius, frame.unit * 0.022, 12, 128]} />
+            <meshStandardMaterial ref={ringMat} color={light ? '#8B6CF0' : '#B49CFF'} emissive={light ? '#7C5CE0' : '#9F86FF'} emissiveIntensity={0.6} toneMapped={false} />
           </mesh>
         </group>
-        <mesh position={[0, -dockRadius - 0.38, 0]}>
-          <planeGeometry args={[2.2, 0.41]} />
+        {/* « Déposer ici » à taille fixe à l'écran (texte d'environ 13 px) */}
+        <mesh position={[0, -dockRadius * FLAT - frame.px * 26, 0]} scale={[frame.px * 200, frame.px * 37.5, 1]}>
+          <planeGeometry args={[1, 1]} />
           <meshBasicMaterial map={dockLabel} transparent depthWrite={false} toneMapped={false} />
         </mesh>
       </group>
 
       {projects.map((p, i) => {
         const radius = p.size * frame.unit;
-        const angle = (i / projects.length) * Math.PI * 2;
+        // Départ : réparties sur une ellipse dans la zone libre
+        const angle = (i / projects.length) * Math.PI * 2 + 0.4;
+        const { left, right, top, floor } = frame.bounds;
         const start: [number, number, number] = [
-          frame.attractor.x + Math.cos(angle) * frame.unit * 2.4,
-          frame.attractor.y + Math.sin(angle) * frame.unit * 2.4,
+          frame.center.x + Math.cos(angle) * Math.max(0, (right - left) / 2 - radius) * 0.6,
+          frame.center.y + Math.sin(angle) * Math.max(0, (top - floor) / 2 - radius) * 0.6,
           0,
         ];
         return (
@@ -487,7 +575,7 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
             }}
             colliders={false}
             position={start}
-            linearDamping={1.6}
+            linearDamping={1.1}
             angularDamping={1}
             enabledTranslations={[true, true, false]}
             enabledRotations={[false, false, false]}

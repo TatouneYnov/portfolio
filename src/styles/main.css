@@ -1821,27 +1821,64 @@ textarea {
 }
 
 /* ---------- Projets ---------- */
-.projects__stage-wrap {
+/* Scène plein écran (bord à bord) : le titre est posé dessus, juste sous l'en-tête quand la scène remplit l'écran */
+.projects--scene {
+  padding-top: 0;
+}
+.projects__scene {
   position: relative;
+  height: 100svh;
+  min-height: 560px;
   overflow: clip;
-  max-width: 1600px;
-  margin-inline: auto;
 }
 .projects__stage {
-  position: relative;
-  height: clamp(480px, 70vh, 720px);
+  position: absolute;
+  inset: 0;
   touch-action: pan-y;
+}
+.projects__overlay {
+  position: relative;
+  z-index: 2;
+  padding-top: calc(var(--header-h) + clamp(12px, 3vh, 32px));
+  pointer-events: none;
+}
+.projects__overlay .section-head {
+  margin-bottom: 0;
 }
 .projects__canvas {
   position: absolute !important;
   inset: 0;
 }
+/* Boutons des projets : invisibles, ils apparaissent en barre de verre dès qu'un bouton reçoit le focus (Tab) */
 .projects__open {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  gap: 12px 20px;
-  margin-top: 8px;
+  gap: 10px 16px;
+  width: max-content;
+  max-width: calc(100% - 2 * var(--gutter));
+  padding: 12px 16px;
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius);
+  background: var(--glass-strong);
+  box-shadow: var(--glass-shine), var(--float-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  transform: translateX(-50%);
+  opacity: 0;
+  clip-path: inset(50%);
+  pointer-events: none;
+}
+.projects__open:focus-within {
+  opacity: 1;
+  clip-path: none;
+  pointer-events: auto;
+  transition: opacity 0.2s ease;
 }
 .projects__open ul {
   display: flex;
@@ -2772,9 +2809,6 @@ button.quick-link:active {
   .toolbox__canvas {
     -webkit-mask-image: none;
     mask-image: none;
-  }
-  .projects__stage {
-    height: min(150vw, 680px);
   }
   .project-panel {
     position: fixed;

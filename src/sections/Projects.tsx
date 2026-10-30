@@ -24,6 +24,8 @@ export function Projects() {
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const tip = useRef<HTMLDivElement>(null);
+  const head = useRef<HTMLDivElement>(null);
+  const [topInset, setTopInset] = useState(0);
   const mounted = useMounted();
   const nearView = useInView(root, '100% 0px', true);
   const idleMount = useIdleMount(1);
@@ -63,26 +65,32 @@ export function Projects() {
   const current = projects.find((p) => p.id === docked) ?? null;
   const show3D = mounted && use3D;
 
-  return (
-    <section ref={root} id="projets" className="projects section" aria-labelledby="projects-title">
-      <div className="container">
-        <div className="section-head">
-          <SplitHeading
-            id="projects-title"
-            className="display display--lg projects__title"
-            lines={[{ text: 'Mes' }, { text: 'projets', accent: true }]}
-          />
-          {show3D && (
-            <p className="label section-head__hint">
-              Clique sur une bulle pour ouvrir le projet
-              <span className="section-head__hint-sub">ou glisse-la dans le socle →</span>
-            </p>
-          )}
-        </div>
-      </div>
+  // Titre posé sur la scène : sa hauteur (depuis le haut de la scène) sert de plafond aux bulles
+  useEffect(() => {
+    const h = head.current;
+    const st = stage.current;
+    if (!show3D || !h || !st) return;
+    const measure = () => setTopInset(Math.max(0, h.getBoundingClientRect().bottom - st.getBoundingClientRect().top));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(h);
+    ro.observe(st);
+    return () => ro.disconnect();
+  }, [show3D]);
 
+  const title = (
+    <SplitHeading
+      id="projects-title"
+      className="display display--lg projects__title"
+      lines={[{ text: 'Mes' }, { text: 'projets', accent: true }]}
+    />
+  );
+
+  return (
+    <section ref={root} id="projets" className={`projects section${show3D ? ' projects--scene' : ''}`} aria-labelledby="projects-title">
       {show3D ? (
-        <div className="projects__stage-wrap">
+        // Scène plein écran : bulles en apesanteur, socle en bas au centre, titre posé dessus
+        <div className="projects__scene">
           <div ref={stage} className="projects__stage" aria-hidden="true">
             {near && (
               <Suspense fallback={null}>
@@ -95,6 +103,7 @@ export function Projects() {
                   maxBubbles={getCapabilities().lowEnd ? 5 : 12}
                   wrapper={stage}
                   tip={tip}
+                  topInset={topInset}
                   onLost={() => setUse3D(false)}
                 />
               </Suspense>
@@ -102,33 +111,43 @@ export function Projects() {
             <div ref={tip} className="bubble-tip" />
           </div>
 
-          <div className="container">
-            <div className="projects__open">
-              <p className="label" id="open-project-label">
-                Ou choisis directement
+          <div className="container projects__overlay">
+            <div ref={head} className="section-head">
+              {title}
+              <p className="label section-head__hint">
+                Clique sur une bulle pour ouvrir le projet
+                <span className="section-head__hint-sub">ou glisse-la dans le socle ↓</span>
               </p>
-              <ul aria-labelledby="open-project-label">
-                {projects.map((p) => (
-                  <li key={p.id}>
-                    <button
-                      type="button"
-                      className="chip-btn"
-                      aria-pressed={docked === p.id}
-                      onClick={(e) => openFromButton(p.id, e.currentTarget)}
-                    >
-                      {p.bubbleLabel.replace(/\n/g, ' ')}
-                      <span className="sr-only"> : ouvrir la fiche « {p.name} »</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
             </div>
+          </div>
+
+          {/* Pour le clavier et les lecteurs d'écran : barre invisible qui apparaît dès qu'un bouton a le focus */}
+          <div className="projects__open">
+            <p className="label" id="open-project-label">
+              Ou choisis directement
+            </p>
+            <ul aria-labelledby="open-project-label">
+              {projects.map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    className="chip-btn"
+                    aria-pressed={docked === p.id}
+                    onClick={(e) => openFromButton(p.id, e.currentTarget)}
+                  >
+                    {p.bubbleLabel.replace(/\n/g, ' ')}
+                    <span className="sr-only"> : ouvrir la fiche « {p.name} »</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <ProjectPanel project={current} onClose={close} />
         </div>
       ) : (
         <div className="container">
+          <div className="section-head">{title}</div>
           <ul className="projects__grid">
             {projects.map((p) => (
               <li key={p.id} className={`project-card${p.size === featuredSize ? ' project-card--featured' : ''}`}>
