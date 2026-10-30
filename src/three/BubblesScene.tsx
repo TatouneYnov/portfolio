@@ -28,35 +28,90 @@ type Props = {
 const DRAG_THRESHOLD = 6; // px parcourus avant de considérer qu'on glisse (sinon : clic)
 const TOUCH_DRAG_THRESHOLD = 10; // au doigt, un tap bouge toujours un peu
 
-/** Texture « nacre » avec le nom du projet, centrée sur la face avant de la sphère. */
-function makeBubbleTexture(label: string): THREE.CanvasTexture {
+/**
+ * Nom du projet, sur fond transparent : il flotte à l'intérieur de la bulle de verre, toujours face à l'écran.
+ * Taille calculée pour tenir dans le disque intérieur (jamais rogné).
+ */
+const LABEL_PX = 1024;
+function makeNameTexture(label: string, light: boolean): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
-  canvas.width = 2048;
-  canvas.height = 1024;
+  canvas.width = canvas.height = LABEL_PX;
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-  ctx.scale(2, 2); // texture 2× : dessin dans le repère d'origine 1024 × 512
-  const g = ctx.createLinearGradient(0, 0, 0, 512);
-  g.addColorStop(0, '#FBF9FF');
-  g.addColorStop(0.5, '#F1ECFA');
-  g.addColorStop(1, '#E4DCF3');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 1024, 512);
   const lines = label.split('\n');
-  const longest = Math.max(...lines.map((l) => l.length));
-  const size = Math.min(84, Math.floor(230 / Math.max(3, longest) / 0.68));
-  ctx.font = `800 ${size}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif`;
-  ctx.fillStyle = '#1B1430';
+  const font = (px: number) => `800 ${px}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif`;
+  // Largeur utile : 72 % du disque ; hauteur du bloc : 60 %
+  let size = 260;
+  ctx.font = font(size);
+  const widest = Math.max(...lines.map((l) => ctx.measureText(l).width));
+  size = Math.floor(Math.min(size, (size * LABEL_PX * 0.72) / widest, (LABEL_PX * 0.6) / (lines.length * 1.05)));
+  ctx.font = font(size);
+  ctx.fillStyle = light ? '#21183A' : '#F3EFFB';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  const lh = size * 1.02;
-  lines.forEach((line, i) => {
-    const y = 256 + (i - (lines.length - 1) / 2) * lh;
-    ctx.fillText(line, 256, y); // u = 0.25 : face avant
-  });
+  const lh = size * 1.05;
+  lines.forEach((line, i) => ctx.fillText(line, LABEL_PX / 2, LABEL_PX / 2 + (i - (lines.length - 1) / 2) * lh));
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
   return tex;
+}
+
+/** Reflets d'une bulle de verre : grande tache douce en haut à gauche, petit éclat en bas à droite. */
+function makeGlintTexture(): THREE.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = c.height = 512;
+  const ctx = c.getContext('2d') as CanvasRenderingContext2D;
+  const spot = (x: number, y: number, rx: number, ry: number, rot: number, a: number) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.scale(rx, ry);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+    g.addColorStop(0, `rgba(255,255,255,${a})`);
+    g.addColorStop(0.45, `rgba(255,255,255,${a * 0.45})`);
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, 1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+  spot(176, 150, 92, 48, -0.6, 0.85);
+  spot(352, 380, 34, 16, -0.6, 0.45);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/** Liseré du verre : plus lumineux sur les bords de la sphère (effet de Fresnel). */
+function makeRimMaterial(light: boolean): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: new THREE.Color(light ? '#7C5CE0' : '#C9B8FF') },
+      uStrength: { value: light ? 0.75 : 0.9 },
+    },
+    vertexShader: `
+      varying vec3 vN;
+      varying vec3 vV;
+      void main() {
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vN = normalize(normalMatrix * normal);
+        vV = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform float uStrength;
+      varying vec3 vN;
+      varying vec3 vV;
+      void main() {
+        float f = pow(1.0 - clamp(abs(dot(normalize(vN), normalize(vV))), 0.0, 1.0), 2.6);
+        gl_FragColor = vec4(uColor, f * uStrength);
+      }`,
+    transparent: true,
+    depthWrite: false,
+    blending: light ? THREE.NormalBlending : THREE.AdditiveBlending,
+  });
 }
 
 // Thème clair : une lueur additive disparaît sur fond clair, on passe en mélange normal et en violet plus foncé
@@ -90,7 +145,7 @@ function Environment() {
   return null;
 }
 
-type BallState = { body: RapierRigidBody | null; mesh: THREE.Mesh | null; radius: number };
+type BallState = { body: RapierRigidBody | null; mesh: THREE.Group | null; radius: number };
 type Press = { id: string; x: number; y: number; touch: boolean; dragging: boolean };
 
 function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 'paused' | 'maxBubbles' | 'onLost'>) {
@@ -128,8 +183,15 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
     };
   }, [camera, size]);
 
-  const textures = useMemo(() => Object.fromEntries(projects.map((p) => [p.id, makeBubbleTexture(p.bubbleLabel || p.name)])), [projects]);
   const light = useTheme() === 'light';
+  const textures = useMemo(
+    () => Object.fromEntries(projects.map((p) => [p.id, makeNameTexture(p.bubbleLabel || p.name, light)])),
+    [projects, light],
+  );
+  const rim = useMemo(() => makeRimMaterial(light), [light]);
+  const namePlane = useMemo(() => new THREE.PlaneGeometry(1.56, 1.56), []);
+  const glint = useMemo(() => makeGlintTexture(), []);
+  const glintPlane = useMemo(() => new THREE.PlaneGeometry(1.9, 1.9), []);
   const dockLabel = useMemo(() => makeLabelTexture('Déposer ici', light), [light]);
   const sphere = useMemo(() => new THREE.SphereGeometry(1, 48, 32), []);
   const haloTex = useMemo(() => {
@@ -146,12 +208,17 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
 
   useEffect(
     () => () => {
-      Object.values(textures).forEach((t) => t.dispose());
       haloTex.dispose();
       sphere.dispose();
+      namePlane.dispose();
+      glint.dispose();
+      glintPlane.dispose();
     },
-    [textures, haloTex, sphere],
+    [haloTex, sphere, namePlane, glint, glintPlane],
   );
+  // Noms et liseré refaits à chaque changement de thème
+  useEffect(() => () => Object.values(textures).forEach((t) => t.dispose()), [textures]);
+  useEffect(() => () => rim.dispose(), [rim]);
   // Libellé du socle refait à chaque changement de thème
   useEffect(() => () => dockLabel.dispose(), [dockLabel]);
 
@@ -303,7 +370,7 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
       balls.current.forEach((b, id) => {
         if (b.mesh && id !== dockedRef.current) hits.push(b.mesh);
       });
-      if (tmp.raycaster.intersectObjects(hits, false).length) e.preventDefault();
+      if (tmp.raycaster.intersectObjects(hits, true).length) e.preventDefault();
     };
     el.addEventListener('touchstart', onTouchStart, { passive: false });
     return () => el.removeEventListener('touchstart', onTouchStart);
@@ -343,10 +410,8 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
 
       if (id === dockedRef.current) {
         b.setNextKinematicTranslation({ x: proxy.current.x, y: proxy.current.y, z: 0 });
-        if (ball.mesh) ball.mesh.rotation.y += dt * 0.6;
         return;
       }
-      if (ball.mesh) ball.mesh.rotation.y = THREE.MathUtils.damp(ball.mesh.rotation.y, 0, 3, dt);
 
       if (id === dragging && pointer.current.valid) {
         // La bulle tenue suit le pointeur quel que soit le débit d'images (léger lissage)
@@ -429,48 +494,63 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
             ccd
           >
             <BallCollider args={[radius]} restitution={0.35} friction={0.2} />
-            <mesh
-              geometry={sphere}
+            <group
               scale={radius}
-              ref={(m) => {
+              ref={(g) => {
                 const entry = balls.current.get(p.id);
-                if (entry) entry.mesh = m;
-              }}
-              onPointerOver={(e) => {
-                e.stopPropagation();
-                hovered.current = p.id;
-                if (!press.current) setCursor('pointer');
-                if (dockedRef.current !== p.id && !press.current?.dragging) showTip(`Ouvrir · ${nameOf(p.id)}`, e.nativeEvent.clientX, e.nativeEvent.clientY);
-              }}
-              onPointerMove={(e) => {
-                if (hovered.current === p.id && dockedRef.current !== p.id && !press.current?.dragging) showTip(`Ouvrir · ${nameOf(p.id)}`, e.nativeEvent.clientX, e.nativeEvent.clientY);
-              }}
-              onPointerOut={() => {
-                if (hovered.current === p.id) hovered.current = null;
-                if (!press.current) setCursor(null);
-                showTip(null);
-              }}
-              onPointerDown={(e) => {
-                e.stopPropagation();
-                if (dockedRef.current === p.id) return;
-                press.current = { id: p.id, x: e.nativeEvent.clientX, y: e.nativeEvent.clientY, touch: e.nativeEvent.pointerType === 'touch', dragging: false };
-                pointer.current.valid = !!clientToWorld(e.nativeEvent.clientX, e.nativeEvent.clientY, pointer.current.world);
+                if (entry) entry.mesh = g;
               }}
             >
-              <meshPhysicalMaterial
-                map={textures[p.id]}
-                color="#ffffff"
-                roughness={0.25}
-                metalness={0}
-                clearcoat={1}
-                clearcoatRoughness={0.15}
-                iridescence={0.5}
-                iridescenceIOR={1.35}
-                iridescenceThicknessRange={[180, 420]}
-                sheen={0.4}
-                sheenColor="#B49CFF"
-              />
-            </mesh>
+              {/* Nom à l'intérieur : après la teinte du verre (reste net), avant le liseré et les reflets */}
+              <mesh geometry={namePlane} renderOrder={2} position={[0, 0, 0.02]} raycast={() => null}>
+                <meshBasicMaterial map={textures[p.id]} transparent depthWrite={false} toneMapped={false} />
+              </mesh>
+              <mesh
+                geometry={sphere}
+                renderOrder={1}
+                onPointerOver={(e) => {
+                  e.stopPropagation();
+                  hovered.current = p.id;
+                  if (!press.current) setCursor('pointer');
+                  if (dockedRef.current !== p.id && !press.current?.dragging) showTip(`Ouvrir · ${nameOf(p.id)}`, e.nativeEvent.clientX, e.nativeEvent.clientY);
+                }}
+                onPointerMove={(e) => {
+                  if (hovered.current === p.id && dockedRef.current !== p.id && !press.current?.dragging) showTip(`Ouvrir · ${nameOf(p.id)}`, e.nativeEvent.clientX, e.nativeEvent.clientY);
+                }}
+                onPointerOut={() => {
+                  if (hovered.current === p.id) hovered.current = null;
+                  if (!press.current) setCursor(null);
+                  showTip(null);
+                }}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  if (dockedRef.current === p.id) return;
+                  press.current = { id: p.id, x: e.nativeEvent.clientX, y: e.nativeEvent.clientY, touch: e.nativeEvent.pointerType === 'touch', dragging: false };
+                  pointer.current.valid = !!clientToWorld(e.nativeEvent.clientX, e.nativeEvent.clientY, pointer.current.world);
+                }}
+              >
+                {/* Verre lavande : coque transparente aux reflets nets (pas de transmission : le canevas est
+                    transparent, le fond de la page n'existe pas pour la scène 3D) */}
+                <meshPhysicalMaterial
+                  color={light ? '#B9A4FF' : '#8F78E8'}
+                  transparent
+                  opacity={light ? 0.16 : 0.14}
+                  depthWrite={false}
+                  roughness={0.06}
+                  metalness={0}
+                  clearcoat={1}
+                  clearcoatRoughness={0.04}
+                  iridescence={0.35}
+                  iridescenceIOR={1.3}
+                  iridescenceThicknessRange={[200, 480]}
+                  envMapIntensity={1.6}
+                />
+              </mesh>
+              <mesh geometry={sphere} material={rim} renderOrder={3} raycast={() => null} />
+              <mesh geometry={glintPlane} position={[0, 0, 1.02]} renderOrder={4} raycast={() => null}>
+                <meshBasicMaterial map={glint} transparent depthWrite={false} toneMapped={false} opacity={light ? 0.9 : 0.6} />
+              </mesh>
+            </group>
           </RigidBody>
         );
       })}
