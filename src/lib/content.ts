@@ -22,6 +22,8 @@ export type ProjectLinks = {
 export type Project = {
   id: string;
   name: string;
+  /** Une ligne sous le nom dans la fiche (null : rien) */
+  tagline: string | null;
   bubbleLabel: string;
   size: number;
   status: string | null;

@@ -1939,37 +1939,110 @@ textarea {
   color: var(--accent);
 }
 .project-panel {
+  /* Au centre, juste au-dessus de la bulle posée sur le socle : elle « sort » de la bulle */
   position: absolute;
-  top: 0;
-  left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  left: 50%;
+  bottom: calc(var(--panel-bottom, 40%) + 12px);
   z-index: 4;
-  width: min(440px, 92vw);
-  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  width: min(580px, calc(100% - 2 * var(--gutter)));
+  max-height: calc(100% - var(--panel-bottom, 40%) - var(--header-h) - 28px);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 28px;
+  padding: 16px 28px 28px;
   border: 1px solid var(--glass-edge);
   border-radius: var(--radius);
   background: var(--glass-strong);
   box-shadow: var(--glass-shine), var(--float-shadow);
-  transform: translateX(calc(-100% - 48px));
+  transform-origin: 50% 100%;
+  transform: translateX(-50%) translateY(24px) scale(0.86);
   opacity: 0;
   visibility: hidden;
   transition: transform 0.25s var(--ease-in-out), opacity 0.2s ease, visibility 0s linear 0.25s; /* fermeture : rapide */
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
 }
+.project-panel:focus {
+  outline: none; /* focus posé par le code à l'ouverture ; les boutons gardent leur contour */
+}
 .project-panel.is-open {
-  transform: none;
+  transform: translateX(-50%);
   opacity: 1;
   visibility: visible;
-  transition: transform 0.4s var(--ease-drawer), opacity 0.25s ease, visibility 0s; /* ouverture */
-  transition: transform 0.475s var(--spring), opacity 0.25s ease, visibility 0s;
+  transition: transform 0.475s var(--spring), opacity 0.25s ease, visibility 0s; /* ouverture */
+}
+/* Grand écran : fiche plus large, en deux colonnes (moins haute, rien à faire défiler pour l'essentiel) */
+@media (min-width: 1024px) {
+  .project-panel {
+    width: min(880px, calc(100% - 2 * var(--gutter)));
+  }
+  .project-panel .project {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    column-gap: 36px;
+  }
+  .project-panel .project__head,
+  .project-panel .project__image {
+    grid-column: 1 / -1;
+  }
+}
+/* Barre du haut : précédent · n / total · suivant, et fermer */
+.project-panel__bar {
+  position: sticky;
+  top: -16px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: -16px -28px 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: color-mix(in srgb, var(--bg-2) 82%, transparent);
+}
+.project-panel__nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.project-panel__count {
+  min-width: 44px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+/* Changement de projet : simple fondu du contenu */
+.project-panel__body {
+  animation: panel-swap 0.25s ease;
+}
+@keyframes panel-swap {
+  from {
+    opacity: 0;
+  }
+}
+/* Voile derrière la fiche : flou et léger assombrissement, sauf autour du socle (la bulle posée reste nette) */
+.projects__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: color-mix(in srgb, var(--bg) 30%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  -webkit-mask-image: radial-gradient(ellipse 22% 26% at 50% 86%, transparent 60%, #000 100%);
+  mask-image: radial-gradient(ellipse 22% 26% at 50% 86%, transparent 60%, #000 100%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+.projects__veil.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0s;
 }
 .project-panel__close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
   display: grid;
   place-items: center;
   width: 40px;
@@ -1978,9 +2051,6 @@ textarea {
   border-radius: 50%;
   background: var(--bg-3);
   transition: transform 160ms var(--ease-out);
-}
-.project-panel__grabber {
-  display: none;
 }
 .project-panel__close svg {
   width: 18px;
@@ -1999,9 +2069,8 @@ textarea {
 }
 .project__head {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   justify-items: start;
-  padding-right: 44px;
 }
 .project__name {
   font-family: var(--font-display);
@@ -2009,6 +2078,25 @@ textarea {
   font-size: clamp(1.4rem, 2vw, 1.9rem);
   line-height: 1.05;
   letter-spacing: -0.02em;
+}
+/* Dans la fiche : grand nom, puis l'accroche */
+.project-panel .project__name {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  letter-spacing: -0.035em;
+}
+.project__tagline {
+  font-size: clamp(1.05rem, 1.4vw, 1.25rem);
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.project__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 6px;
 }
 .project__context {
   font-family: var(--font-body);
@@ -2023,6 +2111,12 @@ textarea {
 .project__block {
   display: grid;
   gap: 6px;
+}
+.project__main,
+.project__side {
+  display: grid;
+  gap: 18px;
+  align-content: start;
 }
 .project__note {
   font-family: var(--font-body);
@@ -2810,39 +2904,17 @@ button.quick-link:active {
     -webkit-mask-image: none;
     mask-image: none;
   }
+  /* Téléphone : fiche au centre, presque plein écran */
   .project-panel {
-    position: fixed;
-    inset: auto 0 0 0;
-    width: 100%;
-    max-height: 78svh;
-    border-radius: 28px 28px 0 0;
-    padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
-    transform: translateY(105%);
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 24px);
+    max-height: calc(100% - var(--header-h) - 24px);
+    padding: 12px 20px 24px;
   }
-  .project-panel.is-open {
-    transform: none;
-  }
-  /* Poignée de la feuille : on la tire vers le bas pour fermer (useDragToDismiss) */
-  .project-panel__grabber {
-    display: block;
-    position: sticky;
-    top: -28px;
-    z-index: 3;
-    height: 28px;
-    margin: -28px -28px 0;
-    touch-action: none;
-    cursor: var(--cursor-grab);
-  }
-  .project-panel__grabber::before {
-    content: '';
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    width: 38px;
-    height: 5px;
-    margin-left: -19px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--text) 28%, transparent);
+  .project-panel__bar {
+    top: -12px;
+    margin: -12px -20px 4px;
+    padding: 10px 10px;
   }
   .contact__form {
     grid-template-columns: minmax(0, 1fr);

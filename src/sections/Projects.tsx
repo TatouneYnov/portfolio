@@ -2,11 +2,12 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import IconGithub from '~icons/simple-icons/github';
 import IconGlobe from '~icons/solar/global-linear';
 import IconClose from '~icons/solar/close-linear';
+import IconPrev from '~icons/solar/alt-arrow-left-linear';
+import IconNext from '~icons/solar/alt-arrow-right-linear';
 import IconArrow from '~icons/solar/arrow-right-up-linear';
 import { projects, isFilled, type Project } from '../lib/content';
 import { canRun3D, getCapabilities } from '../lib/capabilities';
-import { useInView, useMediaQuery, useMounted } from '../lib/hooks';
-import { useDragToDismiss } from '../lib/useDragToDismiss';
+import { useInView, useMounted } from '../lib/hooks';
 import { useIdleMount } from '../lib/warm';
 import { gsap } from '../lib/motion';
 import { revealFade, revealWords } from '../lib/reveal';
@@ -54,6 +55,19 @@ export function Projects() {
   };
 
   const onDock = useCallback((id: string | null) => setDocked(id), []);
+  // Hauteur (px, depuis le bas de la scène) du haut de la bulle posée : la fiche s'ouvre juste au-dessus
+  const [anchor, setAnchor] = useState(0);
+  const onAnchor = useCallback((px: number) => setAnchor(px), []);
+
+  // Projet précédent / suivant depuis la fiche : la bulle suivante file dans le socle
+  const dockedNow = useRef<string | null>(null);
+  dockedNow.current = docked;
+  const go = useCallback((delta: number) => {
+    const i = projects.findIndex((p) => p.id === dockedNow.current);
+    if (i < 0) return;
+    const next = projects[(i + delta + projects.length) % projects.length].id;
+    setRequest((r) => ({ id: next, n: (r?.n ?? 0) + 1 }));
+  }, []);
 
   const close = () => {
     setDocked(null);
@@ -90,7 +104,7 @@ export function Projects() {
     <section ref={root} id="projets" className={`projects section${show3D ? ' projects--scene' : ''}`} aria-labelledby="projects-title">
       {show3D ? (
         // Scène plein écran : bulles en apesanteur, socle en bas au centre, titre posé dessus
-        <div className="projects__scene">
+        <div className={`projects__scene${current ? ' has-panel' : ''}`} style={anchor ? ({ '--panel-bottom': `${anchor}px` } as React.CSSProperties) : undefined}>
           <div ref={stage} className="projects__stage" aria-hidden="true">
             {near && (
               <Suspense fallback={null}>
@@ -104,6 +118,7 @@ export function Projects() {
                   wrapper={stage}
                   tip={tip}
                   topInset={topInset}
+                  onAnchor={onAnchor}
                   onLost={() => setUse3D(false)}
                 />
               </Suspense>
@@ -143,7 +158,9 @@ export function Projects() {
             </ul>
           </div>
 
-          <ProjectPanel project={current} onClose={close} />
+          {/* Voile flouté derrière la fiche (le socle reste net) ; un clic dessus ferme la fiche */}
+          <div className={`projects__veil${current ? ' is-open' : ''}`} aria-hidden="true" onClick={close} />
+          <ProjectPanel project={current} onClose={close} onPrev={() => go(-1)} onNext={() => go(1)} />
         </div>
       ) : (
         <div className="container">
@@ -161,26 +178,32 @@ export function Projects() {
   );
 }
 
-function ProjectPanel({ project, onClose }: { project: Project | null; onClose: () => void }) {
+function ProjectPanel({ project, onClose, onPrev, onNext }: { project: Project | null; onClose: () => void; onPrev: () => void; onNext: () => void }) {
   const panel = useRef<HTMLElement>(null);
   const [shown, setShown] = useState<Project | null>(project);
-  // Sur téléphone, la fiche est une feuille en bas d'écran : on la tire vers le bas pour la fermer
-  const mobile = useMediaQuery('(max-width: 767px)');
-  const grab = useDragToDismiss(panel, { direction: 1, enabled: mobile && !!project, onDismiss: onClose });
+  const swipe = useRef<{ x: number; y: number } | null>(null);
+  const index = shown ? projects.findIndex((p) => p.id === shown.id) : -1;
 
   useEffect(() => {
     if (project) setShown(project);
   }, [project]);
 
+  // Focus dans la fiche à l'ouverture seulement (pas à chaque changement de projet : il reste sur les flèches)
+  const open = !!project;
   useEffect(() => {
-    if (!project) return;
-    panel.current?.focus({ preventScroll: true });
+    if (open) panel.current?.focus({ preventScroll: true });
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      else if (e.key === 'ArrowLeft') onPrev();
+      else if (e.key === 'ArrowRight') onNext();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [project, onClose]);
+  }, [open, onClose, onPrev, onNext]);
 
   return (
     <aside
@@ -190,15 +213,43 @@ function ProjectPanel({ project, onClose }: { project: Project | null; onClose: 
       aria-hidden={!project}
       tabIndex={-1}
       {...(!project ? { inert: '' } : {})}
+      // Au doigt : balayer vers la gauche ou la droite change de projet
+      onPointerDown={(e) => {
+        if (e.pointerType === 'touch') swipe.current = { x: e.clientX, y: e.clientY };
+      }}
+      onPointerUp={(e) => {
+        const s0 = swipe.current;
+        swipe.current = null;
+        if (!s0) return;
+        const dx = e.clientX - s0.x;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - s0.y) * 1.5) (dx < 0 ? onNext : onPrev)();
+      }}
+      onPointerCancel={() => (swipe.current = null)}
     >
       {shown && (
         <>
-          <div className="project-panel__grabber" aria-hidden="true" {...grab} />
-          <button type="button" className="project-panel__close" onClick={onClose}>
-            <IconClose aria-hidden="true" />
-            <span className="sr-only">Fermer la fiche projet</span>
-          </button>
-          <ProjectDetails project={shown} headingLevel="h3" headingId="project-panel-title" />
+          <div className="project-panel__bar">
+            <div className="project-panel__nav">
+              <button type="button" className="icon-btn" onClick={onPrev}>
+                <IconPrev aria-hidden="true" />
+                <span className="sr-only">Projet précédent</span>
+              </button>
+              <span className="project-panel__count" aria-hidden="true">
+                {index + 1} / {projects.length}
+              </span>
+              <button type="button" className="icon-btn" onClick={onNext}>
+                <IconNext aria-hidden="true" />
+                <span className="sr-only">Projet suivant</span>
+              </button>
+            </div>
+            <button type="button" className="project-panel__close" onClick={onClose}>
+              <IconClose aria-hidden="true" />
+              <span className="sr-only">Fermer la fiche projet</span>
+            </button>
+          </div>
+          <div key={shown.id} className="project-panel__body">
+            <ProjectDetails project={shown} headingLevel="h3" headingId="project-panel-title" />
+          </div>
         </>
       )}
     </aside>
@@ -212,36 +263,47 @@ export function ProjectDetails({ project: p, headingLevel: H, headingId }: { pro
         <img className="project__image" src={asset(p.image as string)} alt={`Capture d'écran : ${p.name}`} width={800} height={500} loading="lazy" />
       )}
       <div className="project__head">
-        {isFilled(p.status) && <p className="pill">{p.status}</p>}
         <H id={headingId} className="project__name">
           {p.name}
         </H>
-        {isFilled(p.context) && <p className="project__context">{p.context}</p>}
+        {isFilled(p.tagline) && <p className="project__tagline">{p.tagline}</p>}
+        <div className="project__meta">
+          {isFilled(p.status) && <p className="pill">{p.status}</p>}
+          {isFilled(p.context) && <p className="project__context">{p.context}</p>}
+        </div>
       </div>
-      {isFilled(p.description) && <p className="project__desc">{p.description}</p>}
-      {isFilled(p.role) && (
-        <div className="project__block">
-          <p className="label">Mon rôle</p>
-          <p>{p.role}</p>
+      {/* Deux blocs : ce que c'est (description, technos, liens) et ce que j'y ai fait (rôle, appris).
+          Empilés dans les cartes ; côte à côte dans la fiche sur grand écran */}
+      <div className="project__main">
+        {isFilled(p.description) && <p className="project__desc">{p.description}</p>}
+        {isFilled(p.stack) && (
+          <ul className="chips" aria-label="Technologies">
+            {p.stack.map((s) => (
+              <li key={s} className="chip">
+                {s}
+              </li>
+            ))}
+          </ul>
+        )}
+        {isFilled(p.note) && <p className="project__note">{p.note}</p>}
+        <ProjectLinks project={p} />
+      </div>
+      {(isFilled(p.role) || isFilled(p.learned)) && (
+        <div className="project__side">
+          {isFilled(p.role) && (
+            <div className="project__block">
+              <p className="label">Mon rôle</p>
+              <p>{p.role}</p>
+            </div>
+          )}
+          {isFilled(p.learned) && (
+            <div className="project__block">
+              <p className="label">Ce que j'ai appris</p>
+              <p>{p.learned}</p>
+            </div>
+          )}
         </div>
       )}
-      {isFilled(p.stack) && (
-        <ul className="chips" aria-label="Technologies">
-          {p.stack.map((s) => (
-            <li key={s} className="chip">
-              {s}
-            </li>
-          ))}
-        </ul>
-      )}
-      {isFilled(p.learned) && (
-        <div className="project__block">
-          <p className="label">Ce que j'ai appris</p>
-          <p>{p.learned}</p>
-        </div>
-      )}
-      {isFilled(p.note) && <p className="project__note">{p.note}</p>}
-      <ProjectLinks project={p} />
     </div>
   );
 }

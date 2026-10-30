@@ -97,7 +97,7 @@ Tout le texte modifiable sans toucher au code.
 |---|---|
 | `profile.json` | identité, liens, CV, textes « À propos », « Hors écran », cartes « Ce que je fais » |
 | `skills.json` | touches du clavier |
-| `projects.json` | bulles projets |
+| `projects.json` | bulles projets (dont `tagline`, l'accroche de la fiche) |
 | `timeline.json` | parcours |
 | `training.json` | TryHackMe / Hack The Box / certif |
 | `availability.json` | calendrier de stage + bloc alternance |
@@ -166,7 +166,7 @@ Pas d'appel API depuis le navigateur. Afficher discrètement « Stats au <date> 
 - Count-up une seule fois à l'entrée dans le viewport ; valeur finale directe sous reduced-motion et sans JS.
 
 ### 4.4 projects.json
-Champs : `id, name, bubbleLabel` (texte de la bulle et du bouton, `\n` = retour à la ligne), `size, status, role, context, description, stack[], learned, note, links{github,organization,live,current}, image, draft`.
+Champs : `id, name, tagline` (accroche sous le nom dans la fiche), `bubbleLabel` (texte de la bulle et du bouton, `\n` = retour à la ligne), `size, status, role, context, description, stack[], learned, note, links{github,organization,live,current}, image, draft`.
 Statuts possibles : « En cours », « Livré », « Projet d'école ».
 
 « Ce que j'ai appris » (`learned`), rédigé à partir des mots d'Ethan (17/10), sans rien ajouter :
@@ -405,19 +405,15 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
 ### 7. Terrain d'entraînement (refait le 30/10 : tuiles façon widgets iPhone)
 Grille de tuiles en verre (`.tiles`, 4 colonnes, 2 sur mobile, `grid-auto-flow: dense`) : grande tuile TryHackMe (« Top 7 % » géant, « Voir le profil ↗ »), petites tuiles Meilleure ligue / Questions résolues / Meilleure série / Certification (en préparation), tuile large Badges, grande tuile Hack The Box (niveau 13 géant + machines nommées), tuile large Parcours en cours. Une valeur `null` retire sa tuile sans laisser de trou. Compteurs animés une fois. Mention « Stats au 17 oct. 2026 ».
 
-### 8. Projets (bulles physiques)
-« MES » / « PROJETS » + « Clique sur une bulle pour ouvrir le projet / ou glisse-la dans le socle → ».
-**Interaction validée par Ethan le 17/10 (priorité : qu'un recruteur ouvre un projet sans effort)** :
-- **Clic (ou tap) sur une bulle = la bulle file dans le socle et la fiche s'ouvre.** Seuil de 6 px avant de considérer un glisser.
-- Survol : la bulle grossit légèrement, reste immobile, curseur main, info-bulle « Ouvrir · nom du projet ». **Pas de sphère « pousseur » au survol** (elle éjectait les bulles hors de portée).
-- Glisser : la bulle tenue devient cinématique et suit exactement le pointeur (repousse les autres), le socle s'agrandit et s'illumine quand elle passe au-dessus ; lâcher dans le socle (pointeur ou bulle à moins de 1,5 × son rayon) = ouverture ; ailleurs = la bulle repart avec l'élan du geste. Sur tactile (depuis le 24/10) : un toucher qui **commence sur une bulle** l'attrape (`touchstart` non passif + `preventDefault` après lancer de rayon), on peut la glisser dans le socle (seuil 10 px, sinon c'est un tap qui l'ouvre) ; un toucher qui commence ailleurs fait défiler la page.
-- **Rangée de boutons toujours visible sous la scène** (« Ou choisis directement : Hera · Cabinet infirmier · VBVB · Power 4 · RedQuest »), état actif sur le projet ouvert.
-- Fiche : s'ouvre **à gauche** sur grand écran (la bulle déposée reste visible dans le socle à droite), feuille en bas d'écran sur mobile, **qu'on tire vers le bas pour la fermer** par sa poignée (`useDragToDismiss` : suivi 1:1, élastique vers le haut, fermeture si la projection du geste dépasse la moitié, sinon retour en place au ressort).
-- Rapier, gravité faible vers un attracteur centre-gauche. Sphères nacrées (`MeshPhysicalMaterial` blanc cassé, clearcoat 1, roughness 0.25, iridescence violette légère) avec décal du nom/logo du projet. Taille = `size` (Hera ×1.6).
-- Socle à droite : torus émissif `--accent`, halo pulsant, « Déposer ici ». Dépôt = la bulle glisse au centre (GSAP) et tourne lentement. Nouveau dépôt = éjection de la précédente.
-- Fiche (DOM) : capture 16:10 si dispo, nom, statut, rôle, contexte, description, stack (chips), « Ce que j'ai appris », liens (icônes Solar). Fermer (bouton + Échap) renvoie la bulle dans le nuage. Champs `null` masqués.
-- Accessibilité : les boutons visibles sous la scène ouvrent la fiche (animation bulle → socle) ; focus déplacé dans la fiche puis rendu au bouton à la fermeture.
-- Reduced-motion / sans WebGL / sans JS : grille de cartes statiques (même contenu).
+### 8. Projets (bulles physiques) — refait le 30/10 avec Ethan (grill + validation étape par étape)
+**Scène plein écran** (`.projects__scene`, `100svh`, bord à bord) : « Mes » / « projets » et l'astuce (« Clique sur une bulle pour ouvrir le projet / ou glisse-la dans le socle ↓ ») sont **posés sur la scène** ; leur hauteur (`topInset`, mesurée) sert de plafond aux bulles, qui ne passent jamais dessous.
+- **Bulles en verre lavande** (même teinte pour toutes) : coque transparente aux reflets nets (pas de transmission : le canevas est transparent, le fond de la page n'existe pas pour la 3D), liseré de Fresnel (`makeRimMaterial`), reflets dessinés (`makeGlintTexture`). **Le nom flotte dedans**, sur un plan face à l'écran, calibré pour tenir dans le disque (`makeNameTexture`, jamais rogné ; couleurs selon le thème). Taille = `size` (Hera ×1.6).
+- **Apesanteur** : dérive lente propre à chaque bulle, bords souples (côtés, dessous du titre, dessus du socle) qui freinent aussi les lancers. Plus d'attracteur.
+- **Socle en bas au centre** (choisi par Ethan) : plateau **en noyer** (même bois que le clavier, `src/three/walnut.ts`), cylindre incliné vers la caméra (dessus et tranche visibles), **incrustation de verre dépoli lavande** au centre dont le bord s'allume quand une bulle approche ; halo, ombre douce, « Déposer ici » sous le bord avant. Ethan a refusé : socle plat et blanc (« assiette »), anneau néon rose.
+- **Interaction inchangée** (validée le 17/10) : clic / tap = la bulle file dans le socle et la fiche s'ouvre (seuil 6 px, 10 px au doigt) ; glisser-déposer dans le socle ; survol = la bulle grossit, curseur main, info-bulle « Ouvrir · nom ». Un toucher qui commence sur une bulle l'attrape, ailleurs la page défile. Posée, une bulle prend au plus la taille des autres (Hera rapetisse) et flotte à peine.
+- **Boutons des projets invisibles** (choix d'Ethan) : barre de verre en bas qui apparaît dès qu'un bouton a le focus (Tab) ; lecteurs d'écran inchangés.
+- **Fiche au centre, au-dessus du socle**, comme si elle sortait de la bulle (ordinateur et téléphone, presque plein écran sur téléphone) : position calculée depuis la bulle posée (`onAnchor` → `--panel-bottom`). Les autres bulles s'écartent vers les bords et un **voile flouté** couvre la scène, sauf autour du socle (clic sur le voile = fermer). Contenu : **grand nom + accroche** (`tagline`, validées par Ethan le 30/10), statut, contexte ; puis deux blocs (`project__main` : description, technos, liens · `project__side` : rôle, « Ce que j'ai appris »), côte à côte dès 1024 px. Barre du haut : **‹ n / total ›** + fermer ; flèches du clavier, balayage gauche / droite au doigt ; Échap ferme. Changement de projet = la bulle suivante file dans le socle, contenu en simple fondu.
+- Reduced-motion / sans WebGL / sans JS : grille de cartes statiques (même contenu, avec l'accroche).
 
 ### 9. Disponibilités
 « QUAND » / « JE SUIS DISPO ».

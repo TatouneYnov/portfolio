@@ -25,6 +25,8 @@ type Props = {
   tip: RefObject<HTMLDivElement>;
   /** Hauteur (px) du titre posé sur la scène : les bulles ne passent jamais dessous */
   topInset: number;
+  /** Position du haut de la bulle posée (px depuis le bas de la scène) : la fiche s'ouvre au-dessus */
+  onAnchor: (px: number) => void;
   onLost: () => void;
 };
 
@@ -151,7 +153,7 @@ function Environment() {
 type BallState = { body: RapierRigidBody | null; mesh: THREE.Group | null; radius: number };
 type Press = { id: string; x: number; y: number; touch: boolean; dragging: boolean };
 
-function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Omit<Props, 'paused' | 'maxBubbles' | 'onLost'>) {
+function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAnchor }: Omit<Props, 'paused' | 'maxBubbles' | 'onLost'>) {
   const { camera, size, gl } = useThree();
   const { rapier } = useRapier();
   const balls = useRef(new Map<string, BallState>());
@@ -267,7 +269,9 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
     walnutTop.dispose();
   }, [walnutSide, walnutTop]);
   // Bulle déposée : posée sur le plateau (son centre dépend de sa taille)
-  const restY = (id: string) => frame.dock.y + (balls.current.get(id)?.radius ?? maxRadius) * 1.02;
+  // Posée, une bulle ne dépasse pas la taille des autres (Hera rapetisse) : la fiche garde la même hauteur
+  const dockedRadius = (id: string) => Math.min(balls.current.get(id)?.radius ?? maxRadius, frame.unit);
+  const restY = (id: string) => frame.dock.y + dockedRadius(id) * 1.02;
   // Zone de dépôt : au-dessus du plateau, là où repose la bulle
   const nearDock = (x: number, y: number) => Math.hypot(x - frame.dock.x, y - (frame.dock.y + maxRadius * 0.8)) < dockRadius * 1.4;
   // Phases propres à chaque bulle pour la dérive en apesanteur
@@ -328,6 +332,9 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
     gsap.killTweensOf(proxy.current);
     gsap.to(proxy.current, { x: frame.dock.x, y: restY(id), duration, ease: 'power3.out' });
     glow.current = 1;
+    // La fiche recouvre le haut de la bulle : elle a l'air d'en sortir, et garde de la hauteur
+    const top = restY(id) + dockedRadius(id) * 0.35;
+    onAnchor(((top + frame.halfH) / (2 * frame.halfH)) * size.height);
     onDock(id);
   };
 
@@ -454,7 +461,8 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
       const b = ball.body;
       if (!b) return;
       const t = b.translation();
-      const target = ball.radius * (hovered.current === id && !dragging ? 1.08 : 1);
+      const base = id === dockedRef.current ? dockedRadius(id) : ball.radius;
+      const target = base * (hovered.current === id && !dragging ? 1.08 : 1);
       if (ball.mesh) ball.mesh.scale.setScalar(THREE.MathUtils.damp(ball.mesh.scale.x, target, 14, dt));
 
       if (id === dockedRef.current) {
@@ -493,6 +501,11 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
       const oy = t.y - r < floor ? floor - (t.y - r) : t.y + r > top ? top - (t.y + r) : 0;
       fx += ox * 40;
       fy += oy * 40;
+      // Fiche ouverte : les autres bulles s'écartent vers les bords (elle occupe le centre)
+      if (dockedRef.current) {
+        const half = frame.px * 300 + r;
+        if (Math.abs(t.x) < half) fx += Math.sign(t.x || (index.get(id) ?? 0) % 2 - 0.5) * (half - Math.abs(t.x)) * 6;
+      }
       if (ox || oy) {
         // Dehors : on freine aussi la vitesse qui l'emmène plus loin (lancer, éjection du socle)
         const lv = b.linvel();

@@ -4,6 +4,7 @@
     {
       "id": "hera",
       "name": "Hera",
+      "tagline": "Une app pour organiser et rejoindre des sessions de sport",
       "bubbleLabel": "Hera",
       "size": 1.6,
       "status": "Projet d'école",
@@ -25,6 +26,7 @@
     {
       "id": "cabinet-infirmier",
       "name": "Site du cabinet infirmier de Jassans-Riottier",
+      "tagline": "Le site vitrine d'un cabinet d'infirmières libérales",
       "bubbleLabel": "Cabinet\ninfirmier",
       "size": 1.15,
       "status": "En cours",
@@ -50,6 +52,7 @@
     {
       "id": "vbvb",
       "name": "Refonte du site du VBVB",
+      "tagline": "Le nouveau site de mon club de volley",
       "bubbleLabel": "VBVB",
       "size": 1.1,
       "status": "En cours",
@@ -71,6 +74,7 @@
     {
       "id": "power4",
       "name": "Power 4 Web",
+      "tagline": "Le Puissance 4 dans le navigateur, servi en Go",
       "bubbleLabel": "Power 4",
       "size": 1,
       "status": "Projet d'école",
@@ -97,6 +101,7 @@
     {
       "id": "redquest",
       "name": "RedQuest",
+      "tagline": "Un RPG dans le terminal, écrit en Go",
       "bubbleLabel": "RedQuest",
       "size": 1,
       "status": "Projet d'école",
@@ -120,6 +125,7 @@
     {
       "id": "groupie-tracker",
       "name": "Groupie Tracker",
+      "tagline": null,
       "bubbleLabel": "Groupie\nTracker",
       "size": 1,
       "status": "Projet d'école",
@@ -141,6 +147,7 @@
     {
       "id": "escapequizz",
       "name": "EscapeQuizz",
+      "tagline": null,
       "bubbleLabel": "Escape\nQuizz",
       "size": 1,
       "status": null,
@@ -162,6 +169,7 @@
     {
       "id": "cinelist",
       "name": "CineList",
+      "tagline": null,
       "bubbleLabel": "CineList",
       "size": 1,
       "status": null,
@@ -183,6 +191,7 @@
     {
       "id": "ysentinelle",
       "name": "YSentinelle",
+      "tagline": null,
       "bubbleLabel": "YSentinelle",
       "size": 1,
       "status": null,
