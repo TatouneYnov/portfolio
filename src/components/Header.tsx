@@ -1,16 +1,75 @@
 import { useEffect, useRef, useState } from 'react';
 import IconMenu from '~icons/solar/hamburger-menu-linear';
 import IconClose from '~icons/solar/close-linear';
+import IconSun from '~icons/solar/sun-2-linear';
+import IconMoon from '~icons/solar/moon-linear';
+import { flushSync } from 'react-dom';
 import profile from '../data/profile.json';
 import { copyText } from '../lib/toast';
 import { asset } from '../lib/env';
 import { useDragToDismiss } from '../lib/useDragToDismiss';
+import { isReducedMotion } from '../lib/motion';
+import { setTheme, useTheme } from '../lib/theme';
 
 const NAV = [
   { href: '#a-propos', label: 'À propos' },
   { href: '#projets', label: 'Projets' },
   { href: '#contact', label: 'Contact' },
 ];
+
+/** Bouton soleil / lune : le nouveau thème se révèle dans un cercle qui part du bouton (View Transitions).
+ *  Sans prise en charge : changement direct. Sous « réduire les animations » : fondu court du navigateur. */
+function ThemeToggle() {
+  const theme = useTheme();
+  const dark = theme === 'dark';
+  const ref = useRef<HTMLButtonElement>(null);
+
+  const toggle = () => {
+    const next = dark ? 'light' : 'dark';
+    const doc = document as Document & {
+      startViewTransition?: (cb: () => void) => {
+        ready: Promise<void>;
+        finished: Promise<void>;
+      };
+    };
+    if (!doc.startViewTransition) {
+      setTheme(next);
+      return;
+    }
+    const root = document.documentElement;
+    const reduce = isReducedMotion();
+    if (!reduce) root.classList.add('theme-circle');
+    const vt = doc.startViewTransition(() => flushSync(() => setTheme(next)));
+    vt.finished.finally(() => root.classList.remove('theme-circle'));
+    if (reduce) return;
+    const r = ref.current?.getBoundingClientRect();
+    const x = r ? r.left + r.width / 2 : window.innerWidth;
+    const y = r ? r.top + r.height / 2 : 0;
+    const end = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+    vt.ready
+      .then(() =>
+        root.animate(
+          {
+            clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${end}px at ${x}px ${y}px)`],
+          },
+          {
+            duration: 550,
+            easing: 'cubic-bezier(0.77, 0, 0.175, 1)',
+            pseudoElement: '::view-transition-new(root)',
+          },
+        ),
+      )
+      .catch(() => {});
+  };
+
+  return (
+    <button ref={ref} type="button" className="theme-toggle" aria-pressed={dark} onClick={toggle}>
+      <IconMoon className="theme-toggle__moon" aria-hidden="true" />
+      <IconSun className="theme-toggle__sun" aria-hidden="true" />
+      <span className="sr-only">Mode sombre</span>
+    </button>
+  );
+}
 
 export function Header() {
   const [open, setOpen] = useState(false);
@@ -83,28 +142,31 @@ export function Header() {
           <span className="sr-only">Copier l'adresse e-mail : </span>
           {profile.email}
         </button>
-        <nav className="site-nav" aria-label="Navigation principale">
-          <ul>
-            {NAV.map((item) => (
-              <li key={item.href}>
-                <a href={item.href} aria-current={current === item.href ? 'true' : undefined}>
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <button
-          ref={toggleRef}
-          type="button"
-          className="menu-toggle"
-          aria-expanded={open}
-          aria-controls="menu-mobile"
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? <IconClose aria-hidden="true" /> : <IconMenu aria-hidden="true" />}
-          <span className="sr-only">{open ? 'Fermer le menu' : 'Ouvrir le menu'}</span>
-        </button>
+        <div className="site-header__end">
+          <nav className="site-nav" aria-label="Navigation principale">
+            <ul>
+              {NAV.map((item) => (
+                <li key={item.href}>
+                  <a href={item.href} aria-current={current === item.href ? 'true' : undefined}>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <ThemeToggle />
+          <button
+            ref={toggleRef}
+            type="button"
+            className="menu-toggle"
+            aria-expanded={open}
+            aria-controls="menu-mobile"
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <IconClose aria-hidden="true" /> : <IconMenu aria-hidden="true" />}
+            <span className="sr-only">{open ? 'Fermer le menu' : 'Ouvrir le menu'}</span>
+          </button>
+        </div>
       </div>
 
       <div id="menu-mobile" ref={menuRef} className="menu-mobile" hidden={!open} {...grab}>

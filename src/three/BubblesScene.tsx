@@ -10,6 +10,7 @@ import { gsap } from 'gsap';
 import type { Project } from '../lib/content';
 import type { DockRequest } from '../sections/Projects';
 import { markWebGLLost } from '../lib/capabilities';
+import { useTheme } from '../lib/theme';
 import { Warmup } from './Warmup';
 
 type Props = {
@@ -58,16 +59,14 @@ function makeBubbleTexture(label: string): THREE.CanvasTexture {
   return tex;
 }
 
-// Thème clair de l'OS : une lueur additive disparaît sur fond clair, on passe en mélange normal et en violet plus foncé
-const isLight = () => window.matchMedia('(prefers-color-scheme: light)').matches;
-
-function makeLabelTexture(text: string): THREE.CanvasTexture {
+// Thème clair : une lueur additive disparaît sur fond clair, on passe en mélange normal et en violet plus foncé
+function makeLabelTexture(text: string, light: boolean): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 96;
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
   ctx.font = '600 34px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Roboto, system-ui, sans-serif';
-  ctx.fillStyle = isLight() ? '#6025C9' : '#B49CFF';
+  ctx.fillStyle = light ? '#6025C9' : '#B49CFF';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(text, 256, 48);
@@ -130,9 +129,9 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
   }, [camera, size]);
 
   const textures = useMemo(() => Object.fromEntries(projects.map((p) => [p.id, makeBubbleTexture(p.bubbleLabel || p.name)])), [projects]);
-  const dockLabel = useMemo(() => makeLabelTexture('Déposer ici'), []);
+  const light = useTheme() === 'light';
+  const dockLabel = useMemo(() => makeLabelTexture('Déposer ici', light), [light]);
   const sphere = useMemo(() => new THREE.SphereGeometry(1, 48, 32), []);
-  const light = useMemo(isLight, []);
   const haloTex = useMemo(() => {
     const c = document.createElement('canvas');
     c.width = c.height = 256;
@@ -148,12 +147,13 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
   useEffect(
     () => () => {
       Object.values(textures).forEach((t) => t.dispose());
-      dockLabel.dispose();
       haloTex.dispose();
       sphere.dispose();
     },
-    [textures, dockLabel, haloTex, sphere],
+    [textures, haloTex, sphere],
   );
+  // Libellé du socle refait à chaque changement de thème
+  useEffect(() => () => dockLabel.dispose(), [dockLabel]);
 
   const maxRadius = Math.max(...projects.map((p) => p.size)) * frame.unit;
   const dockRadius = maxRadius * 1.18;

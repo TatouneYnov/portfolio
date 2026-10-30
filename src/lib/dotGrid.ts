@@ -8,6 +8,8 @@
  * Le dessin ne tourne que lorsqu'il y a quelque chose à animer ; sinon la dernière image reste affichée.
  */
 
+import { onThemeChange } from './theme';
+
 const GAP = 26; // espacement des points (px CSS)
 const DOT = 1.4; // taille d'un point au repos
 const RADIUS = 95; // rayon de la lumière sous la souris
@@ -178,7 +180,6 @@ export function startDotGrid(canvas: HTMLCanvasElement, still: boolean): () => v
     if (!document.hidden) request();
   };
 
-  const light = window.matchMedia('(prefers-color-scheme: light)');
   readTheme();
   resize();
   request();
@@ -190,7 +191,7 @@ export function startDotGrid(canvas: HTMLCanvasElement, still: boolean): () => v
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onResize);
   document.addEventListener('visibilitychange', onVisible);
-  light.addEventListener('change', onTheme);
+  const offTheme = onThemeChange(onTheme);
 
   return () => {
     if (raf) cancelAnimationFrame(raf);
@@ -201,6 +202,6 @@ export function startDotGrid(canvas: HTMLCanvasElement, still: boolean): () => v
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onResize);
     document.removeEventListener('visibilitychange', onVisible);
-    light.removeEventListener('change', onTheme);
+    offTheme();
   };
 }

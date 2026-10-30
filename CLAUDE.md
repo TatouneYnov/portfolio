@@ -62,6 +62,7 @@ Fournir un `.env.example`. Ne jamais committer de `.env`.
 | `src/lib/stageState.ts` | Progression partagée scroll → scène de l'avatar (`intro`, `about`, `travel`, `desk`) |
 | `src/lib/warm.ts` | Préchargement des modules 3D, montage anticipé des scènes (`useIdleMount`) |
 | `src/lib/dotGrid.ts` | Grille de points du fond (lumière sous le curseur, onde au clic) |
+| `src/lib/theme.ts` + `public/theme.js` | Thème clair / sombre (bouton de l'en-tête, choix gardé dans le navigateur) |
 | `src/lib/capabilities.ts` | Détection WebGL, « réduire les animations », appareil modeste, pointeur précis |
 | `src/three/avatar.js` (+ `.d.ts`) | Avatar figurine, bureau, écran terminal, poses debout/assis |
 | `src/three/AvatarStage.tsx` | Canvas fixe de l'avatar, cadrage dans les emplacements DOM |
@@ -278,7 +279,7 @@ Structure suggérée :
 --accent-strong: #7C3AED; /* lueurs, ligne de timeline */
 --glow: radial-gradient(circle, rgb(109 40 217 / .35), transparent 70%);
 ```
-**Thème clair** (ajouté le 23/10 à la demande d'Ethan) : le site suit le réglage de l'OS (`prefers-color-scheme`), sombre par défaut, sans bouton ni script. Tokens clairs dans `main.css` (`@media (prefers-color-scheme: light)`), `pages.css` et deux `<meta name="theme-color">`. Clair (retravaillé le 30/10, « trop blanc » avant) : **lavande brumeuse**, `--bg #ECE8F6`, `--bg-2 #FFFFFF`, `--text #17121F`, `--muted #524B67`, `--accent #6025C9`, cartes en verre blanc à 55 % (AA vérifié jusqu'au cœur des lueurs).
+**Thèmes** (refait le 30/10 à la demande d'Ethan) : **clair par défaut pour tout le monde**, quel que soit le réglage de l'appareil ; bouton soleil / lune dans l'en-tête (à droite de « Contact » ; sur téléphone, à gauche du burger ; masqué sans JS) pour passer en sombre. Le nouveau thème se révèle dans un cercle qui part du bouton (View Transitions, 0,55 s ; fondu du navigateur sous « réduire les animations », changement direct sans prise en charge). Thème actif = `data-theme="dark"` sur `<html>` (absent = clair) ; jetons sombres en base dans `main.css`, jetons clairs sous `:root:not([data-theme="dark"])`. **Choix gardé** dans `localStorage` (clé `theme` = `dark`, effacée en repassant en clair ; accepté par Ethan, mentionné dans `confidentialite.html`), relu avant le premier affichage par `public/theme.js` (script bloquant dans `<head>`, aussi chargé par les pages annexes, qui suivent le choix sans bouton). Code : `src/lib/theme.ts` (`setTheme`, `useTheme`, `onThemeChange`), utilisé par la grille du fond et les bulles. Une seule `<meta name="theme-color">`, mise à jour au changement. Clair (retravaillé le 30/10, « trop blanc » avant) : **lavande brumeuse**, `--bg #ECE8F6`, `--bg-2 #FFFFFF`, `--text #17121F`, `--muted #524B67`, `--accent #6025C9`, cartes en verre blanc à 55 % (AA vérifié jusqu'au cœur des lueurs).
 **Fond de page** (`src/components/Backdrop.tsx`, 30/10, les deux thèmes) : calque fixe sous `main` avec trois grandes lueurs radiales (`--orb-a/b/c` ; clair : lavande en haut à gauche, pêche à droite, lilas bleuté en bas ; sombre : violet, prune, bleu nuit à 9–16 %, à peine visibles) qui dérivent au défilement (un seul scrub GSAP sur toute la page, fixe sous « réduire les animations »), + grain SVG fixe (`--grain-opacity`) contre les bandes des dégradés. **Grille de points** (`src/lib/dotGrid.ts`, canvas 2D, choisie par Ethan le 30/10 parmi 4 essais) : points `--grid-alpha` tous les 26 px, estompés vers les bords, défilant à mi-vitesse ; la zone sous la souris s'allume en `--accent` et se soulève, un clic dans le vide (pas sur un lien, bouton ou canevas) lance une onde (la vague au défilement, essayée le 30/10, a été retirée à la demande d'Ethan). Téléphone : onde au toucher, pas de lumière qui suit le doigt. « Réduire les animations » et appareil modeste : grille fixe à l'écran, seule la lueur sous la souris apparaît en fondu. Ne dessine que quand quelque chose bouge. Toute nouvelle couleur passe par un token (pas de `rgb()` codé en dur, utiliser `color-mix` avec les tokens). Scènes 3D : canevas transparents ; seul le socle des bulles change en clair (pas de mélange additif). Les images fixes et l'image Open Graph restent celles du thème sombre.
 
 ### Typo (refonte « Apple » du 30/10)
@@ -347,9 +348,9 @@ Budget : qualité d'abord, optimisation après mesure sur le PC d'Ethan. **Refon
 ### 1. Navigation (fixe)
 - Gauche : monogramme « EB » (police système, 800) → haut de page
 - Centre (≥ 1200 px) : `ethan.bacquier@gmail.com` en petit, clic = copie + toast « Adresse copiée ✓ »
-- Droite : À propos · Projets · Contact (ancres via `lenis.scrollTo`)
+- Droite : À propos · Projets · Contact (ancres via `lenis.scrollTo`) + bouton de thème soleil / lune
 - Bas droite fixe : « CV » vertical (rotation 90°, verre dépoli) → désactivé « CV · bientôt » tant que `cv.available: false` (masqué sur mobile)
-- Mobile : burger plein écran en verre, liens en grand, mention du CV et de l'e-mail ; **on le ferme aussi en le tirant vers le haut** (poignée en bas)
+- Mobile : bouton de thème à gauche du burger ; burger plein écran en verre, liens en grand, mention du CV et de l'e-mail ; **on le ferme aussi en le tirant vers le haut** (poignée en bas)
 - Repère de position : le lien de la section en cours passe en `--accent` (`aria-current`)
 
 ### 2. Hero (100vh)
