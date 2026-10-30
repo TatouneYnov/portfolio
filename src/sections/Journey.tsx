@@ -16,16 +16,16 @@ export function Journey() {
       if (isReducedMotion()) return;
       const list = el.querySelector('.timeline');
       // La ligne se remplit au défilement ; la perle marque sa tête (à 70 % de la hauteur de l'écran).
-      gsap.fromTo(
-        '.timeline__fill',
-        { scaleY: 0 },
-        { scaleY: 1, ease: 'none', scrollTrigger: { trigger: list, start: 'top 70%', end: 'bottom 70%', scrub: true } },
-      );
-      gsap.fromTo(
-        '.timeline__bead',
-        { top: '0%' },
-        { top: '100%', ease: 'none', scrollTrigger: { trigger: list, start: 'top 70%', end: 'bottom 70%', scrub: true } },
-      );
+      // Une seule timeline pour les deux, en transform (composité, pas de recalcul de mise en page) et un léger
+      // lissage : sur iPhone, le défilement natif devance les mises à jour et la perle avançait par à-coups.
+      const track = el.querySelector<HTMLElement>('.timeline__track');
+      gsap
+        .timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: { trigger: list, start: 'top 70%', end: 'bottom 70%', scrub: 0.4, invalidateOnRefresh: true },
+        })
+        .fromTo('.timeline__fill', { scaleY: 0 }, { scaleY: 1 }, 0)
+        .fromTo('.timeline__bead', { y: 0 }, { y: () => track?.offsetHeight ?? 0 }, 0);
       el.querySelectorAll('.tl-row').forEach((row) => {
         gsap.from(row.children, {
           opacity: 0,
