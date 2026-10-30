@@ -118,7 +118,6 @@ export function Availability() {
                 </li>
               ))}
             </ul>
-            <p className="dispo__example">{data.example}</p>
             <p className="dispo__other">{data.otherPeriods}</p>
             <a className="btn btn--primary" href="#contact" onClick={(e) => (e.preventDefault(), propose())}>
               Me proposer un créneau <IconArrow aria-hidden="true" />

@@ -245,7 +245,7 @@ Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogram
 - **Jours passés grisés automatiquement** (comparaison avec la date du visiteur) ; un mois entièrement passé disparaît de la vue.
 - Mention : « Autres périodes : à définir ensemble ».
 - Bloc `alternance` (sous le CTA) : « Et après : alternance » · « Pour ma 3e année (Bachelor 3, rentrée 2027), je cherche une alternance. » · « 1 semaine à l'école · 2 semaines en entreprise » · lien « Me parler d'alternance → » (scroll vers Contact, objet « Alternance B3 »).
-- Exemple de calcul (affiché tel quel) : « Exemple : les 4 semaines de vacances = 126 h (hors fériés) + 11 matinées de 4 h = 170 h ». (18 jours × 7 h = 126 h.)
+- Plus d'exemple de calcul (« les 4 semaines de vacances = 126 h… ») : retiré le 30/10 à la demande d'Ethan.
 
 Structure suggérée :
 ```json
@@ -422,7 +422,7 @@ Grille de tuiles en verre (`.tiles`, 4 colonnes, 2 sur mobile, `grid-auto-flow: 
 - Droite (refait le 30/10, **façon app Calendrier d'iOS**) : carte en verre, résumé calculé (« 4 semaines à temps plein · sinon les matins (8h–12h) »), **un mois à la fois** partout, titre « Novembre 2026 » + flèches. Jours ronds : matin dispo = chiffre + point violet ; journée complète = pastille `--accent` pleine ; férié (barré), passé, week-end = grisé. Le mois **suit le doigt (ou la souris) 1:1**, résiste à l'élastique aux extrémités et se cale sur le mois voisin avec un ressort qui reprend la vitesse du lâcher (projection d'Apple) ; un glisser vertical fait défiler la page. Mois hors champ `inert`. Sans JS : tous les mois empilés.
 - Info-bulle au survol (souris seulement, « Lun. 2 nov. · journée complète »).
 - Vrai tableau accessible (`role="grid"`, libellés de jours complets pour lecteurs d'écran).
-- Légende + exemple de calcul + « Autres périodes : à définir ensemble ».
+- Légende + « Autres périodes : à définir ensemble » (exemple de calcul retiré le 30/10).
 - CTA « Me proposer un créneau → » : scroll vers Contact avec objet pré-rempli « Stage 170 h ».
 - Bloc « Et après : alternance » : après le calendrier dans le HTML ; sous le calendrier sur téléphone et tablette, sous les infos (colonne de gauche) sur ordinateur (30/10).
 

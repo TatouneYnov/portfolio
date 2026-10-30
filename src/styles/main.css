@@ -2186,11 +2186,6 @@ textarea {
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
-.dispo__example {
-  font-size: 15px;
-  color: var(--muted);
-  max-width: 40ch;
-}
 .dispo__other {
   font-family: var(--font-body);
   font-size: 13px;

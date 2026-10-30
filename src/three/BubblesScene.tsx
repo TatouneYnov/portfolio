@@ -32,6 +32,8 @@ type Props = {
   onLost: () => void;
 };
 
+const FLAT = 0.26; // plateau du socle vu légèrement de dessus : cercle aplati en ellipse
+const PLATE_H = 0.32; // épaisseur du plateau (en unités de bulle)
 const DRAG_THRESHOLD = 6; // px parcourus avant de considérer qu'on glisse (sinon : clic)
 const TOUCH_DRAG_THRESHOLD = 10; // au doigt, un tap bouge toujours un peu
 
@@ -193,8 +195,12 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAn
     const unit = Math.min(halfW, halfH) * (portrait ? 0.27 : 0.2);
     const px = (2 * halfH) / Math.max(1, size.height); // 1 px CSS en unités monde
     const margin = unit * 0.3;
-    // Centre du plateau : sa demi-hauteur apparente, son épaisseur et « Déposer ici » tiennent au-dessus du bas
-    const plateY = -halfH + unit * 0.75 + unit * 0.32 + px * 60;
+    // Centre du plateau : placé pour que « Déposer ici » (sous le bord avant, plus proche de la caméra donc
+    // agrandi par la perspective) reste au moins à 16 px au-dessus du bas de la scène
+    const dockR = Math.max(...projects.map((p) => p.size)) * unit * 1.18;
+    const front = cam.position.z / (cam.position.z - dockR * Math.cos(Math.asin(FLAT)));
+    const labelDrop = dockR * 1.03 * FLAT + unit * PLATE_H + px * 24 + px * 19; // jusqu'au bas du libellé
+    const plateY = (-halfH + px * 16) / front + labelDrop;
     const top = halfH - topInset * px - margin;
     const floor = plateY + unit * 0.75; // au-dessus du plateau (dont le bord arrière dépasse d'environ 0,5 unité)
     return {
@@ -206,7 +212,7 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAn
       bounds: { left: -halfW + margin, right: halfW - margin, top, floor },
       center: new THREE.Vector3(0, (top + floor) / 2, 0),
     };
-  }, [camera, size, topInset]);
+  }, [camera, size, topInset, projects]);
 
   const light = useTheme() === 'light';
   const textures = useMemo(
@@ -262,9 +268,8 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAn
 
   const maxRadius = Math.max(...projects.map((p) => p.size)) * frame.unit;
   const dockRadius = maxRadius * 1.18;
-  const FLAT = 0.26; // plateau vu légèrement de dessus : cercle aplati en ellipse
   const TILT = Math.asin(FLAT); // inclinaison du cylindre qui donne cet aplatissement
-  const plateH = frame.unit * 0.32; // épaisseur du plateau
+  const plateH = frame.unit * PLATE_H;
   const INSET = 0.7; // rayon de l'incrustation de verre (part du plateau)
   // Noyer : veinage le long de la tranche, et en lignes parallèles sur le dessus
   const walnutSide = useMemo(() => makeWalnutTexture(2.2, 0.14), []);
