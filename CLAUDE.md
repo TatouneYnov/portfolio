@@ -7,6 +7,7 @@ Ce fichier est la référence du projet. Il reprend le brief initial **et** les 
 ## 0. Règles de travail (à lire avant toute modification)
 
 - **Environnement d'Ethan : Windows / PowerShell.** Jamais de chaînage `&&` dans les scripts npm, le README ou les instructions. Une commande par ligne.
+- **Mise en ligne** (autorisation durable d'Ethan, 30/10) : chaque correctif validé est poussé directement sur `v2`, `main` et le site (`ethanbacquier/ethanbacquier.github.io`, `main`) sans redemander, en avance rapide uniquement (jamais de force-push) ; si l'historique a divergé, fusionner d'abord.
 - **Git** : on travaille sur la branche `v2` du repo `TatouneYnov/portfolio`. Depuis le 23/10 (demande d'Ethan), `main` porte la v2 (avance rapide depuis `v2`) ; l'ancien portfolio (Vue) est conservé sur la branche `v1`, à ne pas toucher. Pas de force-push.
 - **Skills à utiliser** : `build-awwwards-quality-sites` (système visuel et motion) et `frontend-design` (skill de design associé). Pour l'audit final : `seo-audit` (SEOmator) sur le site en ligne.
 - **Honnêteté absolue sur le contenu** : ne jamais inventer d'expérience, de certification, de stat, de client, de rôle ou de stack. Une info manquante est masquée ou remplacée par un état propre (« bientôt »), jamais affichée en « TODO », « lorem » ou lien `#`.
