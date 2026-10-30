@@ -57,7 +57,7 @@ Fournir un `.env.example`. Ne jamais committer de `.env`.
 | `src/App.tsx` | Assemble les sections, démarre le mouvement, monte la scène de l'avatar, lance le préchargement 3D |
 | `src/data/*.json` | Tout le contenu (§4) |
 | `src/sections/*.tsx` | Une section par fichier (Hero, About, WhatIDo, Journey, Toolbox, Training, Projects, Availability, Contact, Footer) |
-| `src/components/` | Loader, Header, Cursor, Toast, SplitHeading (titres mot par mot), Frame (cadre à équerres), Backdrop (fond à lueurs) |
+| `src/components/` | Loader, Header, Toast, SplitHeading (titres mot par mot), Frame (cadre à équerres), Backdrop (fond à lueurs) |
 | `src/lib/motion.ts` | GSAP + ScrollTrigger + Lenis, ancres internes (`scrollToHash`) |
 | `src/lib/stageState.ts` | Progression partagée scroll → scène de l'avatar (`intro`, `about`, `travel`, `desk`) |
 | `src/lib/warm.ts` | Préchargement des modules 3D, montage anticipé des scènes (`useIdleMount`) |
@@ -73,6 +73,7 @@ Fournir un `.env.example`. Ne jamais committer de `.env`.
 | `scripts/build.mjs` | Build client + SSR, pré-rendu, fichiers générés, contrôle du contenu |
 | `scripts/check-content.mjs` | Échoue si TODO, lorem, valeur technique, lien vide, téléphone ou École 42 dans la page |
 | `scripts/gen-keycap-icons.mjs` | Logos blancs des touches (`src/generated/keycap-icons.json`) |
+| `scripts/gen-cursors.mjs` | Curseurs du site (`public/cursors/`, sources dans `tools/cursors/`) |
 | `tools/poster.html`, `tools/og.html` | Rendus des images fixes de l'avatar et de l'image Open Graph (via `npm run dev`) |
 
 ---
@@ -295,8 +296,8 @@ Structure suggérée :
 - **Cartes du contenu** en verre (`.frame` / `.glass-card`) : « Ce que je fais », tuiles d'entraînement, calendrier, « Hors écran », fiches projets, contact, alternance. Le cadre pointillé à équerres a disparu.
 - `prefers-reduced-transparency` et `prefers-contrast: more` : surfaces pleines, sans flou (contours nets en contraste élevé).
 
-### Curseur (desktop, `pointer: fine` uniquement)
-**Refait le 30/10 à la demande d'Ethan** (l'ancien disque lavande qui remplaçait la flèche avait du retard et ne lui plaisait pas) : **le vrai curseur du système reste affiché partout**, sans aucun retard. Il est accompagné d'un **halo lavande doux** (`Cursor.tsx`, ~140 px, dégradé radial en `--accent`) qui le rattrape en ~0,15 s (lissage indépendant de la fréquence d'images), placé **sous le contenu** (au-dessus du fond seulement : le texte reste net). Au survol d'un lien ou d'un bouton, le halo se resserre (×0,6) et s'intensifie. Sous « réduire les animations » : halo collé à la souris, sans changement de taille. Bulles : main (`data-cursor="pointer"`), main fermée pendant le glisser (`grabbing`). Ne pas réintroduire de curseur qui remplace la flèche.
+### Curseur
+**Refait le 30/10 à la demande d'Ethan**, en deux temps : l'ancien disque lavande qui remplaçait la flèche avait du retard ; le halo lavande flou qui l'a remplacé faisait « site fait par une IA ». **Plus aucun élément qui suit la souris en JS** (`Cursor.tsx` supprimé). À la place, des **curseurs dessinés pour le site**, affichés par le système (donc zéro retard) : flèche classique aux coins arrondis, main (liens, boutons, bulles), main ouverte (`grab` : calendrier, poignée de la fiche) et poing (`grabbing`). Remplissage = `--text` du thème (encre `#17121F` en clair, blanc cassé `#F4F1FA` en sombre), liseré opposé, ombre légère. Formes et couleurs dans `scripts/gen-cursors.mjs` (une seule source) → SVG dans `tools/cursors/`, PNG 1× / 2× dans `public/cursors/` (`node scripts/gen-cursors.mjs`, demande Playwright). CSS : jetons `--cursor-arrow`, `--cursor-pointer`, `--cursor-grab`, `--cursor-grabbing` (`image-set()` + point chaud + mot-clé de repli), un jeu par thème ; un navigateur sans `image-set()` garde son curseur habituel. Curseur texte natif sur les champs. Ne pas réintroduire de curseur ou de halo qui suit la souris.
 
 ---
 
@@ -574,7 +575,7 @@ object-src 'none';
 - Le formulaire Web3Forms n'apparaît qu'avec `VITE_FORM_KEY` ; sinon bloc « Écris-moi directement ».
 - Rendus de l'avatar découpés (scissor) à son emplacement, avec un fondu en bas de l'emplacement pour masquer la coupe : depuis le 23/10, ce fondu est dessiné dans la scène 3D (bande `buildFade` collée à la caméra, hero et À propos), plus en CSS.
 - **Canvas de l'avatar transparent aux clics** (corrigé le 24/10) : le conteneur créé par React Three Fiber se remet en `pointer-events: auto`, donc depuis le 23/10 le canevas plein écran de l'avatar (au-dessus de `main`) avalait les clics et les touchers de **toute la page** (boutons, clavier, bulles). Règle `.stage * { pointer-events: none !important }` ; l'avatar n'écoute que `window` (suivi du pointeur), il n'a pas besoin des événements R3F. Test : `document.elementFromPoint` au centre d'un bouton doit renvoyer le bouton, pas un `CANVAS`.
-- **Canvas de l'avatar au-dessus du contenu** (`.stage` en `z-index: 2`, `main` en 1), corrigé le 23/10 : avant, la lueur violette du hero (dans `main`) se dessinait par-dessus le visage et le teintait en mauve sur le site (pas dans les images de `tools/poster.html`). Sans risque pour le texte : rendu découpé à l'emplacement. Le canvas reste sous l'en-tête (50), l'onglet CV (40), le toast (90), le curseur (150) et le loader (200).
+- **Canvas de l'avatar au-dessus du contenu** (`.stage` en `z-index: 2`, `main` en 1), corrigé le 23/10 : avant, la lueur violette du hero (dans `main`) se dessinait par-dessus le visage et le teintait en mauve sur le site (pas dans les images de `tools/poster.html`). Sans risque pour le texte : rendu découpé à l'emplacement. Le canvas reste sous l'en-tête (50), l'onglet CV (40), le toast (90) et le loader (200).
 - Titres découpés (`SplitHeading`) : une espace entre les lignes, pour que le texte brut se lise « Ethan Bacquier » (moteurs de recherche, copier-coller).
 - Mot rotatif du hero : le CSS décale le 2e mot (repli sans JS) ; le JS remet ce décalage à zéro (`y: 0`) avant d'animer en `yPercent`.
 - Canvas de l'avatar **effacé quand il se met en pause** (`ClearWhenPaused`) et quand aucun emplacement n'est visible : après un saut de défilement, la dernière image (avatar au bureau) restait figée par-dessus la section Outils.

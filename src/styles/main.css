@@ -150,7 +150,7 @@ textarea {
   color: inherit;
 }
 button {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
 }
 html {
   -webkit-tap-highlight-color: transparent; /* le retour au tap vient de :active, pas du flash gris */
@@ -446,7 +446,7 @@ main {
 }
 .icon-btn:disabled {
   opacity: 0.35;
-  cursor: default;
+  cursor: var(--cursor-arrow);
 }
 .icon-btn svg {
   width: 20px;
@@ -873,7 +873,7 @@ html.menu-open .site-header::before {
   background: var(--glass-strong);
   box-shadow: var(--glass-shine);
   color: var(--text);
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   transition: transform 160ms var(--ease-out), color 0.2s ease;
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
@@ -1029,46 +1029,43 @@ html.menu-open {
 }
 
 /* ---------- Curseur ---------- */
-/* Le curseur du système reste affiché ; seules les zones à geste changent sa forme. */
+/* Curseurs dessinés pour le site (scripts/gen-cursors.mjs), affichés par le système : aucun retard.
+   Un navigateur qui ne gère pas image-set() garde son curseur habituel. */
+:root {
+  --cursor-arrow: image-set(url('/cursors/arrow-dark.png') 1x, url('/cursors/arrow-dark@2x.png') 2x) 6 4, default;
+  --cursor-pointer: image-set(url('/cursors/pointer-dark.png') 1x, url('/cursors/pointer-dark@2x.png') 2x) 14 4, pointer;
+  --cursor-grab: image-set(url('/cursors/grab-dark.png') 1x, url('/cursors/grab-dark@2x.png') 2x) 16 16, grab;
+  --cursor-grabbing: image-set(url('/cursors/grabbing-dark.png') 1x, url('/cursors/grabbing-dark@2x.png') 2x) 16 16, grabbing;
+}
+:root:not([data-theme='dark']) {
+  --cursor-arrow: image-set(url('/cursors/arrow-light.png') 1x, url('/cursors/arrow-light@2x.png') 2x) 6 4, default;
+  --cursor-pointer: image-set(url('/cursors/pointer-light.png') 1x, url('/cursors/pointer-light@2x.png') 2x) 14 4, pointer;
+  --cursor-grab: image-set(url('/cursors/grab-light.png') 1x, url('/cursors/grab-light@2x.png') 2x) 16 16, grab;
+  --cursor-grabbing: image-set(url('/cursors/grabbing-light.png') 1x, url('/cursors/grabbing-light@2x.png') 2x) 16 16, grabbing;
+}
+html {
+  cursor: var(--cursor-arrow);
+}
+a[href],
+button:not(:disabled):not([aria-disabled='true']),
+summary,
+label[for],
+select,
+[role='button'],
 [data-cursor='pointer'],
 [data-cursor='pointer'] * {
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
+}
+[aria-disabled='true'] {
+  cursor: var(--cursor-arrow);
+}
+input:not([type='checkbox']):not([type='radio']):not([type='submit']),
+textarea {
+  cursor: text;
 }
 [data-cursor='grabbing'],
 [data-cursor='grabbing'] * {
-  cursor: grabbing;
-}
-/* Halo (Cursor.tsx) : au-dessus du fond, sous le contenu (main et pied de page en z-index 1) */
-.cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.cursor.is-visible {
-  opacity: 1;
-}
-.cursor__halo {
-  position: absolute;
-  width: 140px;
-  height: 140px;
-  margin: -70px 0 0 -70px;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 34%, transparent) 0%, transparent 70%);
-  opacity: 0.55;
-  transition: transform 0.3s var(--ease-out), opacity 0.3s;
-}
-.cursor.is-hover .cursor__halo {
-  transform: scale(0.6);
-  opacity: 1;
-}
-@media (prefers-reduced-motion: reduce) {
-  .cursor.is-hover .cursor__halo {
-    transform: none;
-  }
+  cursor: var(--cursor-grabbing);
 }
 
 /* ---------- Toast ---------- */
@@ -2122,10 +2119,10 @@ html.menu-open {
 .cal__viewport {
   overflow: hidden;
   touch-action: pan-y; /* glisser horizontal : changer de mois ; vertical : défiler la page */
-  cursor: grab;
+  cursor: var(--cursor-grab);
 }
 .cal__viewport:active {
-  cursor: grabbing;
+  cursor: var(--cursor-grabbing);
 }
 .cal__track {
   display: flex;
@@ -2798,7 +2795,7 @@ button.quick-link:active {
     height: 28px;
     margin: -28px -28px 0;
     touch-action: none;
-    cursor: grab;
+    cursor: var(--cursor-grab);
   }
   .project-panel__grabber::before {
     content: '';

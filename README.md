@@ -176,12 +176,12 @@ Pour avoir les vrais en-têtes, il suffit de déployer le même dossier `dist` s
 src/
   data/          contenu modifiable (JSON)
   sections/      une section de la page par fichier
-  components/    en-tête, chargement, curseur, titres découpés…
+  components/    en-tête, chargement, titres découpés…
   three/         avatar (avatar.js), scènes 3D : avatar, clavier, bulles
   lib/           mouvement (GSAP + Lenis), capacités de l'appareil, utilitaires
   styles/        feuille de style unique (tokens en tête de fichier)
-scripts/         build, pré-rendu, CSP, contrôle du contenu, logos des touches
-tools/           pages de rendu des images fixes et de l'image Open Graph
+scripts/         build, pré-rendu, CSP, contrôle du contenu, logos des touches, curseurs
+tools/           pages de rendu des images fixes et de l'image Open Graph, sources SVG des curseurs
 public/          fichiers servis tels quels (images, favicon, pages annexes)
 docs/AVATAR.md   comment l'avatar est construit et comment le modifier
 ```
