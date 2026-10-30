@@ -1528,10 +1528,20 @@ html.menu-open {
   padding-left: 56px;
   max-width: 52ch;
 }
+/* Années « à venir » : dégradé qui s'efface vers le bas. Pas de contour (-webkit-text-stroke) : la police système
+   (SF Pro sur iPhone) dessine ses chiffres en formes superposées, et le contour faisait apparaître des traits dans les « 2 » */
 .tl-row--upcoming .tl-row__year {
-  color: transparent;
-  -webkit-text-stroke: 1px var(--accent);
-  letter-spacing: 0.06em; /* en contour, les chiffres serrés se chevauchaient (tiret compris) */
+  color: var(--accent);
+  background: linear-gradient(180deg, var(--accent) 30%, color-mix(in srgb, var(--accent) 45%, transparent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+@media (prefers-contrast: more) {
+  .tl-row--upcoming .tl-row__year {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
 }
 .tl-row--subtle {
   opacity: 0.75;
