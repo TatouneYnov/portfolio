@@ -12,6 +12,7 @@ import type { DockRequest } from '../sections/Projects';
 import { markWebGLLost } from '../lib/capabilities';
 import { useTheme } from '../lib/theme';
 import { Warmup } from './Warmup';
+import { makeWalnutTexture } from './walnut';
 
 type Props = {
   projects: Project[];
@@ -252,6 +253,19 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
   const FLAT = 0.26; // plateau vu légèrement de dessus : cercle aplati en ellipse
   const TILT = Math.asin(FLAT); // inclinaison du cylindre qui donne cet aplatissement
   const plateH = frame.unit * 0.32; // épaisseur du plateau
+  const INSET = 0.7; // rayon de l'incrustation de verre (part du plateau)
+  // Noyer : veinage le long de la tranche, et en lignes parallèles sur le dessus
+  const walnutSide = useMemo(() => makeWalnutTexture(2.2, 0.14), []);
+  const walnutTop = useMemo(() => {
+    const t = makeWalnutTexture(0.5, 0.4);
+    t.center.set(0.5, 0.5);
+    t.rotation = Math.PI / 2; // veines dans le sens de la largeur, comme une planche
+    return t;
+  }, []);
+  useEffect(() => () => {
+    walnutSide.dispose();
+    walnutTop.dispose();
+  }, [walnutSide, walnutTop]);
   // Bulle déposée : posée sur le plateau (son centre dépend de sa taille)
   const restY = (id: string) => frame.dock.y + (balls.current.get(id)?.radius ?? maxRadius) * 1.02;
   // Zone de dépôt : au-dessus du plateau, là où repose la bulle
@@ -504,54 +518,49 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset }: Om
       <directionalLight position={[3, 5, 6]} intensity={2.2} color="#FFF6EE" />
       <directionalLight position={[-6, -2, -4]} intensity={2.4} color="#7C3AED" />
 
-      {/* Socle de dépôt : plateau de verre dépoli vu légèrement de dessus, liseré lavande qui s'allume
+      {/* Socle de dépôt : plateau en noyer vu légèrement de dessus, incrustation de verre qui s'allume
           quand une bulle approche */}
       <group position={frame.dock.toArray()}>
-        <mesh ref={halo} position={[0, 0, -0.6]}>
+        {/* Halo et ombre derrière tout le plateau incliné (sinon ils le coupent en deux) */}
+        <mesh ref={halo} position={[0, 0, -dockRadius * 1.3]}>
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial ref={haloMat} map={haloTex} transparent depthWrite={false} blending={light ? THREE.NormalBlending : THREE.AdditiveBlending} toneMapped={false} />
         </mesh>
-        <mesh position={[0, -plateH - frame.unit * 0.12, -0.3]} scale={[dockRadius * 1.35, dockRadius * FLAT * 1.6, 1]}>
+        <mesh position={[0, -plateH - frame.unit * 0.12, -dockRadius * 1.2]} scale={[dockRadius * 1.35, dockRadius * FLAT * 1.6, 1]}>
           <circleGeometry args={[1, 64]} />
           <meshBasicMaterial map={shadowTex} transparent depthWrite={false} toneMapped={false} opacity={light ? 0.5 : 0.8} />
         </mesh>
-        {/* Plateau en verre, en volume : cylindre incliné vers la caméra (on voit le dessus et la tranche) */}
+        {/* Plateau en noyer (le bois du clavier), en volume : cylindre incliné vers la caméra (dessus et tranche
+            visibles), avec au centre une incrustation de verre dépoli lavande où se pose la bulle */}
         <group rotation={[TILT, 0, 0]} position={[0, -plateH / 2, 0]}>
           <mesh renderOrder={0}>
-            <cylinderGeometry args={[dockRadius, dockRadius * 1.03, plateH, 96, 1]} />
+            <cylinderGeometry args={[dockRadius, dockRadius * 1.02, plateH, 96, 1]} />
             {/* Tranche, dessus, dessous */}
-            <meshPhysicalMaterial
-              attach="material-0"
-              color={light ? '#8B73E6' : '#6B58C8'}
-              transparent
-              opacity={light ? 0.72 : 0.7}
-              roughness={0.18}
-              clearcoat={1}
-              clearcoatRoughness={0.1}
-              envMapIntensity={1.4}
-            />
-            <meshPhysicalMaterial
-              attach="material-1"
-              color={light ? '#CFC2FF' : '#251C55'}
-              transparent
-              opacity={light ? 0.5 : 0.82}
-              roughness={0.32}
-              clearcoat={0.6}
-              clearcoatRoughness={0.3}
-              envMapIntensity={1.2}
-            />
+            {/* Teinte et reflets réduits : sous l'éclairage des bulles, le noyer virait au chêne clair */}
+            <meshPhysicalMaterial attach="material-0" map={walnutSide} color="#8E6A52" roughness={0.5} clearcoat={0.35} clearcoatRoughness={0.45} envMapIntensity={0.35} />
+            <meshPhysicalMaterial attach="material-1" map={walnutTop} color="#8E6A52" roughness={0.5} clearcoat={0.35} clearcoatRoughness={0.45} envMapIntensity={0.35} />
             <meshBasicMaterial attach="material-2" visible={false} />
           </mesh>
-          {/* Arête lumineuse du dessus (s'allume à l'approche d'une bulle) et biseau intérieur */}
-          <group ref={ring} position={[0, plateH / 2 + 0.002, 0]}>
-            <mesh rotation={[Math.PI / 2, 0, 0]}>
-              <torusGeometry args={[dockRadius, frame.unit * 0.02, 12, 128]} />
-              <meshStandardMaterial ref={ringMat} color={light ? '#8B6CF0' : '#7C5CE0'} emissive={light ? '#7C5CE0' : '#9F86FF'} emissiveIntensity={0.6} toneMapped={false} />
+          <group position={[0, plateH / 2 + 0.012, 0]}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} renderOrder={0}>
+              <circleGeometry args={[dockRadius * INSET, 96]} />
+              <meshPhysicalMaterial
+                color={light ? '#9F86F2' : '#5A47B8'}
+                emissive={light ? '#8B6CF0' : '#4B38A8'}
+                emissiveIntensity={0.15}
+                roughness={0.6}
+                clearcoat={0.3}
+                clearcoatRoughness={0.6}
+                envMapIntensity={0.25}
+              />
             </mesh>
-            <mesh rotation={[Math.PI / 2, 0, 0]}>
-              <torusGeometry args={[dockRadius * 0.8, frame.unit * 0.008, 8, 128]} />
-              <meshBasicMaterial color="#FFFFFF" transparent opacity={light ? 0.7 : 0.25} depthWrite={false} />
-            </mesh>
+            {/* Bord de l'incrustation : s'allume quand une bulle approche */}
+            <group ref={ring}>
+              <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[dockRadius * INSET, frame.unit * 0.018, 12, 128]} />
+                <meshStandardMaterial ref={ringMat} color={light ? '#8B6CF0' : '#7C5CE0'} emissive={light ? '#7C5CE0' : '#9F86FF'} emissiveIntensity={0.6} toneMapped={false} />
+              </mesh>
+            </group>
           </group>
         </group>
         {/* « Déposer ici » à taille fixe à l'écran (texte d'environ 13 px) */}
