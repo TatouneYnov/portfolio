@@ -24,19 +24,19 @@ export function Hero() {
       gsap.set(words, { yPercent: 110 });
       gsap.set(right, { autoAlpha: 0, y: 24 });
       gsap.set('.hero__hello', { autoAlpha: 0, y: 12 });
-      gsap.set(glow, { scale: 0.6, autoAlpha: 0 });
+      gsap.set(glow, { scale: 0.85, autoAlpha: 0 });
       gsap.set('.hero__badge, .hero__actions', { autoAlpha: 0, y: 12 });
 
       const play = () => {
         gsap
-          .timeline({ defaults: { ease: 'power3.out' } })
-          .to(glow, { scale: 1, autoAlpha: 1, duration: 1.1 }, 0)
-          .to(stageState, { intro: 1, duration: 1.0 }, 0.1)
-          .to('.hero__hello', { autoAlpha: 1, y: 0, duration: 0.6 }, 0.25)
-          .to(words, { yPercent: 0, duration: 0.9, stagger: 0.08 }, 0.35)
-          .to(right, { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.08 }, 0.6)
-          .to('.hero__badge', { autoAlpha: 1, y: 0, duration: 0.6 }, 0.8)
-          .to('.hero__actions', { autoAlpha: 1, y: 0, duration: 0.6 }, 0.9);
+          .timeline({ defaults: { ease: 'out' } })
+          .to(glow, { scale: 1, autoAlpha: 1, duration: 0.9 }, 0)
+          .to(stageState, { intro: 1, duration: 0.9 }, 0.05)
+          .to('.hero__hello', { autoAlpha: 1, y: 0, duration: 0.5 }, 0.15)
+          .to(words, { yPercent: 0, duration: 0.8, stagger: 0.07 }, 0.22)
+          .to(right, { autoAlpha: 1, y: 0, duration: 0.6, stagger: 0.06 }, 0.4)
+          .to('.hero__badge', { autoAlpha: 1, y: 0, duration: 0.5 }, 0.5)
+          .to('.hero__actions', { autoAlpha: 1, y: 0, duration: 0.5 }, 0.56);
       };
       if (document.documentElement.classList.contains('is-loaded')) play();
       else window.addEventListener('app:loaded', play, { once: true });
@@ -59,7 +59,7 @@ export function Hero() {
       index = (index + 1) % words.length;
       const next = words[index];
       gsap
-        .timeline({ defaults: { duration: 0.7, ease: 'power3.inOut' } })
+        .timeline({ defaults: { duration: 0.7, ease: 'inOut' } })
         .to(current, { yPercent: -110, color: 'var(--accent)', opacity: 0.2 }, 0)
         .fromTo(next, { yPercent: 110, color: 'var(--text)', opacity: 1 }, { yPercent: 0 }, 0);
     }, 2600);

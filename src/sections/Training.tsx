@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import IconArrow from '~icons/solar/arrow-right-up-linear';
 import IconTHM from '~icons/simple-icons/tryhackme';
 import IconHTB from '~icons/simple-icons/hackthebox';
@@ -8,10 +8,12 @@ import { frDate, isFilled } from '../lib/content';
 import { gsap, isReducedMotion } from '../lib/motion';
 import { revealFade, revealWords } from '../lib/reveal';
 import { SplitHeading } from '../components/SplitHeading';
-import { Frame } from '../components/Frame';
 
-type Stat = { label: string; value: number | string; prefix?: string; suffix?: string };
-
+/**
+ * Terrain d'entraînement en tuiles façon widgets : une grande tuile par plateforme (chiffre phare),
+ * des petites tuiles pour les autres stats. Une valeur null dans training.json retire sa tuile ;
+ * la grille se recompacte toute seule (grid-auto-flow: dense).
+ */
 export function Training() {
   const root = useRef<HTMLElement>(null);
 
@@ -20,7 +22,7 @@ export function Training() {
     if (!el) return;
     const ctx = gsap.context(() => {
       revealWords(el.querySelector('.training__title'));
-      revealFade(el.querySelectorAll('.platform'), el.querySelector('.training__grid'), { stagger: 0.12 });
+      revealFade(el.querySelectorAll('.tile'), el.querySelector('.tiles'), { stagger: 0.05 });
       if (isReducedMotion()) return;
       // Compteurs animés une seule fois, à l'entrée
       el.querySelectorAll<HTMLElement>('[data-count]').forEach((node) => {
@@ -28,8 +30,8 @@ export function Training() {
         const obj = { v: 0 };
         gsap.to(obj, {
           v: end,
-          duration: 1.4,
-          ease: 'power2.out',
+          duration: 1,
+          ease: 'out',
           scrollTrigger: { trigger: node, start: 'top 90%', once: true },
           onStart: () => {
             node.textContent = '0';
@@ -45,81 +47,73 @@ export function Training() {
 
   const thm = training.tryhackme;
   const htb = training.hackthebox;
-
-  const thmStats: Stat[] = [
-    isFilled(thm.topPercent) && { label: 'Classement', value: thm.topPercent as number, prefix: 'Top\u00a0', suffix: '\u00a0%' },
-    isFilled(thm.highestLeague) && { label: 'Meilleure ligue', value: thm.highestLeague as string },
-    isFilled(thm.roomsCompleted) && { label: 'Rooms terminées', value: thm.roomsCompleted as unknown as number },
-    isFilled(thm.questionsAnswered) && { label: 'Questions résolues', value: thm.questionsAnswered as number },
-    isFilled(thm.highestStreak) && { label: 'Meilleure série', value: thm.highestStreak as number, suffix: '\u00a0j' },
-  ].filter(Boolean) as Stat[];
-
-  const htbStats: Stat[] = [
-    isFilled(htb.level) && { label: 'Niveau', value: htb.level as number },
-    isFilled(htb.machines) && { label: 'Machines', value: (htb.machines as string[]).length },
-    isFilled(htb.challenges) && { label: 'Challenges', value: htb.challenges as unknown as number },
-    isFilled(htb.sherlocks) && { label: 'Sherlocks', value: htb.sherlocks as unknown as number },
-  ].filter(Boolean) as Stat[];
+  const cert = training.certification;
 
   return (
     <section ref={root} id="entrainement" className="training section" aria-labelledby="training-title">
       <div className="container">
         <div className="section-head section-head--mirror">
-          <SplitHeading
-            id="training-title"
-            className="display display--lg training__title"
-            lines={[{ text: "Terrain" }, { text: "d'entraînement", accent: true }]}
-          />
+          <SplitHeading id="training-title" className="display display--lg training__title" lines={[{ text: 'Terrain' }, { text: "d'entraînement", accent: true }]} />
           <p className="label section-head__hint">Stats au {frDate(training.updatedAt)}</p>
         </div>
 
-        <div className="training__grid">
-          <Frame as="article" className="platform">
-            <header className="platform__head">
-              <IconTHM className="platform__logo" aria-hidden="true" />
-              <div>
-                <h3 className="platform__name">TryHackMe</h3>
-                <p className="platform__user">{thm.username}{isFilled(thm.memberSince) ? ` · depuis ${frDate(thm.memberSince)}` : ''}</p>
-              </div>
-            </header>
-            <StatList stats={thmStats} />
-            {isFilled(thm.badges) && (
-              <div className="platform__block">
-                <p className="label">Badges</p>
-                <ul className="chips">
-                  {thm.badges.map((b) => (
-                    <li key={b} className="chip">
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {isFilled(thm.pathInProgress) && (
-              <p className="platform__path">
-                <span className="label">Parcours en cours</span> {thm.pathInProgress}
+        <ul className="tiles">
+          {/* TryHackMe : grande tuile, classement en vedette */}
+          <li className="tile glass-card tile--hero tile--thm">
+            <PlatformHead icon={<IconTHM aria-hidden="true" />} name="TryHackMe" user={thm.username} since={thm.memberSince} />
+            {isFilled(thm.topPercent) && (
+              <p className="tile__big">
+                <span className="tile__value tile__value--xl">
+                  Top&nbsp;<span data-count={thm.topPercent}>{thm.topPercent}</span>&nbsp;%
+                </span>
+                <span className="tile__caption">des joueurs TryHackMe</span>
               </p>
             )}
-            <a className="btn btn--ghost platform__cta" href={thm.url} target="_blank" rel="noopener noreferrer">
-              Voir le profil <IconArrow aria-hidden="true" />
-              <span className="sr-only"> TryHackMe (nouvel onglet)</span>
-            </a>
-          </Frame>
+            <ProfileLink href={thm.url} name="TryHackMe" />
+          </li>
 
-          <Frame as="article" className="platform">
-            <header className="platform__head">
-              <IconHTB className="platform__logo" aria-hidden="true" />
-              <div>
-                <h3 className="platform__name">Hack The Box</h3>
-                <p className="platform__user">{htb.username}{isFilled(htb.memberSince) ? ` · depuis ${frDate(htb.memberSince)}` : ''}</p>
-              </div>
-            </header>
-            <StatList stats={htbStats} />
+          {isFilled(thm.highestLeague) && <Stat label="Meilleure ligue" value={thm.highestLeague as string} />}
+          {isFilled(thm.questionsAnswered) && <Stat label="Questions résolues" value={thm.questionsAnswered as number} />}
+          {isFilled(thm.roomsCompleted) && <Stat label="Rooms terminées" value={thm.roomsCompleted as unknown as number} />}
+          {isFilled(thm.highestStreak) && <Stat label="Meilleure série" value={thm.highestStreak as number} suffix={' j'} />}
+
+          <li className="tile glass-card tile--cert">
+            <IconShield className="tile__icon" aria-hidden="true" />
+            <p className="tile__label">Certification TryHackMe</p>
+            <p className="tile__value tile__value--sm">{isFilled(cert.name) ? `${cert.name} · en préparation` : 'En préparation'}</p>
+          </li>
+
+          {isFilled(thm.badges) && (
+            <li className="tile glass-card tile--wide">
+              <p className="tile__label">Badges TryHackMe</p>
+              <ul className="chips">
+                {thm.badges.map((b) => (
+                  <li key={b} className="chip">
+                    {b}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          )}
+
+          {/* Hack The Box : grande tuile, niveau en vedette et machines nommées */}
+          <li className="tile glass-card tile--hero tile--htb">
+            <PlatformHead icon={<IconHTB aria-hidden="true" />} name="Hack The Box" user={htb.username} since={htb.memberSince} />
+            {isFilled(htb.level) && (
+              <p className="tile__big">
+                <span className="tile__value tile__value--xl">
+                  <span data-count={htb.level}>{htb.level}</span>
+                </span>
+                <span className="tile__caption">niveau</span>
+              </p>
+            )}
             {isFilled(htb.machines) && (
-              <div className="platform__block">
-                <p className="label">Machines résolues</p>
+              <div className="tile__machines">
+                <p className="tile__label">
+                  {(htb.machines as string[]).length} {(htb.machines as string[]).length > 1 ? 'machines résolues' : 'machine résolue'}
+                </p>
                 <ul className="chips">
-                  {htb.machines.map((m) => (
+                  {(htb.machines as string[]).map((m) => (
                     <li key={m} className="chip">
                       {m}
                     </li>
@@ -127,38 +121,55 @@ export function Training() {
                 </ul>
               </div>
             )}
-            <a className="btn btn--ghost platform__cta" href={htb.url} target="_blank" rel="noopener noreferrer">
-              Voir le profil <IconArrow aria-hidden="true" />
-              <span className="sr-only"> Hack The Box (nouvel onglet)</span>
-            </a>
-          </Frame>
-        </div>
+            <ProfileLink href={htb.url} name="Hack The Box" />
+          </li>
 
-        <p className="cert-pill">
-          <IconShield aria-hidden="true" />
-          {isFilled(training.certification.name)
-            ? `Certification TryHackMe ${training.certification.name} : en préparation`
-            : 'Certification TryHackMe : en préparation'}
-        </p>
+          {isFilled(thm.pathInProgress) && (
+            <li className="tile glass-card tile--wide">
+              <p className="tile__label">Parcours TryHackMe en cours</p>
+              <p className="tile__value tile__value--sm">{thm.pathInProgress}</p>
+            </li>
+          )}
+          {isFilled(htb.challenges) && <Stat label="Challenges HTB" value={htb.challenges as unknown as number} />}
+          {isFilled(htb.sherlocks) && <Stat label="Sherlocks HTB" value={htb.sherlocks as unknown as number} />}
+        </ul>
       </div>
     </section>
   );
 }
 
-function StatList({ stats }: { stats: Stat[] }) {
-  if (!stats.length) return null;
+function PlatformHead({ icon, name, user, since }: { icon: ReactNode; name: string; user: string; since: string | null }) {
   return (
-    <dl className="stats">
-      {stats.map((s) => (
-        <div key={s.label} className="stats__item">
-          <dt className="label">{s.label}</dt>
-          <dd className="stats__value">
-            {s.prefix}
-            {typeof s.value === 'number' ? <span data-count={s.value}>{s.value}</span> : s.value}
-            {s.suffix}
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <header className="tile__head">
+      <span className="tile__logo">{icon}</span>
+      <div>
+        <h3 className="tile__name">{name}</h3>
+        <p className="tile__user">
+          {user}
+          {isFilled(since) ? ` · depuis ${frDate(since as string)}` : ''}
+        </p>
+      </div>
+    </header>
+  );
+}
+
+function Stat({ label, value, suffix }: { label: string; value: number | string; suffix?: string }) {
+  return (
+    <li className="tile glass-card">
+      <p className="tile__label">{label}</p>
+      <p className="tile__value">
+        {typeof value === 'number' ? <span data-count={value}>{value}</span> : value}
+        {suffix}
+      </p>
+    </li>
+  );
+}
+
+function ProfileLink({ href, name }: { href: string; name: string }) {
+  return (
+    <a className="tile__link" href={href} target="_blank" rel="noopener noreferrer">
+      Voir le profil <IconArrow aria-hidden="true" />
+      <span className="sr-only"> {name} (nouvel onglet)</span>
+    </a>
   );
 }

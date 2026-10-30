@@ -4,6 +4,7 @@ import IconClose from '~icons/solar/close-linear';
 import profile from '../data/profile.json';
 import { copyText } from '../lib/toast';
 import { asset } from '../lib/env';
+import { useDragToDismiss } from '../lib/useDragToDismiss';
 
 const NAV = [
   { href: '#a-propos', label: 'À propos' },
@@ -16,8 +17,12 @@ export function Header() {
   // Fond de l'en-tête dès qu'on quitte le haut de page ; onglet CV masqué quand le pied de page est visible
   const [scrolled, setScrolled] = useState(false);
   const [footerVisible, setFooterVisible] = useState(false);
+  // Lien de la section en cours (repère de position dans la navigation)
+  const [current, setCurrent] = useState<string | null>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  // Menu plein écran : on peut le fermer en le tirant vers le haut
+  const grab = useDragToDismiss(menuRef, { direction: -1, enabled: open, onDismiss: () => setOpen(false) });
 
   useEffect(() => {
     if (!open) return;
@@ -40,13 +45,29 @@ export function Header() {
   }, [open]);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
+    const sections = NAV.map((item) => document.getElementById(item.href.slice(1)));
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      setScrolled(window.scrollY > 24);
+      // Section en cours : celle qui occupe la ligne située à 40 % de la hauteur de l'écran
+      const line = window.innerHeight * 0.4;
+      const i = sections.findIndex((el) => {
+        const r = el?.getBoundingClientRect();
+        return !!r && r.top <= line && r.bottom > line;
+      });
+      setCurrent(i >= 0 ? NAV[i].href : null);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    };
+    measure();
     window.addEventListener('scroll', onScroll, { passive: true });
     const footer = document.querySelector('.site-footer');
     const io = footer ? new IntersectionObserver(([entry]) => setFooterVisible(entry.isIntersecting)) : null;
     if (footer && io) io.observe(footer);
     return () => {
+      cancelAnimationFrame(frame);
       window.removeEventListener('scroll', onScroll);
       io?.disconnect();
     };
@@ -66,7 +87,9 @@ export function Header() {
           <ul>
             {NAV.map((item) => (
               <li key={item.href}>
-                <a href={item.href}>{item.label}</a>
+                <a href={item.href} aria-current={current === item.href ? 'true' : undefined}>
+                  {item.label}
+                </a>
               </li>
             ))}
           </ul>
@@ -84,7 +107,7 @@ export function Header() {
         </button>
       </div>
 
-      <div id="menu-mobile" ref={menuRef} className="menu-mobile" hidden={!open}>
+      <div id="menu-mobile" ref={menuRef} className="menu-mobile" hidden={!open} {...grab}>
         <nav aria-label="Menu mobile">
           <ul>
             {NAV.map((item) => (
@@ -102,6 +125,7 @@ export function Header() {
           <p className="menu-mobile__cv menu-mobile__cv--off">CV · bientôt dispo</p>
         )}
         <p className="menu-mobile__mail">{profile.email}</p>
+        <span className="menu-mobile__grabber" aria-hidden="true" />
       </div>
 
       {profile.cv.available ? (

@@ -111,8 +111,9 @@ function AccordionCard({ card, open, onOpen }: { card: CardData; open: boolean; 
       el.style.height = open ? 'auto' : '0px';
       return;
     }
-    gsap.to(el, { height: open ? 'auto' : 0, duration: 0.6, ease: 'power3.inOut' });
-    gsap.to(el.children, { autoAlpha: open ? 1 : 0, y: open ? 0 : 8, duration: open ? 0.5 : 0.25, delay: open ? 0.15 : 0, stagger: 0.05 });
+    // Ouverture posée, fermeture plus rapide (le système répond vite)
+    gsap.to(el, { height: open ? 'auto' : 0, duration: open ? 0.4 : 0.28, ease: 'inOut', overwrite: true });
+    gsap.to(el.children, { autoAlpha: open ? 1 : 0, y: open ? 0 : 6, duration: open ? 0.3 : 0.15, delay: open ? 0.1 : 0, stagger: 0.04, overwrite: true });
   }, [open]);
 
   const finePointerOpen = () => {

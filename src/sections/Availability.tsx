@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import IconLeft from '~icons/solar/alt-arrow-left-linear';
 import IconRight from '~icons/solar/alt-arrow-right-linear';
 import IconArrow from '~icons/solar/arrow-right-linear';
 import data from '../data/availability.json';
-import { gsap, isReducedMotion, scrollToHash } from '../lib/motion';
+import { gsap, scrollToHash } from '../lib/motion';
 import { revealFade, revealWords } from '../lib/reveal';
-import { useMediaQuery, useMounted } from '../lib/hooks';
+import { useMounted } from '../lib/hooks';
+import { project, rubberband, springTo, velocityTracker, type Spring } from '../lib/spring';
 import { SplitHeading } from '../components/SplitHeading';
 
 type DayState = 'morning' | 'full' | 'holiday' | 'weekend' | 'past' | 'out';
@@ -63,13 +64,21 @@ function buildMonths(today: Date | null): Month[] {
   return today ? months.filter((mo) => mo.last >= today) : months;
 }
 
+/** Nombre de jours de semaine à temps plein encore à venir (pour le résumé au-dessus du calendrier). */
+function fullWeekdays(today: Date | null) {
+  let n = 0;
+  data.fullWeeks.forEach((w) => {
+    for (let d = parse(w.from); d <= parse(w.to); d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)) {
+      if ((d.getDay() + 6) % 7 < 5 && (!today || d >= today)) n++;
+    }
+  });
+  return n;
+}
+
 export function Availability() {
   const root = useRef<HTMLElement>(null);
-  const cal = useRef<HTMLDivElement>(null);
   const mounted = useMounted();
-  const mobile = useMediaQuery('(max-width: 767px)');
   const [today, setToday] = useState<Date | null>(null);
-  const [page, setPage] = useState(0);
 
   useEffect(() => {
     const now = new Date();
@@ -77,12 +86,7 @@ export function Availability() {
   }, []);
 
   const months = useMemo(() => buildMonths(today), [today]);
-  const perPage = mounted && mobile ? 1 : 4;
-  const pages = Math.max(1, Math.ceil(months.length / perPage));
-  const safePage = Math.min(page, pages - 1);
-  const visible = months.slice(safePage * perPage, safePage * perPage + perPage);
-
-  useEffect(() => setPage(0), [perPage]);
+  const weeks = Math.round(fullWeekdays(today) / 5);
 
   useEffect(() => {
     const el = root.current;
@@ -90,38 +94,10 @@ export function Availability() {
     const ctx = gsap.context(() => {
       revealWords(el.querySelector('.dispo__title'));
       revealFade(el.querySelectorAll('.dispo__fact'), el.querySelector('.dispo__facts'), { stagger: 0.08 });
+      revealFade(el.querySelector('.dispo__cal'), el.querySelector('.dispo__cal'));
     }, el);
     return () => ctx.revert();
   }, []);
-
-  // Remplissage en cascade (diagonale) à l'entrée, puis à chaque changement de page
-  const played = useRef(false);
-  useEffect(() => {
-    const el = cal.current;
-    if (!el || !mounted || isReducedMotion()) return;
-    const cells = el.querySelectorAll<HTMLElement>('.day__fill');
-    const anim = () =>
-      gsap.fromTo(cells, { scale: 0.4, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'power2.out', stagger: (_i, t) => Number((t as HTMLElement).dataset.diag) * 0.01 });
-    if (played.current) {
-      anim();
-      return;
-    }
-    const st = gsap.context(() => {
-      gsap.set(cells, { scale: 0.4, autoAlpha: 0 });
-      gsap.to(cells, {
-        scale: 1,
-        autoAlpha: 1,
-        duration: 0.35,
-        ease: 'power2.out',
-        stagger: (_i, t) => Number((t as HTMLElement).dataset.diag) * 0.01,
-        scrollTrigger: { trigger: el, start: 'top 80%', once: true, onEnter: () => (played.current = true) },
-      });
-    }, el);
-    return () => st.revert();
-  }, [mounted, safePage, perPage, today]);
-
-  // Balayage horizontal sur mobile
-  const swipe = useRef<number | null>(null);
 
   const propose = (topic: 'stage' | 'alternance' = 'stage') => {
     window.dispatchEvent(new CustomEvent('contact:subject', { detail: topic }));
@@ -159,46 +135,27 @@ export function Availability() {
             )}
           </div>
 
-          <div className="dispo__cal">
-            <div className="dispo__cal-head">
-              <ul className="dispo__legend" aria-label="Légende">
-                <li><span className="day__fill day__fill--morning" aria-hidden="true" /> Matin dispo</li>
-                <li><span className="day__fill day__fill--full" aria-hidden="true" /> Journée complète</li>
-                <li><span className="day__fill day__fill--off" aria-hidden="true" /> Férié, passé ou week-end</li>
-              </ul>
-              {mounted && pages > 1 && (
-                <div className="dispo__pager">
-                  <button type="button" className="icon-btn" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={safePage === 0}>
-                    <IconLeft aria-hidden="true" />
-                    <span className="sr-only">{perPage === 1 ? 'Mois précédent' : 'Mois précédents'}</span>
-                  </button>
-                  <span className="label" aria-live="polite">
-                    {visible[0]?.title}
-                    {visible.length > 1 ? ` – ${visible[visible.length - 1].title}` : ''}
-                  </span>
-                  <button type="button" className="icon-btn" onClick={() => setPage((p) => Math.min(pages - 1, p + 1))} disabled={safePage >= pages - 1}>
-                    <IconRight aria-hidden="true" />
-                    <span className="sr-only">{perPage === 1 ? 'Mois suivant' : 'Mois suivants'}</span>
-                  </button>
-                </div>
-              )}
-            </div>
-            <div
-              ref={cal}
-              className={`months${perPage === 1 ? ' months--single' : ''}`}
-              onPointerDown={(e) => (swipe.current = e.clientX)}
-              onPointerUp={(e) => {
-                if (swipe.current === null || perPage !== 1) return;
-                const dx = e.clientX - swipe.current;
-                swipe.current = null;
-                if (dx < -50) setPage((p) => Math.min(pages - 1, p + 1));
-                if (dx > 50) setPage((p) => Math.max(0, p - 1));
-              }}
-            >
-              {visible.map((month) => (
-                <MonthGrid key={month.key} month={month} />
-              ))}
-            </div>
+          <div className="dispo__cal glass-card">
+            {weeks > 0 && (
+              <p className="cal__summary">
+                <strong>
+                  {weeks} semaine{weeks > 1 ? 's' : ''} à temps plein
+                </strong>{' '}
+                · sinon les matins ({data.morningHours})
+              </p>
+            )}
+            <Calendar months={months} interactive={mounted} />
+            <ul className="cal__legend" aria-label="Légende">
+              <li>
+                <span className="cal__key cal__key--morning" aria-hidden="true" /> Matin dispo
+              </li>
+              <li>
+                <span className="cal__key cal__key--full" aria-hidden="true" /> Journée complète
+              </li>
+              <li>
+                <span className="cal__key cal__key--off" aria-hidden="true" /> Férié, passé ou week-end
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -206,11 +163,143 @@ export function Availability() {
   );
 }
 
+/**
+ * Calendrier façon app Calendrier d'iOS : un mois à la fois. Au doigt (ou à la souris), le mois suit le
+ * geste 1:1, résiste à l'élastique aux extrémités, puis se cale sur le mois visé avec un ressort qui
+ * reprend la vitesse du lâcher. Sans JavaScript, tous les mois s'affichent en grille (voir main.css).
+ */
+function Calendar({ months, interactive }: { months: Month[]; interactive: boolean }) {
+  const viewport = useRef<HTMLDivElement>(null);
+  const track = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+  const pos = useRef(0); // décalage affiché du ruban, en px
+  const spring = useRef<Spring | null>(null);
+  const drag = useRef<{ id: number; x0: number; y0: number; base: number; active: boolean } | null>(null);
+  const tracker = useRef(velocityTracker());
+  const count = months.length;
+
+  const width = () => viewport.current?.clientWidth ?? 1;
+  const apply = useCallback((x: number) => {
+    pos.current = x;
+    if (track.current) track.current.style.transform = `translate3d(${x}px, 0, 0)`;
+  }, []);
+
+  const goTo = useCallback(
+    (target: number, velocity = 0) => {
+      const i = Math.max(0, Math.min(count - 1, target));
+      setIndex(i);
+      spring.current?.stop();
+      // Un léger rebond seulement si le geste a été lancé (Apple : amortissement ~0,8 après un mouvement)
+      spring.current = springTo(pos.current, -i * width(), { velocity, damping: Math.abs(velocity) > 400 ? 0.85 : 1, response: 0.35, onUpdate: apply });
+    },
+    [apply, count],
+  );
+
+  // Mois hors champ : retirés de la tabulation et des lecteurs d'écran
+  useEffect(() => {
+    track.current?.querySelectorAll<HTMLElement>('.cal__month').forEach((m, i) => {
+      m.toggleAttribute('inert', interactive && i !== index);
+    });
+  }, [index, interactive, count]);
+
+  // Nombre de mois qui change (mois passés retirés) ou redimensionnement : on recale sans animation
+  useEffect(() => {
+    if (!interactive) return;
+    const fit = () => apply(-Math.min(index, count - 1) * width());
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interactive, count]);
+  useEffect(() => () => spring.current?.stop(), []);
+
+  const onPointerDown = (e: PointerEvent) => {
+    if (!interactive || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    // On rattrape le mois là où il est, même en plein mouvement
+    spring.current?.stop();
+    drag.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, base: pos.current, active: false };
+    tracker.current.reset();
+  };
+  const onPointerMove = (e: PointerEvent) => {
+    const d = drag.current;
+    if (!d || d.id !== e.pointerId) return;
+    const dx = e.clientX - d.x0;
+    if (!d.active) {
+      // 10 px de marge avant de décider : glisser horizontal = changer de mois, vertical = défiler la page
+      if (Math.abs(dx) < 10) return;
+      if (Math.abs(e.clientY - d.y0) > Math.abs(dx)) {
+        drag.current = null;
+        return;
+      }
+      d.active = true;
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
+    const w = width();
+    const min = -(count - 1) * w;
+    let x = d.base + dx;
+    if (x > 0) x = rubberband(x, w);
+    else if (x < min) x = min + rubberband(x - min, w);
+    apply(x);
+    tracker.current.add(e.clientX);
+  };
+  const onPointerUp = (e: PointerEvent) => {
+    const d = drag.current;
+    drag.current = null;
+    if (!d || d.id !== e.pointerId) return;
+    if (!d.active) {
+      goTo(index); // simple appui : on termine le calage en cours
+      return;
+    }
+    const v = tracker.current.get();
+    const w = width();
+    // Où le geste emmènerait le mois (projection), puis on se cale au mois voisin dans ce sens
+    const landing = Math.round(-(pos.current + project(v)) / w);
+    const target = Math.max(index - 1, Math.min(index + 1, landing));
+    goTo(target, v);
+  };
+
+  const current = months[Math.min(index, count - 1)];
+
+  return (
+    <div className="cal">
+      <div className="cal__head">
+        <h3 className="cal__title" aria-live="polite">
+          {current?.title}
+        </h3>
+        <div className="cal__nav">
+          <button type="button" className="icon-btn" onClick={() => goTo(index - 1)} disabled={!interactive || index === 0}>
+            <IconLeft aria-hidden="true" />
+            <span className="sr-only">Mois précédent</span>
+          </button>
+          <button type="button" className="icon-btn" onClick={() => goTo(index + 1)} disabled={!interactive || index >= count - 1}>
+            <IconRight aria-hidden="true" />
+            <span className="sr-only">Mois suivant</span>
+          </button>
+        </div>
+      </div>
+      <div
+        ref={viewport}
+        className="cal__viewport"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        <div ref={track} className="cal__track">
+          {months.map((month) => (
+            <MonthGrid key={month.key} month={month} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MonthGrid({ month }: { month: Month }) {
   const titleId = `month-${month.key}`;
   return (
-    <table className="month" role="grid" aria-labelledby={titleId}>
-      <caption id={titleId} className="month__title">
+    <table className="cal__month" role="grid" aria-labelledby={titleId}>
+      <caption id={titleId} className="sr-only">
         {month.title}
       </caption>
       <thead>
@@ -228,13 +317,7 @@ function MonthGrid({ month }: { month: Month }) {
           <tr key={wi}>
             {week.map((day, di) =>
               day ? (
-                <td
-                  key={day.iso}
-                  role="gridcell"
-                  className={`day day--${day.state}`}
-                  aria-label={`${cap(fmtShort.format(day.date))} · ${LABELS[day.state]}`}
-                >
-                  <span className="day__fill" data-diag={wi + di} aria-hidden="true" />
+                <td key={day.iso} role="gridcell" className={`day day--${day.state}`} aria-label={`${cap(fmtShort.format(day.date))} · ${LABELS[day.state]}`}>
                   <span className="day__num" aria-hidden="true">
                     {day.date.getDate()}
                   </span>

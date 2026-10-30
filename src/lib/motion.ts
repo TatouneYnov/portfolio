@@ -1,6 +1,7 @@
 // Système de mouvement : GSAP + ScrollTrigger, et Lenis comme unique moteur de défilement doux.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { CustomEase } from 'gsap/CustomEase';
 import Lenis from 'lenis';
 
 let lenis: Lenis | null = null;
@@ -10,8 +11,12 @@ let tickerFn: ((time: number) => void) | null = null;
 // Enregistré dès le chargement du module : les effets des sections s'exécutent avant celui de l'App.
 const isClient = typeof window !== 'undefined';
 if (isClient) {
-  gsap.registerPlugin(ScrollTrigger);
-  gsap.defaults({ ease: 'power3.out', duration: 0.8 });
+  gsap.registerPlugin(ScrollTrigger, CustomEase);
+  // Mêmes courbes que les tokens --ease-out / --ease-in-out / --ease-drawer de main.css (plus franches que power3)
+  CustomEase.create('out', '0.23, 1, 0.32, 1');
+  CustomEase.create('inOut', '0.77, 0, 0.175, 1');
+  CustomEase.create('drawer', '0.32, 0.72, 0, 1');
+  gsap.defaults({ ease: 'out', duration: 0.7 });
 }
 let reduced = isClient ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
 

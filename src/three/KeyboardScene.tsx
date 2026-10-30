@@ -213,7 +213,7 @@ function makeModTexture(label: string, units: number): THREE.CanvasTexture {
   canvas.width = Math.round(h * units);
   canvas.height = h;
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-  ctx.font = '500 46px "JetBrains Mono", ui-monospace, monospace';
+  ctx.font = '500 46px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Roboto, system-ui, sans-serif';
   ctx.fillStyle = INK;
   ctx.globalAlpha = 0.72;
   ctx.textBaseline = 'bottom';
@@ -238,7 +238,7 @@ function makeCapTexture(skill: Skill): THREE.CanvasTexture {
   texture.anisotropy = 8;
 
   const drawHotkey = () => {
-    ctx.font = '500 68px "JetBrains Mono", ui-monospace, monospace';
+    ctx.font = '600 68px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Roboto, system-ui, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.62)';
     ctx.textBaseline = 'top';
     ctx.fillText(skill.hotkey.toUpperCase(), 44, 36);
@@ -246,8 +246,7 @@ function makeCapTexture(skill: Skill): THREE.CanvasTexture {
   const drawMono = () => {
     const text = skill.mono;
     const fontSize = 2 * (text.length <= 2 ? 92 : text.length <= 3 ? 74 : text.length <= 4 ? 58 : 44);
-    ctx.font = `800 ${fontSize}px "Archivo Variable", "Archivo", system-ui, sans-serif`;
-    (ctx as CanvasRenderingContext2D & { fontStretch?: string }).fontStretch = 'expanded';
+    ctx.font = `800 ${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif`;
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';

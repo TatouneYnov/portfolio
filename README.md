@@ -162,7 +162,7 @@ Pour avoir les vrais en-têtes, il suffit de déployer le même dossier `dist` s
 
 ## Sécurité
 
-- CSP stricte : aucun script inline, aucun CDN tiers, polices et icônes hébergées sur le site. `'wasm-unsafe-eval'` sert uniquement au moteur physique (Rapier, en WebAssembly).
+- CSP stricte : aucun script inline, aucun CDN tiers, polices du système (aucune à télécharger) et icônes hébergées sur le site. `'wasm-unsafe-eval'` sert uniquement au moteur physique (Rapier, en WebAssembly).
 - Aucun cookie, aucun traceur. `confidentialite.html` explique le traitement des données, `mentions-legales.html` identifie l'éditeur et l'hébergeur.
 - Liens externes en `rel="noopener noreferrer"`.
 - `security.txt` régénéré à chaque build, avec une date d'expiration à un an.

@@ -6,11 +6,10 @@
 - **Bureau, chaise, écran, clavier, bulles** : géométries Three.js générées en code.
 - Les images fixes (`public/assets/avatar/*.webp`) et l'image Open Graph sont des rendus de ces scènes.
 
-## Polices (auto-hébergées via Fontsource)
+## Polices
 
-- **Archivo** · Omnibus-Type · SIL Open Font License 1.1
-- **Inter** · Rasmus Andersson · SIL Open Font License 1.1
-- **JetBrains Mono** · JetBrains · SIL Open Font License 1.1
+- **Site** : polices du système de l'appareil (SF Pro sur Apple, Segoe UI sur Windows, Roboto sur Android). Aucune police n'est téléchargée.
+- **Image de partage** (`public/og-image.jpg`, générée avec `tools/og.html`) : Archivo (Omnibus-Type), Inter (Rasmus Andersson) et JetBrains Mono (JetBrains), via Fontsource · SIL Open Font License 1.1
 
 ## Icônes
 

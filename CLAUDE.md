@@ -35,8 +35,8 @@ Ancien plan : bilingue FR/EN, hero en graphe réseau, write-ups CTF, terminal in
 - **Animation** : GSAP + ScrollTrigger (système principal et unique pour le DOM)
 - **Smooth scroll** : **Lenis uniquement** (jamais Locomotive). `lenis.on('scroll', ScrollTrigger.update)` + `gsap.ticker.add`, `lagSmoothing(0)`. Désactivé sous `prefers-reduced-motion`. `destroy()` au démontage.
 - **Icônes UI** : Solar via Iconify, **compilées au build** (`unplugin-icons` + `@svgr/core` + `@iconify-json/solar`). Logos de plateformes (GitHub, TryHackMe…) : `@iconify-json/simple-icons`. Aucun appel à l'API Iconify au runtime.
-- **Logos d'outils (keycaps)** : `@iconify-json/logos` / `@iconify-json/simple-icons` + `@iconify/utils` pour récupérer le SVG au build et le rasteriser en texture canvas. Si le logo n'existe pas → monogramme typographique Archivo. Jamais de faux logo.
-- **Polices auto-hébergées** (décision : pas de Google Fonts, pour une CSP plus stricte et zéro IP de visiteur envoyée à Google) : `@fontsource-variable/archivo` (avec l'axe `wdth`, vérifier l'import adéquat), `@fontsource-variable/inter`, `@fontsource/jetbrains-mono` (400). `font-display: swap`, preload du fichier display.
+- **Logos d'outils (keycaps)** : `@iconify-json/logos` / `@iconify-json/simple-icons` + `@iconify/utils` pour récupérer le SVG au build et le rasteriser en texture canvas. Si le logo n'existe pas → monogramme typographique (police système, gras). Jamais de faux logo.
+- **Polices du système** (refonte « Apple » du 30/10, demandée par Ethan) : SF Pro sur Apple, Segoe UI sur Windows, Roboto sur Android (`--font-display` / `--font-body` dans `main.css`), y compris dans les textures 3D (clavier, bulles). Plus aucune police téléchargée, plus de préchargement. Les paquets `@fontsource*` restent installés **uniquement** pour `tools/og.html` (l'image Open Graph a été dessinée avec Archivo, Inter et JetBrains Mono, voir `CREDITS.md`).
 - **Formulaire** : Web3Forms (`https://api.web3forms.com/submit`). Clé dans `VITE_FORM_KEY` (la clé Web3Forms est publique par conception). **Si la clé est absente, le formulaire est remplacé proprement par un lien mailto.**
 - **Avatar** : modélisé en code (`src/three/avatar.js`), aucun GLB. Si un GLB est ajouté un jour : compression meshopt, ou décodeur Draco auto-hébergé dans `public/draco/` (celui de drei vient de gstatic et casserait la CSP).
 - **Pré-rendu au build** (obligatoire) : le site doit être lisible sans JavaScript. Build SSR de l'app (`renderToString`) injecté dans `dist/index.html`, puis `hydrateRoot` côté client. Les Canvas Three.js sont client-only (montés après hydratation). Tout le contenu textuel (compétences, projets, timeline, dispos, contact) est dans le HTML pré-rendu.
@@ -279,11 +279,18 @@ Structure suggérée :
 ```
 **Thème clair** (ajouté le 23/10 à la demande d'Ethan) : le site suit le réglage de l'OS (`prefers-color-scheme`), sombre par défaut, sans bouton ni script. Tokens clairs dans `main.css` (`@media (prefers-color-scheme: light)`), `pages.css` et deux `<meta name="theme-color">`. Clair : `--bg #F6F4FB`, `--bg-2 #FFFFFF`, `--text #17121F`, `--muted #5C5571`, `--accent #6D28D9` (AA vérifié). Toute nouvelle couleur passe par un token (pas de `rgb()` codé en dur, utiliser `color-mix` avec les tokens). Scènes 3D : canevas transparents ; seul le socle des bulles change en clair (pas de mélange additif). Les images fixes et l'image Open Graph restent celles du thème sombre.
 
-### Typo
-- Display : **Archivo** expanded (`wdth` 112–125), 600–800, UPPERCASE pour les gros titres
-- Texte : **Inter** 400/500, 16–18 px, line-height 1.6
-- Labels : **JetBrains Mono** 400, `letter-spacing: .2em`, uppercase (« À PROPOS »)
-- Titres en 2 tons : 1re ligne `--text`, 2e ligne `--accent`
+### Typo (refonte « Apple » du 30/10)
+- **Police système partout**, aucune majuscule forcée : titres en minuscules (« Ma boîte / à outils »), très gras (700–800), lettres serrées.
+- **Espacement des lettres selon la taille** (jamais une valeur unique) : grands titres `-0.035em` (nom du hero `-0.04em`), titres intermédiaires `-0.02em`, texte et petits libellés `0`.
+- Étiquettes (« À propos », légendes) : 13 px semi-gras `--muted` ; boutons 15 px semi-gras.
+- Titres en 2 tons : 1re ligne `--text`, 2e ligne `--accent`.
+- Les jambages (g, j, p) des titres découpés mot par mot ne sont pas rognés : masque `.split__w` avec `padding-bottom: 0.14em`.
+
+### Matières (verre dépoli, refonte du 30/10)
+- Jetons `--glass` (cartes), `--glass-strong` (surfaces flottantes), `--glass-blur`, `--glass-edge`, `--glass-shine` (arête claire), `--float-shadow`, `--radius: 22px`.
+- **Surfaces flottantes** en verre : en-tête (avec un fondu sous la barre au lieu d'un trait), menu mobile, fiche projet, toast, onglet CV, info-bulles, modale des crédits (fond de page assombri et flouté derrière).
+- **Cartes du contenu** en verre (`.frame` / `.glass-card`) : « Ce que je fais », tuiles d'entraînement, calendrier, « Hors écran », fiches projets, contact, alternance. Le cadre pointillé à équerres a disparu.
+- `prefers-reduced-transparency` et `prefers-contrast: more` : surfaces pleines, sans flou (contours nets en contraste élevé).
 
 ### Curseur custom (desktop, `pointer: fine` uniquement)
 Disque lavande ~22 px, opacité 0.9, lerp 0.18. ×2.2 + `mix-blend-mode: difference` au survol des éléments interactifs. Au-dessus d'une bulle : main (`data-cursor="pointer"`), main fermée pendant le glisser (`grabbing`) ; ailleurs sur la scène des bulles : le disque. Curseur natif conservé sur les champs de formulaire.
@@ -333,18 +340,19 @@ Budget : qualité d'abord, optimisation après mesure sur le PC d'Ethan. **Refon
 **Architecture 3D** : un Canvas R3F **fixe** (plein écran, sous le contenu, `pointer-events: none`) porte l'avatar du Hero jusqu'à « Ce que je fais ». L'avatar est cadré dans des **emplacements DOM** (`data-slot="hero|about|desk"`) via `camera.setViewOffset`, et le rendu est découpé (scissor) à l'emplacement : aucun texte ne peut passer dessous. La progression vient de `src/lib/stageState.ts` (intro, about, travel, desk), écrite par des ScrollTriggers en scrub. Le canvas passe en pause (`frameloop="never"`) dès qu'aucun emplacement n'est à l'écran ou que l'onglet est caché. Le clavier et les bulles ont chacun leur Canvas, montés **au repos après le chargement** (`useIdleMount` : clavier puis bulles) ou à l'approche (`rootMargin: 100%`), préchauffés (`Warmup`) et en pause hors écran. Appareil modeste : pas de scène avatar (images fixes), 5 bulles max.
 
 ### 0. Loader (validé par Ethan le 17/10)
-**Durée fixe de 2 s à chaque visite** (progression fictive, voulue pour la mise en scène), puis ouverture `clip-path: inset` verticale 0.8 s. Nom « ETHAN BACQUIER » en Archivo expanded, **barre violette** dessous (remplissage animé en CSS `transform`, fluide même si la page travaille, avec une tête lumineuse), « CHARGEMENT » + compteur 000 → 100 synchronisé sur l'horloge de l'animation CSS (`getAnimations()`). Paliers communs dans `Loader.tsx` (`STEPS`) et `main.css` (`@keyframes loader-progress`) : les modifier ensemble. Pendant ces 2 s : préchargement des modules 3D et préchauffage des shaders (`src/lib/warm.ts`, `src/three/Warmup.tsx`). Sous « réduire les animations » : sauté. Sans JS : masqué (`noscript.css`), et une animation CSS de secours le retire après 4 s si le script plante.
+**Durée fixe de 1 s à chaque visite** (2 s avant le 30/10 ; Ethan a refusé toute mémoire dans le navigateur pour raccourcir les visites suivantes : zéro traceur ; `DURATION` dans `Loader.tsx` = durée de `.loader--run` dans `main.css`) (progression fictive, voulue pour la mise en scène), puis ouverture `clip-path: inset` verticale 0,6 s. Nom « Ethan Bacquier » en police système très grasse, **barre violette** dessous (remplissage animé en CSS `transform`, fluide même si la page travaille, avec une tête lumineuse), « CHARGEMENT » + compteur 000 → 100 synchronisé sur l'horloge de l'animation CSS (`getAnimations()`). Paliers communs dans `Loader.tsx` (`STEPS`) et `main.css` (`@keyframes loader-progress`) : les modifier ensemble. Pendant ce temps : préchargement des modules 3D et préchauffage des shaders (`src/lib/warm.ts`, `src/three/Warmup.tsx`). Sous « réduire les animations » : sauté. Sans JS : masqué (`noscript.css`), et une animation CSS de secours le retire après 3 s si le script plante.
 
 ### 1. Navigation (fixe)
-- Gauche : monogramme « EB » (Archivo 800) → haut de page
+- Gauche : monogramme « EB » (police système, 800) → haut de page
 - Centre (≥ 1200 px) : `ethan.bacquier@gmail.com` en petit, clic = copie + toast « Adresse copiée ✓ »
 - Droite : À propos · Projets · Contact (ancres via `lenis.scrollTo`)
-- Bas droite fixe : « CV » vertical (rotation 90°, JetBrains Mono) → désactivé « CV · bientôt » tant que `cv.available: false` (masqué sur mobile)
-- Mobile : burger plein écran, liens en grand, mention du CV et de l'e-mail
+- Bas droite fixe : « CV » vertical (rotation 90°, verre dépoli) → désactivé « CV · bientôt » tant que `cv.available: false` (masqué sur mobile)
+- Mobile : burger plein écran en verre, liens en grand, mention du CV et de l'e-mail ; **on le ferme aussi en le tirant vers le haut** (poignée en bas)
+- Repère de position : le lien de la section en cours passe en `--accent` (`aria-current`)
 
 ### 2. Hero (100vh)
 3 colonnes desktop, avatar au centre (buste, épaules → haut du crâne), lueur radiale derrière.
-- Gauche : « Salut, moi c'est » (Inter, `--accent`) puis « ETHAN / BACQUIER » (h1 unique, Archivo 700 expanded, `clamp(2rem, 4.6vw, 4.4rem)`, colonne gauche élargie : grille `1.1fr / 1.15fr / 0.92fr`)
+- Gauche : « Salut, moi c'est » (`--accent`) puis « Ethan / Bacquier » (h1 unique, police système 800, `clamp(2.6rem, 6vw, 5.6rem)`, `-0.04em`, colonne gauche élargie : grille `1.1fr / 1.15fr / 0.92fr`)
 - Droite : « Étudiant en » puis mot rotatif « CYBERSÉCURITÉ » ↔ « INFRA ». Sortant : monte de 100 % dans un masque en passant en `--accent` et en perdant l'opacité ; entrant : arrive du bas en `--text`. Cycle 2.6 s, `power3.inOut` 0.7 s. `aria-live="off"` + span sr-only « Étudiant en cybersécurité et infrastructure ».
 - Badge : « ● Stage 170 h dès nov. 2026 / Alternance B3 en 2027 » (2 lignes, 2e en `--accent`, point vert doux qui pulse) → scroll vers Disponibilités
 - Sous le badge : boutons « Me contacter » (plein) et « Voir mes projets » (contour). Un 3e bouton « CV » quand `cv.available` passera à `true`.
@@ -356,7 +364,7 @@ Budget : qualité d'abord, optimisation après mesure sur le PC d'Ethan. **Refon
 ### 3. À propos (l'avatar reste)
 Le contenu du hero glisse vers l'extérieur en fondu (scrub). Avatar à gauche, tête qui suit toujours. À droite :
 - Label « À PROPOS »
-- Paragraphe (Inter ~20 px, passe de `--muted` à `--text` mot à mot au défilement) :
+- Paragraphe (~20 px, passe de `--muted` à `--text` mot à mot au défilement) :
   > Je suis Ethan, étudiant en 2e année de cybersécurité à Ynov Lyon. Ce qui m'attire, c'est de comprendre ce qui s'est passé après une attaque et qui se cache derrière : la réponse à incident (DFIR) et la threat intelligence (CTI). J'aime aussi mettre les mains dans l'infra, parce qu'on défend mieux ce qu'on sait construire. Je m'entraîne sur TryHackMe et Hack The Box, je code (Go, Python, web) et je cherche un premier stage pour apprendre aux côtés d'une vraie équipe, puis une alternance pour ma 3e année.
 - Bloc « Hors écran » (carte `--bg-2`, bordure `--line`) : `volley.webp` (4:5, grayscale → couleur au survol) +
   > Hors clavier, je suis libéro en Nationale 3 au Volley Ball Villefranche Beaujolais (VBVB). Lire le jeu avant l'attaque, rester calme sous pression, jouer pour l'équipe : au fond, c'est le même métier.
@@ -365,14 +373,14 @@ Le contenu du hero glisse vers l'extérieur en fondu (scrub). Avatar à gauche, 
 
 ### 4. Ce que je fais (le perso s'assoit)
 Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos » vers l'emplacement sous le titre (`travel`), puis la caméra passe du buste à une vue de 3/4 arrière par-dessus l'épaule (`desk`) pendant que le bureau, la chaise et l'écran montent du sol ; fondu debout → assis en train de taper (0.5 s, déclenché à 40 % du pin, pas scrubbé). Sous 1024 px : pas de pin, la même séquence suit simplement le défilement. Écran émissif violet avec texture canvas de faux terminal (log crédible qui défile lentement, ex. `[*] volatility -f mem.raw windows.pslist`).
-- Gauche : « CE QUE » / « JE FAIS » (Archivo 800 expanded, ~8vw)
-- Droite : 2 cartes à coins pointillés (tirets + équerres), une seule ouverte à la fois, la 1re par défaut, `<button aria-expanded>` :
+- Gauche : « Ce que » / « je fais » (police système 800, ~7vw)
+- Droite : 2 cartes en verre (coins pointillés à équerres jusqu’au 30/10), une seule ouverte à la fois, la 1re par défaut, `<button aria-expanded>` :
   1. **CYBERSÉCURITÉ** — « Analyser, comprendre, remonter la trace. Forensic, analyse de logs et de trafic, threat intel, et CTF pour garder la main. » · DFIR · CTI · Blue team · CTF
   2. **INFRA** — « Monter, configurer et sécuriser des environnements : Linux, Windows Server, Active Directory, réseau, virtualisation et conteneurs. » · Linux · AD · Réseau · Docker
 - Sortie : l'emplacement défile avec la page ; le canvas fixe passe en pause quand il n'est plus visible.
 
 ### 5. Parcours (timeline lumineuse)
-« Mon parcours & » / « mes objectifs » (Archivo 600, ~5vw, centré). Grille [Intitulé + établissement] | [Année, gros chiffres] | [Description], ligne verticale entre col. 2 et 3, remplie en `--accent-strong` (dégradé + lueur) au scroll, perle lumineuse en tête. Chaque ligne apparaît (fondu + y 30 px) quand la perle la dépasse. Données : `timeline.json`.
+« Mon parcours & » / « mes objectifs » (700, ~5vw, centré). Grille [Intitulé + établissement] | [Année, gros chiffres] | [Description], ligne verticale entre col. 2 et 3, remplie en `--accent-strong` (dégradé + lueur) au scroll, perle lumineuse en tête. Chaque ligne apparaît (fondu + y 30 px) quand la perle la dépasse. Données : `timeline.json`.
 
 ### 6. Ma boîte à outils (clavier 3D)
 « MA BOÎTE » / « À OUTILS » + « (astuce : survole ou appuie sur une touche) ».
@@ -382,15 +390,15 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
   - **Touches réalistes** (`makeKeyGeometry`) : base plus large que le dessus, dessus creusé d'avant en arrière (cuvette cylindrique), finition mate ; grille régulière arrondie à la main (`RoundedBoxGeometry` n'a pas de sommets au centre des faces). Logos et monogrammes en **blanc cassé** (`INK`) sur une étiquette courbée comme la cuvette ; la lettre du raccourci est en haut à gauche.
   - Rotation du socle `TURN` (bureau -0,26 rad, mobile -0,08 rad) ; le cadrage recule la caméra juste assez pour que le boîtier tienne entier. Lumières neutres et chaudes (le bois doit rester brun), violet seulement en contre-jour. `ContactShadows` hors du groupe qui tourne, sous le biseau du fond.
 - Couleurs par catégorie en **tons poudrés mats** (aubergine `#6A4766`, ardoise `#5E6B85`, vieux rose `#B07A86`, lilas `#8F86B3`), identiques dans `skills.json` et `main.css` (`[data-cat]`), + légende cliquable (surbrillance de la catégorie).
-- Dessus de keycap : logo (texture SVG → canvas, repeint en blanc cassé) ou monogramme Archivo.
-- Survol / toucher ou clic (`onPointerDown`, indispensable sur téléphone où il n'y a pas de survol) / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde discrète sur la plaque ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (Archivo 800, couleur de la catégorie) + quip (Inter) + catégorie. Avant toute touche : « 26 outils ».
+- Dessus de keycap : logo (texture SVG → canvas, repeint en blanc cassé) ou monogramme en police système grasse.
+- Survol / toucher ou clic (`onPointerDown`, indispensable sur téléphone où il n'y a pas de survol) / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde discrète sur la plaque ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (police système 800, couleur de la catégorie) + quip + catégorie. Avant toute touche : « 26 outils ».
 - Hotkeys : seulement si la section est visible **et** qu'aucun champ n'a le focus ; jamais avec Ctrl/Alt/Meta.
 - Rotation y au scroll (scrub), amplitude réduite : ±5° bureau, ±3° mobile.
 - `<ul>` réelle des compétences dans le DOM (bouton « Voir en liste ») ; c'est la version affichée sous reduced-motion, sans WebGL et sans JS.
 - **Rien d'autre que des keycaps sur le clavier** (aucun personnage, aucune mascotte).
 
-### 7. Terrain d'entraînement
-2 cartes (`--bg-2`, bordure `--line`, équerres pointillées) : TryHackMe et Hack The Box, données de `training.json` (voir §4.3), boutons « Voir le profil ↗ ». Pastille certif dessous. Mention « Stats au 17 oct. 2026 ».
+### 7. Terrain d'entraînement (refait le 30/10 : tuiles façon widgets iPhone)
+Grille de tuiles en verre (`.tiles`, 4 colonnes, 2 sur mobile, `grid-auto-flow: dense`) : grande tuile TryHackMe (« Top 7 % » géant, « Voir le profil ↗ »), petites tuiles Meilleure ligue / Questions résolues / Meilleure série / Certification (en préparation), tuile large Badges, grande tuile Hack The Box (niveau 13 géant + machines nommées), tuile large Parcours en cours. Une valeur `null` retire sa tuile sans laisser de trou. Compteurs animés une fois. Mention « Stats au 17 oct. 2026 ».
 
 ### 8. Projets (bulles physiques)
 « MES » / « PROJETS » + « Clique sur une bulle pour ouvrir le projet / ou glisse-la dans le socle → ».
@@ -399,7 +407,7 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
 - Survol : la bulle grossit légèrement, reste immobile, curseur main, info-bulle « Ouvrir · nom du projet ». **Pas de sphère « pousseur » au survol** (elle éjectait les bulles hors de portée).
 - Glisser : la bulle tenue devient cinématique et suit exactement le pointeur (repousse les autres), le socle s'agrandit et s'illumine quand elle passe au-dessus ; lâcher dans le socle (pointeur ou bulle à moins de 1,5 × son rayon) = ouverture ; ailleurs = la bulle repart avec l'élan du geste. Sur tactile (depuis le 24/10) : un toucher qui **commence sur une bulle** l'attrape (`touchstart` non passif + `preventDefault` après lancer de rayon), on peut la glisser dans le socle (seuil 10 px, sinon c'est un tap qui l'ouvre) ; un toucher qui commence ailleurs fait défiler la page.
 - **Rangée de boutons toujours visible sous la scène** (« Ou choisis directement : Hera · Cabinet infirmier · VBVB · Power 4 · RedQuest »), état actif sur le projet ouvert.
-- Fiche : s'ouvre **à gauche** sur grand écran (la bulle déposée reste visible dans le socle à droite), bottom sheet sur mobile.
+- Fiche : s'ouvre **à gauche** sur grand écran (la bulle déposée reste visible dans le socle à droite), feuille en bas d'écran sur mobile, **qu'on tire vers le bas pour la fermer** par sa poignée (`useDragToDismiss` : suivi 1:1, élastique vers le haut, fermeture si la projection du geste dépasse la moitié, sinon retour en place au ressort).
 - Rapier, gravité faible vers un attracteur centre-gauche. Sphères nacrées (`MeshPhysicalMaterial` blanc cassé, clearcoat 1, roughness 0.25, iridescence violette légère) avec décal du nom/logo du projet. Taille = `size` (Hera ×1.6).
 - Socle à droite : torus émissif `--accent`, halo pulsant, « Déposer ici ». Dépôt = la bulle glisse au centre (GSAP) et tourne lentement. Nouveau dépôt = éjection de la précédente.
 - Fiche (DOM) : capture 16:10 si dispo, nom, statut, rôle, contexte, description, stack (chips), « Ce que j'ai appris », liens (icônes Solar). Fermer (bouton + Échap) renvoie la bulle dans le nuage. Champs `null` masqués.
@@ -409,14 +417,14 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
 ### 9. Disponibilités
 « QUAND » / « JE SUIS DISPO ».
 - Gauche : « Stage de 170 h » · « Les matins en semaine · 8h–12h » · « À temps plein pendant les vacances » · « Lyon ou télétravail »
-- Droite : mini-calendrier lun → ven (week-ends grisés), données `availability.json` (§4.6). Matin dispo = hachures `--accent` 30 % ; journée complète = `--accent` plein ; férié et passé = grisé. Desktop : grille de petits mois avec navigation par blocs de 4 mois ; mobile : 1 mois à la fois (swipe + boutons).
-- Tooltip au survol/focus (« Lun. 2 nov. · journée complète »). Remplissage en cascade (stagger diagonal 0.01 s).
+- Droite (refait le 30/10, **façon app Calendrier d'iOS**) : carte en verre, résumé calculé (« 4 semaines à temps plein · sinon les matins (8h–12h) »), **un mois à la fois** partout, titre « Novembre 2026 » + flèches. Jours ronds : matin dispo = chiffre + point violet ; journée complète = pastille `--accent` pleine ; férié (barré), passé, week-end = grisé. Le mois **suit le doigt (ou la souris) 1:1**, résiste à l'élastique aux extrémités et se cale sur le mois voisin avec un ressort qui reprend la vitesse du lâcher (projection d'Apple) ; un glisser vertical fait défiler la page. Mois hors champ `inert`. Sans JS : tous les mois empilés.
+- Info-bulle au survol (souris seulement, « Lun. 2 nov. · journée complète »).
 - Vrai tableau accessible (`role="grid"`, libellés de jours complets pour lecteurs d'écran).
 - Légende + exemple de calcul + « Autres périodes : à définir ensemble ».
 - CTA « Me proposer un créneau → » : scroll vers Contact avec objet pré-rempli « Stage 170 h ».
 
 ### 10. Contact
-« TRAVAILLONS » / « ENSEMBLE » (Archivo 800, ~9vw, mot par mot, letter-spacing qui se resserre au scroll).
+« Travaillons » / « ensemble » (police système 800, ~9vw, mot par mot, letter-spacing qui se resserre au scroll).
 - Gauche : formulaire Web3Forms : Nom*, Email*, Entreprise, Objet (Stage 170 h / Alternance B3 / Autre), Message*, honeypot caché. Validation native + messages en français. États : focus, erreur inline, envoi (spinner, bouton désactivé), succès « Message reçu, je te réponds vite ✓ », échec (message + mailto de secours). « Tes données servent uniquement à te répondre. » Sans JS : `action` HTTP vers Web3Forms avec redirection. Sans clé : mailto à la place du formulaire.
 - Droite : liens rapides (icône Solar + libellé + ↗ qui glisse) : Email (copier), LinkedIn, GitHub, TryHackMe, Hack The Box, Discord « tatoune » (copier), CV (désactivé « bientôt »).
 
@@ -430,6 +438,13 @@ Pied : « © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confident
 ---
 
 ## 8. Système de mouvement
+
+**Mise à jour du 30/10** (skills `emil-design-eng` et `apple-design` d'Emil Kowalski, appliqués avec Ethan) :
+- Courbes communes CSS / GSAP : `--ease-out` = `out` (0.23, 1, 0.32, 1), `--ease-in-out` = `inOut` (0.77, 0, 0.175, 1), `--ease-drawer` = `drawer` (0.32, 0.72, 0, 1), via `CustomEase` dans `motion.ts` ; plus de `power3`.
+- **Ressorts façon Apple** (`src/lib/spring.ts`, réglés en amortissement + réponse, interruptibles, héritent de la vitesse du geste ; `project()` et `rubberband()`) pour les gestes ; `--spring` (CSS `linear()`, amortissement 1, réponse 0,35 s) pour l'ouverture de la fiche et du toast.
+- Tout ce qui se presse s'enfonce (`scale(0.97)`, 160 ms). Survols réservés à `(hover: hover) and (pointer: fine)` (sur téléphone ils restaient collés). Sorties plus rapides que les entrées (fiche 0,25 s, toast 0,2 s). Interfaces sous 300 ms ; gestes répétés (texte du clavier, changement de mois) en simple fondu.
+- `prefers-reduced-motion` : **plus de figeage total**, mais aucun mouvement (transform non animés), fondus de 0,2 s conservés ; ressorts posés directement à l'état final ; l'indicateur d'envoi du formulaire tourne toujours.
+- Mobile : pas de flash au tap, `touch-action: manipulation`, pas de sélection à l'appui long sur les contrôles.
 
 - GSAP = seul moteur des propriétés DOM. `useFrame` seulement pour l'idle 3D, le suivi de tête et la physique. Jamais deux systèmes sur la même propriété.
 - Lenis (`lerp: 0.1`, `smoothWheel: true`) ↔ ScrollTrigger. `ScrollTrigger.refresh()` après `document.fonts.ready`, `load` et la fin du chargement. ScrollTrigger est enregistré dès le chargement du module `motion.ts` (les effets des sections s'exécutent avant celui de l'App).
@@ -456,7 +471,8 @@ Pied : « © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confident
 - Lien d'évitement « Aller au contenu ».
 - Focus visible partout : `outline: 2px solid var(--accent); outline-offset: 3px`.
 - Tout le contenu 3D existe en DOM.
-- `prefers-reduced-motion: reduce` → pas de Lenis, pas de scrub, pas de pin, états finaux immédiats, avatar en image statique, clavier en liste, bulles en grille.
+- `prefers-reduced-motion: reduce` → pas de Lenis, pas de scrub, pas de pin, aucun déplacement (fondus courts seulement), avatar en image statique, clavier en liste, bulles en grille.
+- `prefers-reduced-transparency` / `prefers-contrast: more` → surfaces pleines sans flou.
 - Contraste AA (4.5:1 minimum pour le texte courant).
 - Lisible et complet sans JavaScript (pré-rendu).
 

@@ -5,9 +5,10 @@ import IconClose from '~icons/solar/close-linear';
 import IconArrow from '~icons/solar/arrow-right-up-linear';
 import { projects, isFilled, type Project } from '../lib/content';
 import { canRun3D, getCapabilities } from '../lib/capabilities';
-import { useInView, useMounted } from '../lib/hooks';
+import { useInView, useMediaQuery, useMounted } from '../lib/hooks';
+import { useDragToDismiss } from '../lib/useDragToDismiss';
 import { useIdleMount } from '../lib/warm';
-import { gsap, isReducedMotion } from '../lib/motion';
+import { gsap } from '../lib/motion';
 import { revealFade, revealWords } from '../lib/reveal';
 import { asset } from '../lib/env';
 import { SplitHeading } from '../components/SplitHeading';
@@ -144,6 +145,9 @@ export function Projects() {
 function ProjectPanel({ project, onClose }: { project: Project | null; onClose: () => void }) {
   const panel = useRef<HTMLElement>(null);
   const [shown, setShown] = useState<Project | null>(project);
+  // Sur téléphone, la fiche est une feuille en bas d'écran : on la tire vers le bas pour la fermer
+  const mobile = useMediaQuery('(max-width: 767px)');
+  const grab = useDragToDismiss(panel, { direction: 1, enabled: mobile && !!project, onDismiss: onClose });
 
   useEffect(() => {
     if (project) setShown(project);
@@ -162,7 +166,7 @@ function ProjectPanel({ project, onClose }: { project: Project | null; onClose: 
   return (
     <aside
       ref={panel}
-      className={`project-panel${project ? ' is-open' : ''}${isReducedMotion() ? ' no-anim' : ''}`}
+      className={`project-panel${project ? ' is-open' : ''}`}
       aria-labelledby="project-panel-title"
       aria-hidden={!project}
       tabIndex={-1}
@@ -170,6 +174,7 @@ function ProjectPanel({ project, onClose }: { project: Project | null; onClose: 
     >
       {shown && (
         <>
+          <div className="project-panel__grabber" aria-hidden="true" {...grab} />
           <button type="button" className="project-panel__close" onClick={onClose}>
             <IconClose aria-hidden="true" />
             <span className="sr-only">Fermer la fiche projet</span>

@@ -40,11 +40,10 @@ function makeBubbleTexture(label: string): THREE.CanvasTexture {
   g.addColorStop(1, '#E4DCF3');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 1024, 512);
-  const lines = label.toUpperCase().split('\n');
+  const lines = label.split('\n');
   const longest = Math.max(...lines.map((l) => l.length));
   const size = Math.min(84, Math.floor(230 / Math.max(3, longest) / 0.68));
-  ctx.font = `800 ${size}px "Archivo Variable", "Archivo", system-ui, sans-serif`;
-  (ctx as CanvasRenderingContext2D & { fontStretch?: string }).fontStretch = 'expanded';
+  ctx.font = `800 ${size}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif`;
   ctx.fillStyle = '#1B1430';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -67,11 +66,10 @@ function makeLabelTexture(text: string): THREE.CanvasTexture {
   canvas.width = 512;
   canvas.height = 96;
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-  ctx.font = '400 34px "JetBrains Mono", ui-monospace, monospace';
+  ctx.font = '600 34px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Roboto, system-ui, sans-serif';
   ctx.fillStyle = isLight() ? '#6D28D9' : '#B49CFF';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  (ctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = '6px';
   ctx.fillText(text, 256, 48);
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -132,7 +130,7 @@ function World({ projects, docked, request, onDock, wrapper, tip }: Omit<Props, 
   }, [camera, size]);
 
   const textures = useMemo(() => Object.fromEntries(projects.map((p) => [p.id, makeBubbleTexture(p.bubbleLabel || p.name)])), [projects]);
-  const dockLabel = useMemo(() => makeLabelTexture('DÉPOSER ICI'), []);
+  const dockLabel = useMemo(() => makeLabelTexture('Déposer ici'), []);
   const sphere = useMemo(() => new THREE.SphereGeometry(1, 48, 32), []);
   const light = useMemo(isLight, []);
   const haloTex = useMemo(() => {

@@ -933,7 +933,7 @@ export function makeTerminal() {
     grad.addColorStop(1, 'rgba(124,58,237,0)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.font = '20px "JetBrains Mono", ui-monospace, monospace';
+    ctx.font = '20px ui-monospace, "SF Mono", Menlo, Consolas, monospace'; // écran de terminal : police à chasse fixe du système
     ctx.textBaseline = 'top';
     for (let i = 0; i < 13; i++) {
       const line = lines[(offset + i) % lines.length];

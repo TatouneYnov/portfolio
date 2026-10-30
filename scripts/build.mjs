@@ -37,11 +37,8 @@ const appHtml = render();
 let html = readFileSync(path.join(dist, 'index.html'), 'utf8');
 html = html.replace('<!--app-->', appHtml);
 
-// Préchargement de la police d'affichage (Archivo, latin, axe de largeur)
-const assets = readdirSync(path.join(dist, 'assets'));
-const display = assets.find((f) => /^archivo-latin-wdth-normal.*\.woff2$/.test(f));
-const preload = display ? `<link rel="preload" href="${base}assets/${display}" as="font" type="font/woff2" crossorigin />` : '';
-html = html.replace('<!--preload-->', preload);
+// Plus de police à précharger : le site utilise les polices du système
+html = html.replace('<!--preload-->', '');
 writeFileSync(path.join(dist, 'index.html'), html);
 
 step('Fichiers générés');

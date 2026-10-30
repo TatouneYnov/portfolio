@@ -56,12 +56,13 @@ export function Toolbox() {
     return () => ctx.revert();
   }, []);
 
-  // Animation du texte de gauche quand la touche change
+  // Texte de gauche quand la touche change : on balaie souvent les touches, donc un fondu bref et sans
+  // déplacement (aussi sous « réduire les animations »)
   const current = useMemo(() => skills.find((s) => s.id === active) ?? null, [active]);
   useEffect(() => {
     const el = readout.current;
-    if (!el || isReducedMotion() || !mounted) return;
-    gsap.fromTo(el.children, { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.45, stagger: 0.05, ease: 'power3.out' });
+    if (!el || !mounted) return;
+    gsap.fromTo(el.children, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.15, stagger: 0.03, ease: 'out', overwrite: true });
   }, [active, mounted]);
 
   const pressKey = useCallback((id: string) => {

@@ -13,8 +13,11 @@ const CREDITS = [
     ],
   },
   {
-    title: 'Polices (auto-hébergées)',
-    items: ['Archivo · Omnibus-Type · SIL Open Font License', 'Inter · Rasmus Andersson · SIL Open Font License', 'JetBrains Mono · JetBrains · SIL Open Font License'],
+    title: 'Polices',
+    items: [
+      'Polices du système de ton appareil (SF Pro, Segoe UI, Roboto…) : aucune police téléchargée.',
+      "Image de partage (Open Graph) : Archivo, Inter et JetBrains Mono · SIL Open Font License",
+    ],
   },
   {
     title: 'Icônes',
@@ -32,7 +35,7 @@ const CREDITS = [
 // Encart « Comment ce site est sécurisé » : uniquement ce qui est réellement en place dans le code.
 const SECURITY = [
   'Aucun tracker, aucun cookie, aucune publicité.',
-  "Polices et icônes hébergées ici : rien n'est chargé depuis un autre site, ton adresse IP n'est pas envoyée à Google.",
+  "Polices du système et icônes hébergées ici : rien n'est chargé depuis un autre site, ton adresse IP n'est pas envoyée à Google.",
   'Politique de sécurité du contenu (CSP) stricte : seuls les scripts du site peuvent s\'exécuter, aucun script inline.',
   ...(FORM_KEY ? ['Seul le formulaire de contact échange avec un service externe (Web3Forms), pour me transmettre ton message.'] : []),
 ];

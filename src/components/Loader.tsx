@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from '../lib/motion';
 
-/** Durée fixe de l'écran de chargement (ms). La barre est fictive : elle sert la mise en scène. */
-const DURATION = 2000;
+/** Durée fixe de l'écran de chargement (ms), la même à chaque visite (aucun repère stocké dans le navigateur).
+ *  La barre est fictive : elle sert la mise en scène. À garder égale à la durée de `.loader--run` (main.css). */
+const DURATION = 1000;
 
 /**
  * Progression fictive, avec un rythme « naturel » : départ rapide, petit ralenti, accélération.
@@ -30,7 +31,7 @@ function progressAt(t: number) {
 }
 
 /**
- * Écran de chargement : 2 s à chaque visite, puis ouverture verticale.
+ * Écran de chargement : 1 s à chaque visite, puis ouverture verticale.
  * Sans JavaScript, noscript.css le masque ; si le script ne démarre jamais, une animation CSS
  * de secours le retire après 4 s. Sous « réduire les animations », il est sauté.
  */
@@ -75,15 +76,15 @@ export function Loader({ onDone }: { onDone: () => void }) {
       done = true;
       if (count.current) count.current.textContent = '100';
       exit = gsap
-        .timeline({ delay: 0.15 })
-        .to(el, { clipPath: 'inset(50% 0% 50% 0%)', duration: 0.8, ease: 'power3.inOut' })
-        .add(onDone, '-=0.35')
+        .timeline({ delay: 0.1 })
+        .to(el, { clipPath: 'inset(50% 0% 50% 0%)', duration: 0.6, ease: 'inOut' })
+        .add(onDone, '-=0.3')
         .add(() => {
           el.hidden = true;
         });
     };
     anim?.finished.then(leave, () => undefined);
-    const timer = window.setTimeout(leave, DURATION + 600); // filet de sécurité
+    const timer = window.setTimeout(leave, DURATION + 500); // filet de sécurité
 
     return () => {
       cancelAnimationFrame(raf);

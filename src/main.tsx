@@ -1,8 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
-import '@fontsource-variable/archivo/wdth.css';
-import '@fontsource-variable/inter/wght.css';
-import '@fontsource/jetbrains-mono/latin-400.css';
+// Polices du système (SF sur Apple, Segoe UI sur Windows, Roboto sur Android) : rien à télécharger
 import './styles/main.css';
 import { App } from './App';
 
