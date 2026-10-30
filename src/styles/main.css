@@ -1953,28 +1953,26 @@ textarea {
   padding: 16px 28px 28px;
   border: 1px solid var(--glass-edge);
   border-radius: var(--radius);
-  background: var(--glass-strong);
+  /* Verre sans flou d'arrière-plan : recalculé à chaque image au-dessus de la scène 3D, il saccadait */
+  background: color-mix(in srgb, var(--bg-2) 92%, transparent);
   box-shadow: var(--glass-shine), var(--float-shadow);
   /* Fermée : petite et floue au centre de la bulle posée ; elle en monte en se dépliant (--panel-rise : JS) */
   transform-origin: 50% 100%;
   transform: translateX(-50%) translateY(var(--panel-rise, 60px)) scale(0.16);
-  filter: blur(10px);
   opacity: 0;
   visibility: hidden;
   /* Rentrée dans la bulle : rapide (300 ms, PANEL_OUT dans Projects.tsx) */
-  transition: transform 0.3s var(--ease-in-out), filter 0.3s ease, opacity 0.24s ease 0.06s, visibility 0s linear 0.3s;
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  transition: transform 0.3s var(--ease-in-out), opacity 0.24s ease 0.06s, visibility 0s linear 0.3s;
+  will-change: transform, opacity;
 }
 .project-panel:focus {
   outline: none; /* focus posé par le code à l'ouverture ; les boutons gardent leur contour */
 }
 .project-panel.is-open {
   transform: translateX(-50%);
-  filter: none;
   opacity: 1;
   visibility: visible;
-  transition: transform 0.55s var(--spring), filter 0.4s ease, opacity 0.2s ease, visibility 0s; /* sortie de la bulle */
+  transition: transform 0.55s var(--spring), opacity 0.25s ease, visibility 0s; /* sortie de la bulle */
 }
 /* Grand écran : fiche plus large, en deux colonnes (moins haute, rien à faire défiler pour l'essentiel) */
 @media (min-width: 1024px) {
@@ -2027,14 +2025,13 @@ textarea {
     opacity: 0;
   }
 }
-/* Voile derrière la fiche : flou et léger assombrissement, sauf autour du socle (la bulle posée reste nette) */
+/* Voile derrière la fiche : assombrit la scène, sauf autour du socle (la bulle posée reste nette) */
 .projects__veil {
   position: absolute;
   inset: 0;
   z-index: 3;
-  background: color-mix(in srgb, var(--bg) 30%, transparent);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  /* Teinte seule, sans flou : un flou d'arrière-plan plein écran sur la scène 3D coûtait trop (saccades) */
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
   -webkit-mask-image: radial-gradient(ellipse 22% 26% at 50% 86%, transparent 60%, #000 100%);
   mask-image: radial-gradient(ellipse 22% 26% at 50% 86%, transparent 60%, #000 100%);
   opacity: 0;

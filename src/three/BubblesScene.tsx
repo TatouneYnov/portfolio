@@ -724,9 +724,12 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAn
 
 export default function BubblesScene(props: Props) {
   const { paused, maxBubbles, onLost, projects, ...rest } = props;
-  const list = projects.slice(0, maxBubbles);
-  // Netteté pleine (DPR 2) : à 1,25 les noms des bulles étaient flous sur les écrans de téléphone (3×)
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  // Liste stable : recréée à chaque rendu de la section, elle faisait redessiner les 5 noms (textures 1024²)
+  // à chaque étape du dépôt, d'où des à-coups pendant l'animation
+  const list = useMemo(() => projects.slice(0, maxBubbles), [projects, maxBubbles]);
+  // Netteté pleine (DPR 2) sur les téléphones ; sur les grands écrans, la scène est plein écran :
+  // on plafonne le nombre de pixels (~2,6 millions) pour garder une animation fluide
+  const dpr = Math.min(window.devicePixelRatio || 1, 2, Math.max(1, Math.sqrt(2.6e6 / (window.innerWidth * window.innerHeight))));
   return (
     <Canvas
       className="projects__canvas"
