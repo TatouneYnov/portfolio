@@ -1955,11 +1955,14 @@ textarea {
   border-radius: var(--radius);
   background: var(--glass-strong);
   box-shadow: var(--glass-shine), var(--float-shadow);
+  /* Fermée : petite et floue au centre de la bulle posée ; elle en monte en se dépliant (--panel-rise : JS) */
   transform-origin: 50% 100%;
-  transform: translateX(-50%) translateY(24px) scale(0.86);
+  transform: translateX(-50%) translateY(var(--panel-rise, 60px)) scale(0.16);
+  filter: blur(10px);
   opacity: 0;
   visibility: hidden;
-  transition: transform 0.25s var(--ease-in-out), opacity 0.2s ease, visibility 0s linear 0.25s; /* fermeture : rapide */
+  /* Rentrée dans la bulle : rapide (300 ms, PANEL_OUT dans Projects.tsx) */
+  transition: transform 0.3s var(--ease-in-out), filter 0.3s ease, opacity 0.24s ease 0.06s, visibility 0s linear 0.3s;
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
 }
@@ -1968,9 +1971,10 @@ textarea {
 }
 .project-panel.is-open {
   transform: translateX(-50%);
+  filter: none;
   opacity: 1;
   visibility: visible;
-  transition: transform 0.475s var(--spring), opacity 0.25s ease, visibility 0s; /* ouverture */
+  transition: transform 0.55s var(--spring), filter 0.4s ease, opacity 0.2s ease, visibility 0s; /* sortie de la bulle */
 }
 /* Grand écran : fiche plus large, en deux colonnes (moins haute, rien à faire défiler pour l'essentiel) */
 @media (min-width: 1024px) {

@@ -55,22 +55,39 @@ export function Projects() {
   };
 
   const onDock = useCallback((id: string | null) => setDocked(id), []);
-  // Hauteur (px, depuis le bas de la scène) du haut de la bulle posée : la fiche s'ouvre juste au-dessus
-  const [anchor, setAnchor] = useState(0);
-  const onAnchor = useCallback((px: number) => setAnchor(px), []);
+  // Position de la fiche (px, depuis le bas de la scène) et distance jusqu'au centre de la bulle, d'où elle sort
+  const [anchor, setAnchor] = useState<{ bottom: number; rise: number } | null>(null);
+  const onAnchor = useCallback((bottom: number, rise: number) => setAnchor({ bottom, rise }), []);
 
-  // Projet précédent / suivant depuis la fiche : la bulle suivante file dans le socle
+  // Séquence : la bulle se pose → le socle s'allume → la fiche sort de la bulle (0,3 s après le dépôt).
+  // Fermer ou changer de projet : la fiche rentre d'abord dans la bulle.
+  const [panelOpen, setPanelOpen] = useState(false);
+  const timer = useRef(0);
+  const later = (fn: () => void, ms: number) => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(fn, ms);
+  };
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  const onArrive = useCallback(() => later(() => setPanelOpen(true), 300), []);
+  const PANEL_OUT = 300; // durée de la rentrée de la fiche (main.css, .project-panel)
+
+  // Projet précédent / suivant : la fiche rentre, la bulle suivante file dans le socle, la séquence reprend
   const dockedNow = useRef<string | null>(null);
   dockedNow.current = docked;
+  const navFocus = useRef<'prev' | 'next' | null>(null);
   const go = useCallback((delta: number) => {
     const i = projects.findIndex((p) => p.id === dockedNow.current);
     if (i < 0) return;
     const next = projects[(i + delta + projects.length) % projects.length].id;
-    setRequest((r) => ({ id: next, n: (r?.n ?? 0) + 1 }));
+    navFocus.current = delta < 0 ? 'prev' : 'next';
+    setPanelOpen(false);
+    later(() => setRequest((r) => ({ id: next, n: (r?.n ?? 0) + 1 })), PANEL_OUT);
   }, []);
 
   const close = () => {
-    setDocked(null);
+    setPanelOpen(false);
+    navFocus.current = null;
+    later(() => setDocked(null), PANEL_OUT);
     const target = returnFocus.current;
     returnFocus.current = null;
     target?.focus();
@@ -104,7 +121,7 @@ export function Projects() {
     <section ref={root} id="projets" className={`projects section${show3D ? ' projects--scene' : ''}`} aria-labelledby="projects-title">
       {show3D ? (
         // Scène plein écran : bulles en apesanteur, socle en bas au centre, titre posé dessus
-        <div className={`projects__scene${current ? ' has-panel' : ''}`} style={anchor ? ({ '--panel-bottom': `${anchor}px` } as React.CSSProperties) : undefined}>
+        <div className={`projects__scene${current ? ' has-panel' : ''}`} style={anchor ? ({ '--panel-bottom': `${anchor.bottom}px`, '--panel-rise': `${anchor.rise}px` } as React.CSSProperties) : undefined}>
           <div ref={stage} className="projects__stage" aria-hidden="true">
             {near && (
               <Suspense fallback={null}>
@@ -119,6 +136,7 @@ export function Projects() {
                   tip={tip}
                   topInset={topInset}
                   onAnchor={onAnchor}
+                  onArrive={onArrive}
                   onLost={() => setUse3D(false)}
                 />
               </Suspense>
@@ -159,8 +177,8 @@ export function Projects() {
           </div>
 
           {/* Voile flouté derrière la fiche (le socle reste net) ; un clic dessus ferme la fiche */}
-          <div className={`projects__veil${current ? ' is-open' : ''}`} aria-hidden="true" onClick={close} />
-          <ProjectPanel project={current} onClose={close} onPrev={() => go(-1)} onNext={() => go(1)} />
+          <div className={`projects__veil${current && panelOpen ? ' is-open' : ''}`} aria-hidden="true" onClick={close} />
+          <ProjectPanel project={panelOpen ? current : null} onClose={close} onPrev={() => go(-1)} onNext={() => go(1)} navFocus={navFocus} />
         </div>
       ) : (
         <div className="container">
@@ -178,7 +196,19 @@ export function Projects() {
   );
 }
 
-function ProjectPanel({ project, onClose, onPrev, onNext }: { project: Project | null; onClose: () => void; onPrev: () => void; onNext: () => void }) {
+function ProjectPanel({
+  project,
+  onClose,
+  onPrev,
+  onNext,
+  navFocus,
+}: {
+  project: Project | null;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  navFocus: { current: 'prev' | 'next' | null };
+}) {
   const panel = useRef<HTMLElement>(null);
   const [shown, setShown] = useState<Project | null>(project);
   const swipe = useRef<{ x: number; y: number } | null>(null);
@@ -188,11 +218,14 @@ function ProjectPanel({ project, onClose, onPrev, onNext }: { project: Project |
     if (project) setShown(project);
   }, [project]);
 
-  // Focus dans la fiche à l'ouverture seulement (pas à chaque changement de projet : il reste sur les flèches)
+  // Focus dans la fiche à l'ouverture ; après ‹ ou ›, il revient sur la même flèche
   const open = !!project;
   useEffect(() => {
-    if (open) panel.current?.focus({ preventScroll: true });
-  }, [open]);
+    if (!open) return;
+    const nav = navFocus.current;
+    const target = nav ? panel.current?.querySelector<HTMLElement>(`[data-nav="${nav}"]`) : null;
+    (target ?? panel.current)?.focus({ preventScroll: true });
+  }, [open, navFocus]);
 
   useEffect(() => {
     if (!open) return;
@@ -230,14 +263,14 @@ function ProjectPanel({ project, onClose, onPrev, onNext }: { project: Project |
         <>
           <div className="project-panel__bar">
             <div className="project-panel__nav">
-              <button type="button" className="icon-btn" onClick={onPrev}>
+              <button type="button" className="icon-btn" data-nav="prev" onClick={onPrev}>
                 <IconPrev aria-hidden="true" />
                 <span className="sr-only">Projet précédent</span>
               </button>
               <span className="project-panel__count" aria-hidden="true">
                 {index + 1} / {projects.length}
               </span>
-              <button type="button" className="icon-btn" onClick={onNext}>
+              <button type="button" className="icon-btn" data-nav="next" onClick={onNext}>
                 <IconNext aria-hidden="true" />
                 <span className="sr-only">Projet suivant</span>
               </button>

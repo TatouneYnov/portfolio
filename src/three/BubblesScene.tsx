@@ -26,7 +26,9 @@ type Props = {
   /** Hauteur (px) du titre posé sur la scène : les bulles ne passent jamais dessous */
   topInset: number;
   /** Position du haut de la bulle posée (px depuis le bas de la scène) : la fiche s'ouvre au-dessus */
-  onAnchor: (px: number) => void;
+  onAnchor: (px: number, rise: number) => void;
+  /** La bulle est posée sur le socle (fin de son trajet) : le socle s'allume, la fiche peut sortir */
+  onArrive: (id: string) => void;
   onLost: () => void;
 };
 
@@ -153,7 +155,7 @@ function Environment() {
 type BallState = { body: RapierRigidBody | null; mesh: THREE.Group | null; radius: number };
 type Press = { id: string; x: number; y: number; touch: boolean; dragging: boolean };
 
-function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAnchor }: Omit<Props, 'paused' | 'maxBubbles' | 'onLost'>) {
+function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAnchor, onArrive }: Omit<Props, 'paused' | 'maxBubbles' | 'onLost'>) {
   const { camera, size, gl } = useThree();
   const { rapier } = useRapier();
   const balls = useRef(new Map<string, BallState>());
@@ -167,6 +169,14 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAn
   const proxy = useRef({ x: 0, y: 0 });
   const pointer = useRef({ world: new THREE.Vector3(), valid: false });
   const glow = useRef(0);
+  // Allumage du socle au dépôt : éclair puis veilleuse tant que la bulle est posée, et onde du centre vers le bord
+  const arrived = useRef<string | null>(null);
+  const lit = useRef(0);
+  const flash = useRef(0);
+  const wave = useRef(-1);
+  const insetMat = useRef<THREE.MeshPhysicalMaterial>(null);
+  const waveMesh = useRef<THREE.Mesh>(null);
+  const waveMat = useRef<THREE.MeshBasicMaterial>(null);
   const throwVel = useRef(new THREE.Vector3());
   const tmp = useMemo(
     () => ({ v: new THREE.Vector3(), dir: new THREE.Vector3(), ndc: new THREE.Vector2(), raycaster: new THREE.Raycaster(), plane: new THREE.Plane(new THREE.Vector3(0, 0, 1), 0) }),
@@ -330,11 +340,25 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAn
     dockedRef.current = id;
     showTip(null);
     gsap.killTweensOf(proxy.current);
-    gsap.to(proxy.current, { x: frame.dock.x, y: restY(id), duration, ease: 'power3.out' });
-    glow.current = 1;
-    // La fiche recouvre le haut de la bulle : elle a l'air d'en sortir, et garde de la hauteur
+    arrived.current = null;
+    gsap.to(proxy.current, {
+      x: frame.dock.x,
+      y: restY(id),
+      duration,
+      ease: 'power3.out',
+      onComplete: () => {
+        if (dockedRef.current !== id) return;
+        arrived.current = id;
+        flash.current = 1;
+        wave.current = 0;
+        onArrive(id);
+      },
+    });
+    // La fiche recouvre le haut de la bulle : elle a l'air d'en sortir, et garde de la hauteur.
+    // rise : distance (px) entre le bas de la fiche et le centre de la bulle, d'où elle part
     const top = restY(id) + dockedRadius(id) * 0.35;
-    onAnchor(((top + frame.halfH) / (2 * frame.halfH)) * size.height);
+    const pxPerUnit = size.height / (2 * frame.halfH);
+    onAnchor(((top + frame.halfH) / (2 * frame.halfH)) * size.height, (top - restY(id)) * pxPerUnit + 12);
     onDock(id);
   };
 
@@ -343,6 +367,7 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAn
     const current = dockedRef.current;
     if (current && docked === null) {
       dockedRef.current = null;
+      arrived.current = null;
       gsap.killTweensOf(proxy.current);
       toDynamic(current);
     }
@@ -519,9 +544,25 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAn
     glow.current = THREE.MathUtils.damp(glow.current, overDock ? 1 : 0, overDock ? 10 : 3, dt);
     const pulse = 1 + Math.sin(state.clock.elapsedTime * 1.6) * 0.04;
     if (ring.current) ring.current.scale.setScalar(1 + glow.current * 0.06);
-    if (ringMat.current) ringMat.current.emissiveIntensity = (light ? 0.5 : 0.35) + glow.current * 2.2;
+    // Allumé tant qu'une bulle est posée ; l'éclair du dépôt retombe en ~0,6 s
+    lit.current = THREE.MathUtils.damp(lit.current, arrived.current ? 1 : 0, arrived.current ? 6 : 8, dt);
+    flash.current *= Math.exp(-4 * dt);
+    const on = lit.current * 0.6 + flash.current;
+    if (ringMat.current) ringMat.current.emissiveIntensity = (light ? 0.5 : 0.35) + glow.current * 2.2 + on * 2.4;
+    if (insetMat.current) insetMat.current.emissiveIntensity = 0.15 + on * (light ? 1.9 : 1.8);
     if (halo.current) halo.current.scale.set(dockRadius * 3.2 * pulse, dockRadius * 3.2 * FLAT * 2.2 * pulse, 1);
-    if (haloMat.current) haloMat.current.opacity = (light ? 0.25 : 0.4) + glow.current * 0.6;
+    if (haloMat.current) haloMat.current.opacity = (light ? 0.25 : 0.4) + glow.current * 0.6 + on * 0.5;
+    // Onde : un anneau de lumière part du centre de l'incrustation et s'efface en atteignant le bois
+    if (waveMesh.current && waveMat.current) {
+      if (wave.current >= 0) {
+        wave.current += dt / 0.7;
+        const k = Math.min(1, wave.current);
+        waveMesh.current.visible = k < 1;
+        waveMesh.current.scale.setScalar(0.15 + k * 0.95);
+        waveMat.current.opacity = (1 - k) * (light ? 0.9 : 0.8);
+        if (k >= 1) wave.current = -1;
+      } else waveMesh.current.visible = false;
+    }
   });
 
   return (
@@ -558,6 +599,7 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAn
             <mesh rotation={[-Math.PI / 2, 0, 0]} renderOrder={0}>
               <circleGeometry args={[dockRadius * INSET, 96]} />
               <meshPhysicalMaterial
+                ref={insetMat}
                 color={light ? '#9F86F2' : '#5A47B8'}
                 emissive={light ? '#8B6CF0' : '#4B38A8'}
                 emissiveIntensity={0.15}
@@ -566,6 +608,10 @@ function World({ projects, docked, request, onDock, wrapper, tip, topInset, onAn
                 clearcoatRoughness={0.6}
                 envMapIntensity={0.25}
               />
+            </mesh>
+            <mesh ref={waveMesh} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.004, 0]} visible={false} renderOrder={1}>
+              <ringGeometry args={[dockRadius * INSET * 0.86, dockRadius * INSET, 96]} />
+              <meshBasicMaterial ref={waveMat} color={light ? '#FFFFFF' : '#D9CCFF'} transparent opacity={0} depthWrite={false} toneMapped={false} blending={light ? THREE.NormalBlending : THREE.AdditiveBlending} />
             </mesh>
             {/* Bord de l'incrustation : s'allume quand une bulle approche */}
             <group ref={ring}>
