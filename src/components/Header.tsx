@@ -9,7 +9,7 @@ import { copyText } from '../lib/toast';
 import { asset } from '../lib/env';
 import { useDragToDismiss } from '../lib/useDragToDismiss';
 import { isReducedMotion } from '../lib/motion';
-import { setTheme, useTheme } from '../lib/theme';
+import { setHeaderScrolled, setTheme, useTheme } from '../lib/theme';
 
 const NAV = [
   { href: '#a-propos', label: 'À propos' },
@@ -80,6 +80,7 @@ export function Header() {
   const [current, setCurrent] = useState<string | null>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => setHeaderScrolled(scrolled && !open), [scrolled, open]);
   // Menu plein écran : on peut le fermer en le tirant vers le haut
   const grab = useDragToDismiss(menuRef, { direction: -1, enabled: open, onDismiss: () => setOpen(false) });
 

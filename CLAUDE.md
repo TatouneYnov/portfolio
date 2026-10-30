@@ -352,6 +352,7 @@ Budget : qualité d'abord, optimisation après mesure sur le PC d'Ethan. **Refon
 - Bas droite fixe : « CV » vertical (rotation 90°, verre dépoli) → désactivé « CV · bientôt » tant que `cv.available: false` (masqué sur mobile)
 - Mobile : bouton de thème à gauche du burger ; burger plein écran en verre, liens en grand, mention du CV et de l'e-mail ; **on le ferme aussi en le tirant vers le haut** (poignée en bas)
 - Repère de position : le lien de la section en cours passe en `--accent` (`aria-current`)
+- Barre d'état du téléphone (sous l'heure, 30/10, choix d'Ethan) : une fois qu'on a défilé, elle prend la teinte du verre de l'en-tête pour ne faire qu'une barre. La teinte est posée sur `.site-header--scrolled` lui-même (Safari 26 prolonge le fond de la barre fixe du haut ; le flou reste sur `::before`) et `theme-color` suit (`setHeaderScrolled` dans `theme.ts` : `#FAF9FD` clair, `#0D0915` sombre), pour les anciens iOS et Chrome Android. Pas de flou possible sous l'heure : Safari n'y peint qu'une couleur.
 
 ### 2. Hero (100vh)
 3 colonnes desktop, avatar au centre (buste, épaules → haut du crâne), lueur radiale derrière.

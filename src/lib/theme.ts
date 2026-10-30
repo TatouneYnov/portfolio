@@ -11,6 +11,23 @@ export type Theme = 'light' | 'dark';
 
 const KEY = 'theme';
 const THEME_COLOR: Record<Theme, string> = { light: '#ECE8F6', dark: '#07050C' };
+// Teinte de l'en-tête en verre une fois qu'on a défilé (--glass-strong posé sur --bg), pour la barre d'état
+const THEME_COLOR_SCROLLED: Record<Theme, string> = { light: '#FAF9FD', dark: '#0D0915' };
+let scrolled = false;
+
+function applyThemeColor(theme: Theme) {
+  const color = (scrolled ? THEME_COLOR_SCROLLED : THEME_COLOR)[theme];
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
+}
+
+/**
+ * Barre d'état du téléphone (sous l'heure) : même teinte que l'en-tête en verre dès qu'on a défilé.
+ * Safari 26 prolonge le fond de l'en-tête fixe ; les versions plus anciennes et Chrome Android lisent theme-color.
+ */
+export function setHeaderScrolled(value: boolean) {
+  scrolled = value;
+  applyThemeColor(getTheme());
+}
 
 export function getTheme(): Theme {
   return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
@@ -20,7 +37,7 @@ export function setTheme(theme: Theme) {
   const root = document.documentElement;
   if (theme === 'dark') root.dataset.theme = 'dark';
   else delete root.dataset.theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[theme]);
+  applyThemeColor(theme);
   try {
     if (theme === 'dark') localStorage.setItem(KEY, 'dark');
     else localStorage.removeItem(KEY);

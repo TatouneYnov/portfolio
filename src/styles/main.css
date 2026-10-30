@@ -721,15 +721,23 @@ main {
   z-index: 50;
   padding-top: env(safe-area-inset-top, 0px);
   pointer-events: none;
+  transition: background-color 0.3s ease;
 }
-/* Fond sur un pseudo-élément : un backdrop-filter sur l'en-tête lui-même deviendrait le bloc
+/* Teinte du verre sur l'en-tête lui-même : Safari (iOS 26) prolonge le fond de la barre fixe du haut
+   sous l'heure, la barre d'état et l'en-tête ne font plus qu'un (theme-color suit, src/lib/theme.ts) */
+.site-header--scrolled {
+  background-color: var(--glass-strong);
+}
+html.menu-open .site-header {
+  background-color: transparent;
+}
+/* Flou sur un pseudo-élément : un backdrop-filter sur l'en-tête lui-même deviendrait le bloc
    conteneur du menu mobile et de l'onglet CV (position: fixed) */
 .site-header::before {
   content: '';
   position: absolute;
   inset: 0 0 auto;
   height: calc(var(--header-h) + env(safe-area-inset-top, 0px));
-  background: var(--glass-strong);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   opacity: 0;
