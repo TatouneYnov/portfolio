@@ -1,13 +1,23 @@
 import { useEffect, useRef } from 'react';
 import { gsap, isReducedMotion } from '../lib/motion';
+import { getCapabilities } from '../lib/capabilities';
+import { startDotGrid } from '../lib/dotGrid';
 
 /**
- * Fond de page : trois grandes lueurs floues fixes à l'écran + un grain très fin.
- * Elles dérivent lentement et changent de place au fil du défilement (scrub sur toute la page).
- * Sous « réduire les animations » : fond fixe.
+ * Fond de page : trois grandes lueurs floues fixes à l'écran, une grille de points (src/lib/dotGrid.ts)
+ * et un grain très fin. Les lueurs dérivent au fil du défilement (scrub sur toute la page).
+ * Sous « réduire les animations » : lueurs fixes, grille fixe (seule la lueur sous la souris reste, en fondu).
+ * Appareil modeste : grille fixe aussi.
  */
 export function Backdrop() {
   const ref = useRef<HTMLDivElement>(null);
+
+  const grid = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!grid.current) return;
+    return startDotGrid(grid.current, isReducedMotion() || getCapabilities().lowEnd);
+  }, []);
 
   useEffect(() => {
     const root = ref.current;
@@ -31,6 +41,7 @@ export function Backdrop() {
       <span className="backdrop__orb backdrop__orb--a" />
       <span className="backdrop__orb backdrop__orb--b" />
       <span className="backdrop__orb backdrop__orb--c" />
+      <canvas className="backdrop__grid" ref={grid} />
       <span className="backdrop__grain" />
     </div>
   );
