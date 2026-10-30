@@ -1495,7 +1495,8 @@ html.menu-open {
 }
 .tl-row--upcoming .tl-row__year {
   color: transparent;
-  -webkit-text-stroke: 1.2px var(--accent);
+  -webkit-text-stroke: 1px var(--accent);
+  letter-spacing: 0.06em; /* en contour, les chiffres serrés se chevauchaient (tiret compris) */
 }
 .tl-row--subtle {
   opacity: 0.75;
@@ -1973,8 +1974,13 @@ html.menu-open {
 .dispo__grid {
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: clamp(32px, 5vw, 80px);
+  gap: 32px clamp(32px, 5vw, 80px);
   align-items: start;
+}
+/* Sur ordinateur, le calendrier occupe toute la hauteur à droite et le bloc alternance passe sous les infos */
+.dispo__cal {
+  grid-column: 2;
+  grid-row: 1 / span 2;
 }
 .dispo__facts {
   display: grid;
@@ -2010,7 +2016,6 @@ html.menu-open {
   gap: 8px;
   justify-items: start;
   width: 100%;
-  margin-top: 8px;
   padding: 20px 22px;
   border: 1px solid var(--glass-edge);
   box-shadow: var(--glass-shine), var(--card-shadow);
@@ -2646,11 +2651,18 @@ button.quick-link:active {
   }
   .toolbox__readout {
     transform: rotate(-4deg);
-    min-height: 150px;
+    min-height: 0;
   }
   .dispo__grid,
   .contact__grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .dispo__grid {
+    gap: clamp(32px, 5vw, 48px);
+  }
+  .dispo__cal {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
 
@@ -2685,8 +2697,21 @@ button.quick-link:active {
   .tile--hero {
     grid-row: span 1;
   }
+  /* Sur téléphone, seul le nom de l'outil reste affiché (le reste est lu par les lecteurs d'écran) :
+     la place libérée va au clavier, qui prend toute la largeur de l'écran */
+  .toolbox__quip,
+  .toolbox__used,
+  .toolbox__cat {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   .toolbox__stage {
-    height: min(72vw, 340px);
+    height: min(66vw, 340px);
+    margin-inline: calc(-1 * var(--gutter));
   }
   .projects__stage {
     height: min(150vw, 680px);

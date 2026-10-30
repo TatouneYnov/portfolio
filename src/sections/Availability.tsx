@@ -123,16 +123,6 @@ export function Availability() {
             <a className="btn btn--primary" href="#contact" onClick={(e) => (e.preventDefault(), propose())}>
               Me proposer un créneau <IconArrow aria-hidden="true" />
             </a>
-            {alt && (
-              <div className="dispo__alt">
-                <p className="label">{alt.title}</p>
-                <p>{alt.text}</p>
-                <p className="dispo__alt-rhythm">{alt.rhythm}</p>
-                <a className="text-link" href="#contact" onClick={(e) => (e.preventDefault(), propose('alternance'))}>
-                  {alt.cta} <span className="arrow" aria-hidden="true">→</span>
-                </a>
-              </div>
-            )}
           </div>
 
           <div className="dispo__cal glass-card">
@@ -157,6 +147,18 @@ export function Availability() {
               </li>
             </ul>
           </div>
+
+          {/* Après le calendrier dans le HTML : en dessous sur téléphone et tablette, sous les infos (colonne de gauche) sur ordinateur */}
+          {alt && (
+            <div className="dispo__alt">
+              <p className="label">{alt.title}</p>
+              <p>{alt.text}</p>
+              <p className="dispo__alt-rhythm">{alt.rhythm}</p>
+              <a className="text-link" href="#contact" onClick={(e) => (e.preventDefault(), propose('alternance'))}>
+                {alt.cta} <span className="arrow" aria-hidden="true">→</span>
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </section>

@@ -245,8 +245,14 @@ function makeCapTexture(skill: Skill): THREE.CanvasTexture {
   };
   const drawMono = () => {
     const text = skill.mono;
-    const fontSize = 2 * (text.length <= 2 ? 92 : text.length <= 3 ? 74 : text.length <= 4 ? 58 : 44);
-    ctx.font = `800 ${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif`;
+    let fontSize = 2 * (text.length <= 2 ? 104 : text.length <= 3 ? 84 : text.length <= 4 ? 66 : 50);
+    const font = (px: number) =>
+      `800 ${px}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif`;
+    ctx.font = font(fontSize);
+    // Jamais plus large que 78 % du dessus de la touche
+    const fit = (size * 0.78) / ctx.measureText(text).width;
+    if (fit < 1) fontSize = Math.floor(fontSize * fit);
+    ctx.font = font(fontSize);
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -267,7 +273,7 @@ function makeCapTexture(skill: Skill): THREE.CanvasTexture {
   if (svg) {
     const img = new Image();
     img.onload = () => {
-      const s = size * 0.5;
+      const s = size * 0.6;
       ctx.drawImage(img, (size - s) / 2, (size - s) / 2 + 16, s, s);
       drawHotkey();
       ink();
@@ -525,8 +531,9 @@ function Keyboard({ skills, categories, active, press, highlight, onHover, scrol
 
 export default function KeyboardScene(props: Props) {
   const { paused, onLost, ...rest } = props;
-  // Petit canevas : on peut se permettre la pleine netteté (DPR 2) et l'anticrénelage, même sur mobile
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  // Petit canevas : rendu au moins en 2× (suréchantillonné sur les écrans 1×, sinon les logos sont flous)
+  // et jusqu'en 3× sur les téléphones, avec anticrénelage
+  const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
   return (
     <Canvas
       className="toolbox__canvas"

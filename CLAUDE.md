@@ -393,7 +393,7 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
   - Rotation du socle `TURN` (bureau -0,26 rad, mobile -0,08 rad) ; le cadrage recule la caméra juste assez pour que le boîtier tienne entier. Lumières neutres et chaudes (le bois doit rester brun), violet seulement en contre-jour. `ContactShadows` hors du groupe qui tourne, sous le biseau du fond.
 - Couleurs par catégorie en **tons poudrés mats** (aubergine `#6A4766`, ardoise `#5E6B85`, vieux rose `#B07A86`, lilas `#8F86B3`), identiques dans `skills.json` et `main.css` (`[data-cat]`), + légende cliquable (surbrillance de la catégorie).
 - Dessus de keycap : logo (texture SVG → canvas, repeint en blanc cassé) ou monogramme en police système grasse.
-- Survol / toucher ou clic (`onPointerDown`, indispensable sur téléphone où il n'y a pas de survol) / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde discrète sur la plaque ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (police système 800, couleur de la catégorie) + quip + catégorie. Avant toute touche : « 26 outils ».
+- Survol / toucher ou clic (`onPointerDown`, indispensable sur téléphone où il n'y a pas de survol) / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde discrète sur la plaque ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (police système 800, couleur de la catégorie) + quip + catégorie. Avant toute touche : « 26 outils ». **Sur téléphone (< 768 px), seul le nom s'affiche** (phrase, « Utilisé : … » et catégorie restent pour les lecteurs d'écran) et le clavier prend toute la largeur de l'écran (30/10).
 - Hotkeys : seulement si la section est visible **et** qu'aucun champ n'a le focus ; jamais avec Ctrl/Alt/Meta.
 - Rotation y au scroll (scrub), amplitude réduite : ±5° bureau, ±3° mobile.
 - `<ul>` réelle des compétences dans le DOM (bouton « Voir en liste ») ; c'est la version affichée sous reduced-motion, sans WebGL et sans JS.
@@ -424,6 +424,7 @@ Grille de tuiles en verre (`.tiles`, 4 colonnes, 2 sur mobile, `grid-auto-flow: 
 - Vrai tableau accessible (`role="grid"`, libellés de jours complets pour lecteurs d'écran).
 - Légende + exemple de calcul + « Autres périodes : à définir ensemble ».
 - CTA « Me proposer un créneau → » : scroll vers Contact avec objet pré-rempli « Stage 170 h ».
+- Bloc « Et après : alternance » : après le calendrier dans le HTML ; sous le calendrier sur téléphone et tablette, sous les infos (colonne de gauche) sur ordinateur (30/10).
 
 ### 10. Contact
 « Travaillons » / « ensemble » (police système 800, ~9vw, mot par mot, letter-spacing qui se resserre au scroll).
@@ -482,7 +483,7 @@ Pied : « © 2026 Ethan Bacquier · Fait à Lyon » · « Politique de confident
 
 ## 11. Performance
 
-- DPR : avatar max 1.75 (1.25 mobile), antialias seulement si DPR < 2 (grand canevas plein écran). Clavier et bulles : DPR max 2 partout et antialias (petits canevas ; à 1,25 ils étaient flous sur les téléphones 3×). Textures des touches en 512 px (512 × 256 par unité pour les touches de modification), des bulles en 2048 × 1024, anisotropie 8.
+- DPR : avatar max 1.75 (1.25 mobile), antialias seulement si DPR < 2 (grand canevas plein écran). Clavier : DPR entre 2 et 3 (suréchantillonné sur les écrans 1×, jusqu'à 3× sur téléphone ; demandé par Ethan le 30/10, il le trouvait flou) et antialias ; logos à 60 % du dessus de touche, monogrammes plus gros (78 % de largeur max). Bulles : DPR max 2 et antialias (petits canevas ; à 1,25 ils étaient flous sur les téléphones 3×). Textures des touches en 512 px (512 × 256 par unité pour les touches de modification), des bulles en 2048 × 1024, anisotropie 8.
 - Canvases en pause (`frameloop="never"`) hors écran et quand `document.hidden`.
 - Pendant les 2 s de chargement : import des modules clavier et bulles + init du WebAssembly Rapier ; compilation de l'avatar et du bureau (caché) derrière l'écran de chargement. Après : montage échelonné des scènes au repos, avec `Warmup` (textures envoyées, `gl.compile`, rendu à blanc sans frustum culling, et une image complète via `advance()` pour l'ombre du clavier). Preload de l'image fixe du hero seulement.
 - Mesures du 17/10 (navigateur de test sans GPU) : pendant le défilement, plus aucune compilation de shader ; une seule tâche longue de 58 ms, contre 4 à 5 s avant correction. JS initial ~120 Ko gzip.
