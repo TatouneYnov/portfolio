@@ -95,7 +95,7 @@
       "status": "Projet d'école",
       "context": "Ynov · projet de groupe (4 étudiants)",
       "description": "Une plateforme de jeux musicaux : blind test et petit bac musical, dans des salles privées qu'on rejoint avec un code, avec un classement en direct. Serveur en Go, base SQLite, extraits musicaux via l'API Deezer.",
-      "role": "J'ai développé le système de salles : génération des codes, tables SQLite des salles et de leurs joueurs, salle d'attente et connexion WebSocket de la salle.",
+      "role": null,
       "stack": [
         "Go",
         "SQLite",
@@ -173,9 +173,9 @@
       "bubbleLabel": "YSentinelle",
       "size": 1,
       "status": "Projet d'école",
-      "context": "Challenge 48 h · équipes data, dev et infra",
+      "context": "Ynov · challenge 48 h, équipes data, dev et infra",
       "description": "Un défi de 48 heures : croiser les données publiques de pollution et de météo, en tirer un indice et l'afficher sur une carte, le tout sur une infrastructure haute disponibilité.",
-      "role": "Côté dev, j'ai écrit le client Node.js de l'API de l'équipe data (stations, pollution, indices) et un worker qui la synchronise toutes les 5 minutes.",
+      "role": null,
       "stack": [
         "Node.js",
         "JavaScript"
@@ -200,7 +200,7 @@
       "status": "Projet d'école",
       "context": "Projet de groupe",
       "description": "Un petit escape game en Java : pour obtenir le code qui désamorce la bombe, il faut répondre juste à 5 questions d'affilée, tirées d'une API de quiz.",
-      "role": "J'ai codé la partie quiz : questions tirées de l'API (Open Trivia DB) avec nouvelles tentatives en cas d'échec, score, et passage à l'écran de fin.",
+      "role": null,
       "stack": [
         "Java",
         "JavaFX",
