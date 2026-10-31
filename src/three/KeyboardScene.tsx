@@ -148,17 +148,17 @@ function makeCaseGeometry(outerW: number, outerD: number, innerW: number, innerD
   return g;
 }
 
-// Disposition d'un clavier compact réel, 9,5 unités de large sur 5 rangées : les 26 outils occupent les
-// touches de lettres (7-7-6-6), entourées des touches de modification à leurs largeurs habituelles.
+// Disposition d'un clavier compact réel, 9,5 unités de large sur 5 rangées : les 21 outils occupent les
+// touches de lettres (6-5-5-5), entourées des touches de modification à leurs largeurs habituelles.
 // Le décalage des rangées vient, comme sur un vrai clavier, de la largeur de tab / verr maj / maj.
 type Slot = { units: number; mod?: string };
 const mod = (label: string, units: number): Slot => ({ units, mod: label });
 const letters = (n: number): Slot[] => Array.from({ length: n }, () => ({ units: 1 }));
 const ROWS: Slot[][] = [
-  [mod('échap', 1), ...letters(7), mod('effacer', 1.5)],
-  [mod('tab', 1.5), ...letters(7), mod('$', 1)],
-  [mod('verr maj', 1.75), ...letters(6), mod('entrée', 1.75)],
-  [mod('maj', 2.25), ...letters(6), mod('maj', 1.25)],
+  [mod('échap', 1), ...letters(6), mod('effacer', 2.5)],
+  [mod('tab', 1.5), ...letters(5), mod('[', 1), mod(']', 1), mod('$', 1)],
+  [mod('verr maj', 1.75), ...letters(5), mod('entrée', 2.75)],
+  [mod('maj', 2.25), ...letters(5), mod('maj', 2.25)],
   [mod('ctrl', 1.25), mod('alt', 1.25), mod('', 4.75), mod('alt gr', 1.25), mod('fn', 1)],
 ];
 const ROW_UNITS = 9.5;

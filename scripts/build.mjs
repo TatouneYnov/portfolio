@@ -70,7 +70,7 @@ writeFileSync(
   [
     `# ${profile.name}`,
     '',
-    `> ${profile.status}. Attiré par le DFIR et la CTI, ouvert à l'infra. ${profile.badge}.`,
+    `> ${profile.status}. Entre sécurité et infra. ${profile.badge}.`,
     '',
     '## Liens',
     `- [Portfolio](${siteUrl}/)`,

@@ -125,7 +125,7 @@ export function Toolbox() {
                 <>
                   <p className="toolbox__name">{skills.length} outils</p>
                   <p className="toolbox__quip">
-                    Des langages aux outils d'analyse. <span className="only-mouse">Survole une touche ou tape sa lettre.</span>
+                    Des langages aux outils de lab. <span className="only-mouse">Survole une touche ou tape sa lettre.</span>
                     <span className="only-touch">Appuie sur une touche pour la découvrir.</span>
                   </p>
                 </>

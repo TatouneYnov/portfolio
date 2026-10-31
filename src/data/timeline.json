@@ -12,7 +12,7 @@
       "title": "Bachelor 2 Cybersécurité",
       "place": "Ynov Lyon",
       "year": "2026–27",
-      "text": "Spécialisation cyber : sécurité des systèmes et réseaux, analyse, offensive en lab. En parallèle : TryHackMe, Hack The Box, certif THM en préparation.",
+      "text": "Spécialisation cyber : sécurité des systèmes et des réseaux, sécurité offensive en lab. En parallèle : TryHackMe et Hack The Box.",
       "upcoming": false,
       "draft": false
     },
@@ -20,8 +20,11 @@
       "title": "Stage · 170 h",
       "place": "Et si c'était chez vous ?",
       "year": "2026–27",
-      "text": "Je cherche un stage en DFIR, CTI, SOC ou infra, les matins (8h–12h) et à temps plein pendant les vacances.",
-      "link": { "label": "Voir mes disponibilités", "href": "#dispos" },
+      "text": "Je cherche un stage en cybersécurité ou en infra, les matins (8h–12h) et à temps plein pendant les vacances.",
+      "link": {
+        "label": "Voir mes disponibilités",
+        "href": "#dispos"
+      },
       "upcoming": true,
       "draft": false
     },

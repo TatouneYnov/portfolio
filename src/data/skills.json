@@ -3,8 +3,7 @@
   "categories": [
     { "id": "prog", "label": "Prog & web", "color": "#6A4766" },
     { "id": "infra", "label": "Système & infra", "color": "#5E6B85" },
-    { "id": "offensive", "label": "Offensif / CTF", "color": "#B07A86" },
-    { "id": "blue", "label": "DFIR / CTI / Blue team", "color": "#8F86B3" }
+    { "id": "offensive", "label": "Offensif / CTF", "color": "#B07A86" }
   ],
   "skills": [
     {"id": "python", "label": "Python", "category": "prog", "icon": "simple-icons:python", "mono": "PY", "hotkey": "p", "quip": "Le couteau suisse : un script et le problème est réglé.", "usedIn": ["Cours à Ynov", "TryHackMe / HTB", "Projets perso", "Hera (prototype Garmin)"]},
@@ -21,17 +20,12 @@
     {"id": "virtualization", "label": "VirtualBox / VMware", "category": "infra", "icon": "simple-icons:virtualbox", "mono": "VM", "hotkey": "x", "quip": "Mes labs vivent ici. Et y cassent en paix.", "usedIn": ["Cours à Ynov", "TryHackMe / HTB", "Projets perso"]},
     {"id": "active-directory", "label": "Active Directory", "category": "infra", "icon": null, "mono": "AD", "hotkey": "a", "quip": "Le royaume des GPO. Et des chemins d'attaque.", "usedIn": ["TryHackMe / HTB"]},
     {"id": "network", "label": "Réseau (TCP/IP)", "category": "infra", "icon": null, "mono": "TCP", "hotkey": "r", "quip": "Trois poignées de main avant de se parler.", "usedIn": ["Cours à Ynov", "TryHackMe / HTB", "Projets perso"]},
+    {"id": "wireshark", "label": "Wireshark", "category": "infra", "icon": "simple-icons:wireshark", "mono": "WS", "hotkey": "e", "quip": "Je lis des paquets comme d'autres lisent des romans.", "usedIn": ["Machine Cap (HTB)"]},
     {"id": "kali", "label": "Kali Linux", "category": "offensive", "icon": "simple-icons:kalilinux", "mono": "KALI", "hotkey": "k", "quip": "La caisse à outils, version dragon.", "usedIn": ["Cours à Ynov", "TryHackMe / HTB", "Projets perso"]},
     {"id": "nmap", "label": "Nmap", "category": "offensive", "icon": null, "mono": "NMAP", "hotkey": "n", "quip": "Toc toc. Qui est là ? 65 535 portes à tester.", "usedIn": ["Machines Cap et Nexus (HTB)"]},
     {"id": "burp", "label": "Burp Suite", "category": "offensive", "icon": "simple-icons:burpsuite", "mono": "BURP", "hotkey": "u", "quip": "Je m'interpose. Poliment.", "usedIn": ["TryHackMe / HTB", "Projets perso"]},
     {"id": "metasploit", "label": "Metasploit", "category": "offensive", "icon": "simple-icons:metasploit", "mono": "MSF", "hotkey": "m", "quip": "En lab uniquement. Promis.", "usedIn": ["Room Blue (THM)"]},
     {"id": "gobuster", "label": "Gobuster", "category": "offensive", "icon": null, "mono": "GOB", "hotkey": "o", "quip": "Il frappe à toutes les URL du site.", "usedIn": ["TryHackMe / HTB", "Projets perso"]},
-    {"id": "john-hashcat", "label": "John / Hashcat", "category": "offensive", "icon": null, "mono": "JTR", "hotkey": "z", "quip": "Ton mot de passe ? Plus pour longtemps.", "usedIn": ["Room Blue (THM)", "badge Hash Cracker"]},
-    {"id": "wireshark", "label": "Wireshark", "category": "blue", "icon": "simple-icons:wireshark", "mono": "WS", "hotkey": "e", "quip": "Je lis des paquets comme d'autres lisent des romans.", "usedIn": ["Machine Cap (HTB)"]},
-    {"id": "volatility", "label": "Volatility", "category": "blue", "icon": null, "mono": "VOL", "hotkey": "y", "quip": "La RAM se souvient de tout.", "usedIn": ["TryHackMe / HTB"]},
-    {"id": "autopsy", "label": "Autopsy", "category": "blue", "icon": null, "mono": "AUT", "hotkey": "t", "quip": "On ouvre l'image disque, on remonte le temps.", "usedIn": ["TryHackMe / HTB"]},
-    {"id": "splunk", "label": "Splunk", "category": "blue", "icon": null, "mono": "SPL", "hotkey": "s", "quip": "Des logs, des logs… et soudain, l'anomalie.", "usedIn": ["TryHackMe / HTB"]},
-    {"id": "cyberchef", "label": "CyberChef", "category": "blue", "icon": null, "mono": "CHEF", "hotkey": "f", "quip": "La recette : From Base64 → Gunzip → bingo.", "usedIn": ["TryHackMe / HTB"]},
-    {"id": "mitre", "label": "MITRE ATT&CK", "category": "blue", "icon": null, "mono": "ATT&CK", "hotkey": "q", "quip": "La carte de toutes les ruses.", "usedIn": ["TryHackMe / HTB"]}
+    {"id": "john-hashcat", "label": "John / Hashcat", "category": "offensive", "icon": null, "mono": "JTR", "hotkey": "z", "quip": "Ton mot de passe ? Plus pour longtemps.", "usedIn": ["Room Blue (THM)", "badge Hash Cracker"]}
   ]
 }

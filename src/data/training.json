@@ -10,7 +10,13 @@
     "questionsAnswered": 254,
     "highestStreak": 8,
     "roomsCompleted": null,
-    "badges": ["First Four", "cat linux.txt", "Blue", "OhSINT", "Hash Cracker"],
+    "badges": [
+      "First Four",
+      "cat linux.txt",
+      "Blue",
+      "OhSINT",
+      "Hash Cracker"
+    ],
     "pathInProgress": "Cyber Security 101"
   },
   "hackthebox": {
@@ -18,12 +24,15 @@
     "url": "https://app.hackthebox.com/users/2165775",
     "memberSince": "2024-12",
     "level": 13,
-    "machines": ["Cap", "Nexus"],
+    "machines": [
+      "Cap",
+      "Nexus"
+    ],
     "challenges": null,
     "sherlocks": null
   },
   "certification": {
-    "status": "in-progress",
+    "status": "goal",
     "name": null
   }
 }

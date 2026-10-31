@@ -908,21 +908,18 @@ export function makeTerminal() {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const lines = [
-    '$ vol -f mem.raw windows.pslist',
-    'PID    PPID   ImageFileName',
-    '4      0      System',
-    '612    4      smss.exe',
-    '1984   1204   powershell.exe',
-    '[*] windows.netscan : 3 connexions à vérifier',
-    '$ grep -c "Failed password" auth.log',
-    '1342',
-    '[+] IOC : 203.0.113.42 (liste de blocage)',
-    '$ tshark -r capture.pcap -Y dns',
-    '[*] timeline : premier accès à 02:14',
-    '$ yara rules/loader.yar dump/',
-    '[ok] 0 correspondance sur 412 fichiers',
-    '$ chainsaw hunt logs/ -s sigma/',
-    '[*] 2 détections : règle « encoded cmd »',
+    '$ nmap -sC -sV 10.10.10.245',
+    'PORT    STATE  SERVICE  VERSION',
+    '21/tcp  open   ftp      vsftpd 3.0.3',
+    '22/tcp  open   ssh      OpenSSH 8.2p1',
+    '80/tcp  open   http     gunicorn',
+    '[*] 0.pcap : identifiants FTP en clair',
+    '$ john --wordlist=rockyou.txt hash.txt',
+    '[+] 1 mot de passe trouvé',
+    '$ go run .',
+    '[ok] serveur Puissance 4 sur :8080',
+    '$ git commit -m "salle d\'attente + WebSocket"',
+    '[ok] 3 fichiers modifiés',
   ];
   let offset = 0;
   function draw() {

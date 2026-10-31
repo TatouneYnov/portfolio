@@ -51,7 +51,7 @@ Tout le texte vit dans `src/data/`. Règle commune : une valeur à `null` est ma
 | Fichier | Ce qu'il contient |
 |---|---|
 | `profile.json` | nom, statut, e-mail, Discord, liens, texte « À propos », bloc « Hors écran », cartes « Ce que je fais », CV |
-| `skills.json` | les 26 touches du clavier : nom, catégorie, logo, lettre du raccourci, phrase, où tu t'en es servi (`usedIn`) |
+| `skills.json` | les 21 touches du clavier (si tu en ajoutes une, ajoute aussi une place dans `ROWS` de `KeyboardScene.tsx`) : nom, catégorie, logo, lettre du raccourci, phrase, où tu t'en es servi (`usedIn`) |
 | `projects.json` | les bulles projets |
 | `timeline.json` | le parcours |
 | `training.json` | stats TryHackMe et Hack The Box, certification |

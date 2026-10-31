@@ -80,7 +80,7 @@ export function Training() {
           <li className="tile glass-card tile--cert">
             <IconShield className="tile__icon" aria-hidden="true" />
             <p className="tile__label">Certification TryHackMe</p>
-            <p className="tile__value tile__value--sm">{isFilled(cert.name) ? `${cert.name} · en préparation` : 'En préparation'}</p>
+            <p className="tile__value tile__value--sm">{cert.status === 'in-progress' ? (isFilled(cert.name) ? `${cert.name} · en préparation` : 'En préparation') : 'Prochain objectif'}</p>
           </li>
 
           {isFilled(thm.badges) && (

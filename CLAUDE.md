@@ -112,7 +112,7 @@ Tout le texte modifiable sans toucher au code.
 - Statut : **Étudiant en B2 Cybersécurité · Ynov Campus Lyon (2026–2027)** (`status`, utilisé dans `llms.txt`) ; version courte du hero `heroStatus` : « B2 · Ynov Campus Lyon · 2026–27 » (évite de répéter « Étudiant en cybersécurité » juste sous le mot rotatif)
 - Badge du hero : « Stage 170 h dès nov. 2026 · Alternance B3 en 2027 » (affiché sur 2 lignes, coupé sur « · »)
 - Recherche : stage de 170 h cette année **et** alternance en B3 (rentrée 2027, rythme **1 semaine à l'école / 2 semaines en entreprise**). Les recruteurs s'intéressent souvent plus aux alternants : l'alternance est mise en avant (badge, Disponibilités, timeline, formulaire).
-- Intérêts : DFIR et CTI en priorité, ouvert à l'infra
+- Intérêts : cybersécurité (labs THM / HTB) et infra. **Plus aucune mention de DFIR / CTI / threat intel** (demande d'Ethan du 31/10 : il n'en a jamais fait). « À propos » et la carte « Cybersécurité » réécrits le 31/10 sur cette base.
 - Niveau (à respecter dans tous les textes) : bases solides en infra/cyber et plusieurs langages ; **pas encore de certification** ; ne jamais gonfler.
 - Email : `ethan.bacquier@gmail.com` (bouton copier + mailto)
 - Discord : `tatoune` (bouton « copier le pseudo », pas d'URL)
@@ -127,8 +127,8 @@ Tout le texte modifiable sans toucher au code.
 
 ### 4.2 timeline.json (Ynov uniquement)
 1. **Bachelor 1 Informatique** · Ynov Lyon · 2025–26 · « Bases du développement, des systèmes et des réseaux. Premiers projets en Go et en web. » *(wording à valider par Ethan)*
-2. **Bachelor 2 Cybersécurité** · Ynov Lyon · 2026–27 · « Spécialisation cyber : sécurité des systèmes et réseaux, analyse, offensive en lab. En parallèle : TryHackMe, Hack The Box, certif THM en préparation. »
-3. **Stage · 170 h** · « Et si c'était chez vous ? » · 2026–27 · « Je cherche un stage en DFIR, CTI, SOC ou infra, les matins (8h–12h) et à temps plein pendant les vacances. » + lien « Voir mes disponibilités ↓ ». Style « à venir » : année en dégradé lavande qui s’efface vers le bas (plus de contour `-webkit-text-stroke` depuis le 30/10 : sur iPhone, la police système faisait apparaître des traits dans les « 2 »), perle qui pulse.
+2. **Bachelor 2 Cybersécurité** · Ynov Lyon · 2026–27 · « Spécialisation cyber : sécurité des systèmes et des réseaux, sécurité offensive en lab. En parallèle : TryHackMe et Hack The Box. »
+3. **Stage · 170 h** · « Et si c'était chez vous ? » · 2026–27 · « Je cherche un stage en cybersécurité ou en infra, les matins (8h–12h) et à temps plein pendant les vacances. » + lien « Voir mes disponibilités ↓ ». Style « à venir » : année en dégradé lavande qui s’efface vers le bas (plus de contour `-webkit-text-stroke` depuis le 30/10 : sur iPhone, la police système faisait apparaître des traits dans les « 2 »), perle qui pulse.
 4. **Alternance · Bachelor 3** · « Prochaine étape » · 2027–28 · « Objectif : continuer en alternance en B3, au rythme de 1 semaine à l'école et 2 semaines en entreprise. » Style « à venir » (plus en version discrète depuis le 17/10 au soir).
 
 ### 4.3 training.json (stats relevées le 17 oct. 2026, mises à jour à la main)
@@ -164,7 +164,7 @@ Pas d'appel API depuis le navigateur. Afficher discrètement « Stats au <date> 
 
 - Ne **pas** afficher le libellé de rang HTB (« Noob »). Afficher les noms des machines plutôt qu'un simple chiffre.
 - `roomsCompleted`, `challenges`, `sherlocks` à `null` → masqués.
-- Certif : `name: null` → pastille « Certification TryHackMe : en préparation » sans nom.
+- Certif : `status: "goal"` (31/10, aucune certification choisie) → tuile « Certification TryHackMe · Prochain objectif ». `status: "in-progress"` affiche « en préparation » (avec `name` s'il est rempli).
 - Count-up une seule fois à l'entrée dans le viewport ; valeur finale directe sous reduced-motion et sans JS.
 
 ### 4.4 projects.json
@@ -172,7 +172,7 @@ Champs : `id, name, tagline` (accroche sous le nom dans la fiche), `bubbleLabel`
 Statuts possibles : « En cours », « Livré », « Projet d'école ».
 
 « Ce que j'ai appris » (`learned`), rédigé à partir des mots d'Ethan (17/10), sans rien ajouter :
-- Hera : « Gérer des comptes et leurs permissions, construire une API et une interface d'administration. »
+- Hera : « Utiliser une API REST (jetons JWT) pour construire une interface d'administration, et gérer des comptes et leurs permissions. » (corrigé le 31/10)
 - Power 4 : « Monter un serveur web en Go. » · RedQuest : « Apprendre le langage Go. »
 - Cabinet infirmier et VBVB : « Réaliser un site, utiliser l'IA comme aide et le déployer. »
 
@@ -186,19 +186,22 @@ Statuts possibles : « En cours », « Livré », « Projet d'école ».
 3. **Refonte du site du VBVB** (Volley Ball Villefranche Beaujolais) — statut **« En cours »**. Ethan refait le site de son propre club (actuellement sous WordPress) : actus, équipes, inscriptions, formation, beach, partenaires. Stack = `null` (masquée). Lien https://vbvb.fr uniquement en « site actuel », jamais comme réalisation.
 4. **Power 4 Web** — Projet d'école. Puissance 4 dans le navigateur, serveur Go (`net/http`), interface HTML/CSS, 3 difficultés (Normal 6×7, Difficile 6×9, Expert 7×8), noms de joueurs personnalisables. GitHub : https://github.com/TatouneYnov/-power4-web (ignorer le repo privé `-power4-webbbbb`).
 5. **RedQuest** — Projet d'école. RPG jouable dans le terminal, en Go : création de perso (nom, classe, compétences, équipement), boutique, combats contre des gobelins et autres monstres, gestion du mana et des ressources. GitHub : https://github.com/TatouneYnov/Projet_Red
-6. **Groupie Tracker** — repo `Lyon-Ynov-Campus/groupie-tracker-gp-armonik` (collaborateur). `draft: true`.
-7. **EscapeQuizz** — repo `guiarthur7/EscapeQuizz` (collaborateur). `draft: true`.
-8. **CineList** — repo `guiarthur7/CineList` (collaborateur). `draft: true`.
-9. **YSentinelle** — repo `YSentinelle/app` (collaborateur). `draft: true`.
+6. **ArmoniK** (Groupie Tracker) — publié le 31/10. Repo `Lyon-Ynov-Campus/groupie-tracker-gp-armonik`, 4 étudiants, Go + SQLite + WebSocket + API Deezer (blind test, petit bac musical). Commits d'Ethan (12/12/2025) : système de salles (`CodeRandom`, tables `rooms` / `rooms_users`, salle d'attente, WebSocket de la salle).
+7. **YSentinelle** — publié le 31/10. Repo `YSentinelle/app`, challenge 48 h (équipes data, dev, infra : indice pollution × météo sur carte). Commits d'Ethan (branche `BaEthan`) : `dataApi.js` (client Node.js de l'API data) et `syncDataWorker.js` (synchro toutes les 5 min). Statut « Projet d'école » à confirmer par Ethan.
+8. **EscapeQuizz** — publié le 31/10. Repo `guiarthur7/EscapeQuizz`, Java / JavaFX. Commits d'Ethan : `QuizzController` (5 bonnes réponses d'affilée, score) et `TriviaService` (Open Trivia DB, 3 tentatives, délai). Ne pas nommer la personne réelle évoquée dans les dialogues du jeu.
+9. **CineList** — repo `guiarthur7/CineList` : un seul commit d'Ethan (une ligne de README). `draft: true`, rien à montrer.
+
+Power 4 Web et RedQuest : **projets solo** (confirmé par Ethan le 31/10). VBVB : stack lue dans son repo `TatouneYnov/vbvb` (React, TypeScript, Vite, React Router, GSAP).
+Hera : Ethan **n'a pas codé l'API** ; il a suivi sa création et s'en est servi pour le panel (31/10).
 
 Pour 6 à 9 : avant de passer `draft` à `false`, lire le code et **les commits d'Ethan** (`git log --author`) et ne décrire que ce qu'il a réellement fait. Rôle en une phrase factuelle.
 
 Ne **pas** utiliser : `biblio-groupe-15`, `togethapp`, `Scalingo`, `tp-template-golang`, `algo-projet`, `ynov_2025_bachelor_1`, `exam-git-avanc-*` (non retenus par Ethan).
 
-### 4.5 skills.json (26 touches)
+### 4.5 skills.json (21 touches)
 En tête : `"_note": "Ne garde que les outils que tu sais expliquer en entretien."`
 Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogramme si pas de logo), hotkey (lettre unique), quip, usedIn[]`.
-`usedIn` = où Ethan s'est servi de l'outil (réponses d'Ethan du 17/10), affiché « Utilisé : … » sous la phrase, dans le texte du clavier et dans la liste. Valeurs : « Cours à Ynov », « TryHackMe / HTB », « Projets perso », ou un exercice précis (Wireshark → Machine Cap (HTB) ; Nmap → Machines Cap et Nexus (HTB) ; Metasploit → Room Blue (THM) ; John/Hashcat → Room Blue (THM), badge Hash Cracker ; Go → Power 4 Web, RedQuest ; HTML/CSS et JS → Cabinet infirmier, Refonte du VBVB ; Vue → Mon ancien portfolio, Hera (panel admin) ; JavaScript → aussi Hera (panel admin) ; Python et Docker → aussi Hera (prototype Garmin), d'après le code de ses repos ; Git → Tous mes projets GitHub). Ne jamais ajouter un lieu qu'Ethan n'a pas confirmé. Noms longs d'un seul mot (> 8 lettres) : taille réduite (`toolbox__name--long`). Ton complice, jamais vantard. 16 logos Simple Icons ; AD, Réseau, Nmap, Gobuster, John/Hashcat, Volatility, Autopsy, Splunk (son logo est un mot-symbole illisible sur une touche, 31/10), CyberChef et MITRE ATT&CK utilisent leur monogramme. Logos à traits fins épaissis à la texture (`BOLD` dans `KeyboardScene.tsx` : Kali, Linux).
+`usedIn` = où Ethan s'est servi de l'outil (réponses d'Ethan du 17/10), affiché « Utilisé : … » sous la phrase, dans le texte du clavier et dans la liste. Valeurs : « Cours à Ynov », « TryHackMe / HTB », « Projets perso », ou un exercice précis (Wireshark → Machine Cap (HTB) ; Nmap → Machines Cap et Nexus (HTB) ; Metasploit → Room Blue (THM) ; John/Hashcat → Room Blue (THM), badge Hash Cracker ; Go → Power 4 Web, RedQuest ; HTML/CSS et JS → Cabinet infirmier, Refonte du VBVB ; Vue → Mon ancien portfolio, Hera (panel admin) ; JavaScript → aussi Hera (panel admin) ; Python et Docker → aussi Hera (prototype Garmin), d'après le code de ses repos ; Git → Tous mes projets GitHub). Ne jamais ajouter un lieu qu'Ethan n'a pas confirmé. Noms longs d'un seul mot (> 8 lettres) : taille réduite (`toolbox__name--long`). Ton complice, jamais vantard. 16 logos Simple Icons ; AD, Réseau, Nmap, Gobuster et John/Hashcat utilisent leur monogramme. Logos à traits fins épaissis à la texture (`BOLD` dans `KeyboardScene.tsx` : Kali, Linux).
 
 **Prog & web** (`prog`, aubergine `#6A4766`)
 - Python — « Le couteau suisse : un script et le problème est réglé. »
@@ -226,13 +229,9 @@ Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogram
 - Gobuster — « Il frappe à toutes les URL du site. »
 - John / Hashcat — « Ton mot de passe ? Plus pour longtemps. »
 
-**DFIR / CTI / Blue team** (`blue`, lilas `#8F86B3`)
-- Wireshark — « Je lis des paquets comme d'autres lisent des romans. »
-- Volatility — « La RAM se souvient de tout. »
-- Autopsy — « On ouvre l'image disque, on remonte le temps. »
-- Splunk — « Des logs, des logs… et soudain, l'anomalie. »
-- CyberChef — « La recette : From Base64 → Gunzip → bingo. »
-- MITRE ATT&CK — « La carte de toutes les ruses. »
+Wireshark — « Je lis des paquets comme d'autres lisent des romans. » : rangé dans **Système & infra** depuis le 31/10.
+
+**Retirés le 31/10** (Ethan ne s'en est jamais servi) : Volatility, Autopsy, Splunk, CyberChef, MITRE ATT&CK, et la catégorie « DFIR / CTI / Blue team ». Ne pas les remettre.
 
 ### 4.6 availability.json (calendrier novembre 2026 → juin 2027)
 - Période affichée : **2 nov. 2026 → 30 juin 2027** (fin d'année scolaire ; Ethan ajustera).
@@ -379,7 +378,7 @@ Le contenu du hero glisse vers l'extérieur en fondu (scrub). Avatar à gauche, 
   + lien Instagram discret (icône Solar + « @ethan.bcqr »). Sans photo : carte texte seule, sans bloc vide.
 
 ### 4. Ce que je fais (le perso s'assoit)
-Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos » vers l'emplacement sous le titre (`travel`), puis la caméra passe du buste à une vue de 3/4 arrière par-dessus l'épaule (`desk`) pendant que le bureau, la chaise et l'écran montent du sol ; fondu debout → assis en train de taper (0.5 s, déclenché à 40 % du pin, pas scrubbé). Sous 1024 px : pas de pin, la même séquence suit simplement le défilement. Écran émissif violet avec texture canvas de faux terminal (log crédible qui défile lentement, ex. `[*] volatility -f mem.raw windows.pslist`).
+Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos » vers l'emplacement sous le titre (`travel`), puis la caméra passe du buste à une vue de 3/4 arrière par-dessus l'épaule (`desk`) pendant que le bureau, la chaise et l'écran montent du sol ; fondu debout → assis en train de taper (0.5 s, déclenché à 40 % du pin, pas scrubbé). Sous 1024 px : pas de pin, la même séquence suit simplement le défilement. Écran émissif violet avec texture canvas de faux terminal (log qui défile lentement, uniquement des choses qu'Ethan a faites : nmap sur la machine Cap, identifiants FTP dans le pcap, john, `go run .` du Puissance 4, git).
 - Gauche : « Ce que » / « je fais » (police système 800, ~7vw)
 - Droite : 2 cartes en verre (coins pointillés à équerres jusqu’au 30/10), une seule ouverte à la fois, la 1re par défaut, `<button aria-expanded>` :
   1. **CYBERSÉCURITÉ** — « Analyser, comprendre, remonter la trace. Forensic, analyse de logs et de trafic, threat intel, et CTF pour garder la main. » · DFIR · CTI · Blue team · CTF
@@ -393,12 +392,12 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
 « MA BOÎTE » / « À OUTILS » + « (astuce : survole ou appuie sur une touche) ».
 - **Clavier compact réel** (refait le 29/10 avec Ethan, décisions issues d'un grill) dans `KeyboardScene.tsx` :
   - **Boîtier en noyer moyen** (brun noisette, veinage fin dessiné en code `makeWalnutTexture`, finition satinée huilée), **penché** (`TILT` ≈ 6°, plus haut à l'arrière, fond plat), **rebord fin** (`RIM` ≈ 1/3 de touche), bords arrondis ; les touches sont dans un **renfoncement** sur une **plaque gris anthracite mate**. Ethan a refusé : socle noir plat, liseré néon violet, marge large, lueur violette entre les touches, fond violet, bois plus clair (« miel »).
-  - **Disposition `ROWS`** (9,5 unités × 5 rangées) : échap · 7 outils · effacer / tab · 7 outils · $ / verr maj · 6 outils · entrée / maj · 6 outils · maj / ctrl · alt · barre d'espace · alt gr · fn. Les 26 outils occupent les touches de lettres dans l'ordre de `skills.json` (si on ajoute un outil, il faut ajouter une place dans `ROWS`). Les touches de modification sont décoratives (gris taupe `MOD_COLOR`, libellé discret en bas à gauche, sans survol). Même disposition sur mobile.
+  - **Disposition `ROWS`** (9,5 unités × 5 rangées) : échap · 6 outils · effacer / tab · 5 outils · [ ] $ / verr maj · 5 outils · entrée / maj · 5 outils · maj / ctrl · alt · barre d'espace · alt gr · fn. Les 21 outils occupent les touches de lettres (6-5-5-5) dans l'ordre de `skills.json` (si on ajoute un outil, il faut ajouter une place dans `ROWS`). Les touches de modification sont décoratives (gris taupe `MOD_COLOR`, libellé discret en bas à gauche, sans survol). Même disposition sur mobile.
   - **Touches réalistes** (`makeKeyGeometry`) : base plus large que le dessus, dessus creusé d'avant en arrière (cuvette cylindrique), finition mate ; grille régulière arrondie à la main (`RoundedBoxGeometry` n'a pas de sommets au centre des faces). Logos et monogrammes en **blanc cassé** (`INK`) sur une étiquette courbée comme la cuvette ; la lettre du raccourci est en haut à gauche.
   - Rotation du socle `TURN` (bureau -0,26 rad, mobile -0,08 rad) ; le cadrage recule la caméra juste assez pour que le boîtier tienne entier. Lumières neutres et chaudes (le bois doit rester brun), violet seulement en contre-jour. `ContactShadows` hors du groupe qui tourne, sous le biseau du fond.
 - Couleurs par catégorie en **tons poudrés mats** (aubergine `#6A4766`, ardoise `#5E6B85`, vieux rose `#B07A86`, lilas `#8F86B3`), identiques dans `skills.json` et `main.css` (`[data-cat]`), + légende cliquable (surbrillance de la catégorie).
 - Dessus de keycap : logo (texture SVG → canvas, repeint en blanc cassé) ou monogramme en police système grasse.
-- Survol / toucher ou clic (`onPointerDown`, indispensable sur téléphone où il n'y a pas de survol) / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde discrète sur la plaque ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (police système 800, couleur de la catégorie) + quip + catégorie. Avant toute touche : « 26 outils ». **Sur téléphone (< 768 px), seul le nom s'affiche** (phrase, « Utilisé : … » et catégorie restent pour les lecteurs d'écran) et le clavier prend toute la largeur de l'écran (30/10) ; sur téléphone, il est vu plus en plongée (~62° au lieu de ~50°), presque droit (`TURN.mobile.base` -0,04) avec une marge de cadrage réduite et une scène plus haute (`min(76vw, 400px)`) : touches ~25 % plus hautes (30/10, demandé par Ethan).
+- Survol / toucher ou clic (`onPointerDown`, indispensable sur téléphone où il n'y a pas de survol) / touche physique : enfoncement puis remontée `elastic.out`, émissif, onde discrète sur la plaque ; à gauche, gros texte incliné (-12° desktop, -4° mobile, au-dessus du clavier) : nom (police système 800, couleur de la catégorie) + quip + catégorie. Avant toute touche : « 21 outils ». **Sur téléphone (< 768 px), seul le nom s'affiche** (phrase, « Utilisé : … » et catégorie restent pour les lecteurs d'écran) et le clavier prend toute la largeur de l'écran (30/10) ; sur téléphone, il est vu plus en plongée (~62° au lieu de ~50°), presque droit (`TURN.mobile.base` -0,04) avec une marge de cadrage réduite et une scène plus haute (`min(76vw, 400px)`) : touches ~25 % plus hautes (30/10, demandé par Ethan).
 - Hotkeys : seulement si la section est visible **et** qu'aucun champ n'a le focus ; jamais avec Ctrl/Alt/Meta.
 - Rotation y au scroll (scrub), amplitude réduite : ±5° bureau, ±3° mobile.
 - `<ul>` réelle des compétences dans le DOM (bouton « Voir en liste ») ; c'est la version affichée sous reduced-motion, sans WebGL et sans JS.
@@ -524,7 +523,7 @@ object-src 'none';
 ## 13. SEO
 
 - `<title>` : « Ethan Bacquier · Étudiant en cybersécurité · Ynov Lyon » (raccourci à moins de 60 caractères après l'audit SEO)
-- `meta description` : « Étudiant en B2 cybersécurité à Ynov Lyon (DFIR, CTI, infra) : je cherche un stage de 170 h dès novembre, puis une alternance en 2027. » (133 caractères) (120 à 160 caractères, sans troncature)
+- `meta description` : « Étudiant en B2 cybersécurité à Ynov Lyon : je cherche un stage de 170 h en cybersécurité ou en infra dès novembre, puis une alternance en 2027. » (143 caractères) (120 à 160 caractères, sans troncature)
 - `llms.txt`, `404.html`, `confidentialite.html` (RGPD : formulaire de contact) générés ou présents dans `public/`.
 - Open Graph + Twitter card (`og-image.jpg`), canonical, favicon « EB » (SVG + PNG 32/180), `robots.txt`, `sitemap.xml` (générés depuis `VITE_SITE_URL`).
 - JSON-LD `@graph` : `Person` (`@id` …/#person, alternateName « Tatoune », affiliation Ynov, `sameAs` GitHub, LinkedIn, TryHackMe, HTB) + `WebSite`.
@@ -617,6 +616,8 @@ object-src 'none';
 - [ ] Confirmer l'accord du cabinet infirmier et du VBVB pour être cités comme projets
 - [ ] Plus tard, facultatif : domaine perso `ethanbacquier.fr`
 - [ ] Mettre à jour `training.json` de temps en temps
+- [ ] Badges TryHackMe à jour (demandés le 31/10) : impossible depuis le conteneur cloud, tryhackme.com n'est pas dans les domaines autorisés du réseau de l'environnement
+- [ ] Dire ce qu'il a appris sur ArmoniK, YSentinelle et EscapeQuizz (champ `learned`, vide pour l'instant) et confirmer que YSentinelle était un projet d'école
 - [ ] Stack du site VBVB ; lien live du cabinet quand il est en ligne
 - [ ] Demander de vrais témoignages (prof Ynov, coach de volley, cabinet infirmier) avec accord de publication → `testimonials.json`
 - [ ] Monter un homelab (puis on pourra l'ajouter au site)

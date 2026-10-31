@@ -8,11 +8,20 @@
       "bubbleLabel": "Hera",
       "size": 1.6,
       "status": "Projet d'école",
-      "role": "J'ai réalisé le panel d'administration (admin.hera-app) : connexion par e-mail ou Google, rôles organisateur et admin, gestion des événements, modération des utilisateurs et des signalements. J'ai aussi monté un prototype de connexion Garmin (hera-connect) à partir du projet open source garmin-grafana, avec mon export CSV et mes correctifs.",
-      "context": "Projet de groupe à Ynov",
+      "role": "J'ai réalisé le panel d'administration (admin.hera-app), branché sur l'API du projet dont j'ai suivi la création : connexion par e-mail ou Google, rôles organisateur et admin, gestion des événements, modération des utilisateurs et des signalements. J'ai aussi monté un prototype de connexion Garmin (hera-connect) à partir du projet open source garmin-grafana, avec mon export CSV et mes correctifs.",
+      "context": "Ynov · projet de groupe",
       "description": "Une application autour d'événements sportifs : des organisateurs publient des sessions (sport, niveau, lieu, horaires) et les participants les rejoignent.",
-      "stack": ["Vue 3", "Vue Router", "Vite", "API REST (JWT)", "Python", "Docker", "InfluxDB", "Grafana"],
-      "learned": "Gérer des comptes et leurs permissions, construire une API et une interface d'administration.",
+      "stack": [
+        "Vue 3",
+        "Vue Router",
+        "Vite",
+        "API REST (JWT)",
+        "Python",
+        "Docker",
+        "InfluxDB",
+        "Grafana"
+      ],
+      "learned": "Utiliser une API REST (jetons JWT) pour construire une interface d'administration, et gérer des comptes et leurs permissions.",
       "note": null,
       "links": {
         "github": null,
@@ -59,7 +68,13 @@
       "role": "Je refais le site de mon propre club de volley.",
       "context": "Volley Ball Villefranche Beaujolais (site actuel sous WordPress)",
       "description": "Nouveau site pour le club : actus, équipes, inscriptions, formation, beach et partenaires.",
-      "stack": [],
+      "stack": [
+        "React",
+        "TypeScript",
+        "Vite",
+        "React Router",
+        "GSAP"
+      ],
       "learned": "Réaliser un site, utiliser l'IA comme aide et le déployer.",
       "note": null,
       "links": {
@@ -72,14 +87,43 @@
       "draft": false
     },
     {
+      "id": "armonik",
+      "name": "ArmoniK",
+      "tagline": "Des jeux musicaux multijoueurs en temps réel",
+      "bubbleLabel": "ArmoniK",
+      "size": 1,
+      "status": "Projet d'école",
+      "context": "Ynov · projet de groupe (4 étudiants)",
+      "description": "Une plateforme de jeux musicaux : blind test et petit bac musical, dans des salles privées qu'on rejoint avec un code, avec un classement en direct. Serveur en Go, base SQLite, extraits musicaux via l'API Deezer.",
+      "role": "J'ai développé le système de salles : génération des codes, tables SQLite des salles et de leurs joueurs, salle d'attente et connexion WebSocket de la salle.",
+      "stack": [
+        "Go",
+        "SQLite",
+        "WebSocket",
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "learned": null,
+      "note": null,
+      "links": {
+        "github": "https://github.com/Lyon-Ynov-Campus/groupie-tracker-gp-armonik",
+        "organization": null,
+        "live": null,
+        "current": null
+      },
+      "image": null,
+      "draft": false
+    },
+    {
       "id": "power4",
       "name": "Power 4 Web",
       "tagline": "Le Puissance 4 dans le navigateur, servi en Go",
       "bubbleLabel": "Power 4",
       "size": 1,
       "status": "Projet d'école",
-      "role": null,
-      "context": "Projet d'école · Ynov",
+      "role": "Projet réalisé seul : le serveur Go, la logique du jeu et l'interface.",
+      "context": "Ynov · projet solo",
       "description": "Le Puissance 4 dans le navigateur, avec un serveur en Go. Trois difficultés (Normal 6×7, Difficile 6×9, Expert 7×8) et des noms de joueurs personnalisables.",
       "stack": [
         "Go",
@@ -105,8 +149,8 @@
       "bubbleLabel": "RedQuest",
       "size": 1,
       "status": "Projet d'école",
-      "role": null,
-      "context": "Projet d'école · Ynov",
+      "role": "Projet réalisé seul : tout le jeu, du personnage aux combats.",
+      "context": "Ynov · projet solo",
       "description": "Un RPG jouable dans le terminal, en Go : création de personnage (nom, classe, compétences, équipement), boutique, combats contre des gobelins et d'autres monstres, gestion du mana et des ressources.",
       "stack": [
         "Go"
@@ -123,38 +167,45 @@
       "draft": false
     },
     {
-      "id": "groupie-tracker",
-      "name": "Groupie Tracker",
-      "tagline": null,
-      "bubbleLabel": "Groupie\nTracker",
+      "id": "ysentinelle",
+      "name": "YSentinelle",
+      "tagline": "Pollution et météo sur une carte, en 48 heures",
+      "bubbleLabel": "YSentinelle",
       "size": 1,
       "status": "Projet d'école",
-      "role": null,
-      "context": "Projet d'école · Ynov (collaboration)",
-      "description": null,
-      "stack": [],
+      "context": "Challenge 48 h · équipes data, dev et infra",
+      "description": "Un défi de 48 heures : croiser les données publiques de pollution et de météo, en tirer un indice et l'afficher sur une carte, le tout sur une infrastructure haute disponibilité.",
+      "role": "Côté dev, j'ai écrit le client Node.js de l'API de l'équipe data (stations, pollution, indices) et un worker qui la synchronise toutes les 5 minutes.",
+      "stack": [
+        "Node.js",
+        "JavaScript"
+      ],
       "learned": null,
       "note": null,
       "links": {
-        "github": "https://github.com/Lyon-Ynov-Campus/groupie-tracker-gp-armonik",
+        "github": "https://github.com/YSentinelle/app",
         "organization": null,
         "live": null,
         "current": null
       },
       "image": null,
-      "draft": true
+      "draft": false
     },
     {
       "id": "escapequizz",
       "name": "EscapeQuizz",
-      "tagline": null,
+      "tagline": "Un escape game en quiz, en Java",
       "bubbleLabel": "Escape\nQuizz",
-      "size": 1,
-      "status": null,
-      "role": null,
-      "context": "Collaboration",
-      "description": null,
-      "stack": [],
+      "size": 0.95,
+      "status": "Projet d'école",
+      "context": "Projet de groupe",
+      "description": "Un petit escape game en Java : pour obtenir le code qui désamorce la bombe, il faut répondre juste à 5 questions d'affilée, tirées d'une API de quiz.",
+      "role": "J'ai codé la partie quiz : questions tirées de l'API (Open Trivia DB) avec nouvelles tentatives en cas d'échec, score, et passage à l'écran de fin.",
+      "stack": [
+        "Java",
+        "JavaFX",
+        "Gson"
+      ],
       "learned": null,
       "note": null,
       "links": {
@@ -164,7 +215,7 @@
         "current": null
       },
       "image": null,
-      "draft": true
+      "draft": false
     },
     {
       "id": "cinelist",
@@ -186,29 +237,8 @@
         "current": null
       },
       "image": null,
-      "draft": true
-    },
-    {
-      "id": "ysentinelle",
-      "name": "YSentinelle",
-      "tagline": null,
-      "bubbleLabel": "YSentinelle",
-      "size": 1,
-      "status": null,
-      "role": null,
-      "context": "Collaboration",
-      "description": null,
-      "stack": [],
-      "learned": null,
-      "note": null,
-      "links": {
-        "github": "https://github.com/YSentinelle/app",
-        "organization": null,
-        "live": null,
-        "current": null
-      },
-      "image": null,
-      "draft": true
+      "draft": true,
+      "_why": "Un seul commit d'Ethan (README) : rien à montrer pour l'instant."
     }
   ]
 }
