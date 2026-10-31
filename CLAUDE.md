@@ -72,7 +72,8 @@ Fournir un `.env.example`. Ne jamais committer de `.env`.
 | `src/three/Warmup.tsx` | Préchauffage : textures, compilation des shaders, rendu à blanc |
 | `src/styles/main.css` | Feuille unique, tokens en tête |
 | `scripts/build.mjs` | Build client + SSR, pré-rendu, fichiers générés, contrôle du contenu |
-| `scripts/check-content.mjs` | Échoue si TODO, lorem, valeur technique, lien vide, téléphone ou École 42 dans la page |
+| `scripts/check-content.mjs` | Échoue si TODO, lorem, valeur technique, lien vide, téléphone, École 42 ou espace normale devant « : ; ? ! » dans la page |
+| `scripts/typo.mjs` | Espaces insécables de la typographie française (JSON du contenu et pages annexes, à la compilation) |
 | `scripts/gen-keycap-icons.mjs` | Logos blancs des touches (`src/generated/keycap-icons.json`) |
 | `scripts/gen-cursors.mjs` | Curseurs du site (`public/cursors/`, sources dans `tools/cursors/`) |
 | `tools/poster.html`, `tools/og.html` | Rendus des images fixes de l'avatar et de l'image Open Graph (via `npm run dev`) |
@@ -197,7 +198,7 @@ Ne **pas** utiliser : `biblio-groupe-15`, `togethapp`, `Scalingo`, `tp-template-
 ### 4.5 skills.json (26 touches)
 En tête : `"_note": "Ne garde que les outils que tu sais expliquer en entretien."`
 Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogramme si pas de logo), hotkey (lettre unique), quip, usedIn[]`.
-`usedIn` = où Ethan s'est servi de l'outil (réponses d'Ethan du 17/10), affiché « Utilisé : … » sous la phrase, dans le texte du clavier et dans la liste. Valeurs : « Cours à Ynov », « TryHackMe / HTB », « Projets perso », ou un exercice précis (Wireshark → Machine Cap (HTB) ; Nmap → Machines Cap et Nexus (HTB) ; Metasploit → Room Blue (THM) ; John/Hashcat → Room Blue (THM), badge Hash Cracker ; Go → Power 4 Web, RedQuest ; HTML/CSS et JS → Cabinet infirmier, Refonte du VBVB ; Vue → Mon ancien portfolio, Hera (panel admin) ; JavaScript → aussi Hera (panel admin) ; Python et Docker → aussi Hera (prototype Garmin), d'après le code de ses repos ; Git → Tous mes projets GitHub). Ne jamais ajouter un lieu qu'Ethan n'a pas confirmé. Noms longs d'un seul mot (> 8 lettres) : taille réduite (`toolbox__name--long`). Ton complice, jamais vantard. 17 logos Simple Icons existent ; AD, Réseau, Nmap, Gobuster, John/Hashcat, Volatility, Autopsy, CyberChef et MITRE ATT&CK utilisent leur monogramme.
+`usedIn` = où Ethan s'est servi de l'outil (réponses d'Ethan du 17/10), affiché « Utilisé : … » sous la phrase, dans le texte du clavier et dans la liste. Valeurs : « Cours à Ynov », « TryHackMe / HTB », « Projets perso », ou un exercice précis (Wireshark → Machine Cap (HTB) ; Nmap → Machines Cap et Nexus (HTB) ; Metasploit → Room Blue (THM) ; John/Hashcat → Room Blue (THM), badge Hash Cracker ; Go → Power 4 Web, RedQuest ; HTML/CSS et JS → Cabinet infirmier, Refonte du VBVB ; Vue → Mon ancien portfolio, Hera (panel admin) ; JavaScript → aussi Hera (panel admin) ; Python et Docker → aussi Hera (prototype Garmin), d'après le code de ses repos ; Git → Tous mes projets GitHub). Ne jamais ajouter un lieu qu'Ethan n'a pas confirmé. Noms longs d'un seul mot (> 8 lettres) : taille réduite (`toolbox__name--long`). Ton complice, jamais vantard. 16 logos Simple Icons ; AD, Réseau, Nmap, Gobuster, John/Hashcat, Volatility, Autopsy, Splunk (son logo est un mot-symbole illisible sur une touche, 31/10), CyberChef et MITRE ATT&CK utilisent leur monogramme. Logos à traits fins épaissis à la texture (`BOLD` dans `KeyboardScene.tsx` : Kali, Linux).
 
 **Prog & web** (`prog`, aubergine `#6A4766`)
 - Python — « Le couteau suisse : un script et le problème est réglé. »
@@ -586,6 +587,13 @@ object-src 'none';
 - Bulles : `unit` paysage 0.23 (au lieu de 0.17), scène `clamp(480px, 70vh, 720px)`. Grille statique : la plus grosse bulle (Hera) prend 2 colonnes (`project-card--featured`).
 - Contact sans formulaire : la carte « Écris-moi directement » s'étire à la hauteur des liens rapides, contenu centré.
 - Lisibilité : plus aucun texte sous 12 px ; liens texte à 32 px de haut minimum (cible tactile), soulignement par `text-decoration` ; liens du pied de page qui passent à la ligne ; calendrier : hachures plus marquées, jours grisés bordés.
+
+### Revue complète du 31/10 (corrections faites)
+- **Avatar et titre « Ce que je fais »** : le trajet À propos → bureau croise forcément le titre (l'un est au-dessus, l'autre en dessous). Pendant le trajet, un masque CSS adouci (`mask-image` posé par `AvatarStage.tsx` sur le canevas) découpe l'avatar à l'emplacement du titre : le texte reste toujours devant.
+- **Fiche projet sur écran bas** (1366×768) : fiche plus large et plus serrée (`max-height: 900px`), et quand il reste à lire, fondu en bas + « Suite ↓ » (`has-more`, mesuré au défilement et au redimensionnement).
+- **Consignes selon l'appareil** : classes `.only-mouse` / `.only-touch` (CSS `hover: none` / `pointer: coarse`, donc identiques au pré-rendu) ; « Touche une bulle… », « (astuce : appuie sur une touche) » sur téléphone.
+- **Typographie française** : espace insécable avant « : », fine insécable avant « ; ? ! », dans les « » (`scripts/typo.mjs`). Appliquée à la compilation à `src/data/*.json` (plugin `french-typography` de `vite.config.ts`, client et SSR identiques, pas d'écart d'hydratation) et aux pages annexes (`build.mjs`). Dans le code (TSX), écrire `&nbsp;:` ou `\u00a0:` ; `check:content` échoue sinon.
+- Contact : flèches et icônes « copier » dans la même colonne. Pied de page : trait de séparation aligné sur le contenu.
 
 ### Pistes examinées le 17/10 (grill « améliorations »)
 - **Fait** : « Utilisé : … » sur les touches, boutons du hero, alternance B3 mise en avant, « Ce que j'ai appris », encart sécurité, emplacement témoignages.

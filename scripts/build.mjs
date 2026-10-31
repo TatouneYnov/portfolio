@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { buildCsp } from './csp.mjs';
+import { frTypo } from './typo.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const dist = path.join(root, 'dist');
@@ -105,6 +106,15 @@ const headers = [
 writeFileSync(path.join(dist, '_headers'), headers.join('\n'));
 const host = new URL(siteUrl).hostname;
 if (!host.endsWith('github.io')) writeFileSync(path.join(dist, 'CNAME'), `${host}\n`);
+// Pages annexes (copiées telles quelles depuis public/) : même typographie française que le site, texte seulement
+for (const page of readdirSync(dist).filter((f) => f.endsWith('.html') && f !== 'index.html')) {
+  const file = path.join(dist, page);
+  const src = readFileSync(file, 'utf8');
+  const out = src.replace(/(<(script|style|title)\b[^>]*>[\s\S]*?<\/\2>)|>([^<]+)(?=<)/g, (m, raw, _tag, text) =>
+    raw ? raw : `>${frTypo(text)}`,
+  );
+  writeFileSync(file, out);
+}
 rmSync(ssrOut, { recursive: true, force: true });
 
 step('Contrôle du contenu');

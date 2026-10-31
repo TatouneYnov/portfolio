@@ -140,7 +140,7 @@ export function Header() {
           EB
         </a>
         <button type="button" className="site-header__mail" onClick={() => copyText(profile.email, 'Adresse copiée ✓')}>
-          <span className="sr-only">Copier l'adresse e-mail : </span>
+          <span className="sr-only">Copier l'adresse e-mail&nbsp;: </span>
           {profile.email}
         </button>
         <div className="site-header__end">

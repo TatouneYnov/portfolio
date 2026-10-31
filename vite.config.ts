@@ -2,6 +2,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import Icons from 'unplugin-icons/vite';
 import { buildCsp } from './scripts/csp.mjs';
+import { frTypo } from './scripts/typo.mjs';
 
 const DEFAULT_SITE_URL = 'https://ethanbacquier.github.io';
 
@@ -30,13 +31,25 @@ function siteMeta(siteUrl: string, base: string): Plugin {
   };
 }
 
+/** Espaces insécables de la typographie française dans les textes du site (src/data/*.json) */
+function frenchTypography(): Plugin {
+  return {
+    name: 'french-typography',
+    enforce: 'pre',
+    transform(code, id) {
+      if (!/[\\/]src[\\/]data[\\/][^\\/]+\.json$/.test(id)) return null;
+      return { code: frTypo(code), map: null };
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
   const base = env.VITE_BASE || '/';
   const siteUrl = env.VITE_SITE_URL || DEFAULT_SITE_URL;
   return {
     base,
-    plugins: [react(), Icons({ compiler: 'jsx', jsx: 'react' }), siteMeta(siteUrl, base)],
+    plugins: [frenchTypography(), react(), Icons({ compiler: 'jsx', jsx: 'react' }), siteMeta(siteUrl, base)],
     define: {
       __SITE_URL__: JSON.stringify(siteUrl.replace(/\/$/, '')),
     },

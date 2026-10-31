@@ -118,6 +118,9 @@ function Scene() {
       dir: new THREE.Vector3(),
       frame: { center: new THREE.Vector3(), height: 1, width: 1, dir: new THREE.Vector3() } as Framing,
       slots: { hero: null as Element | null, about: null as Element | null, desk: null as Element | null },
+      title: null as Element | null,
+      titleRect: { x: 0, y: 0, w: 0, h: 0 } as Rect,
+      masked: '',
       look: { yaw: 0, pitch: 0, tYaw: 0, tPitch: 0, px: 0, py: 0, last: -10 },
       sitW: 0,
       waveT0: -1,
@@ -136,6 +139,7 @@ function Scene() {
     s.slots.hero = document.querySelector('[data-slot="hero"]');
     s.slots.about = document.querySelector('[data-slot="about"]');
     s.slots.desk = document.querySelector('[data-slot="desk"]');
+    s.title = document.querySelector('.whatido__title');
     const onMove = (e: PointerEvent) => {
       if (e.pointerType === 'touch') return;
       s.look.px = e.clientX;
@@ -190,6 +194,11 @@ function Scene() {
     if (!visible) {
       // Rien à l'écran : on efface tout le canevas (sinon une ancienne image peut rester affichée)
       desk.group.visible = false;
+      if (s.masked) {
+        s.masked = '';
+        gl.domElement.style.maskImage = '';
+        (gl.domElement.style as CSSStyleDeclaration & { webkitMaskImage: string }).webkitMaskImage = '';
+      }
       gl.setScissorTest(false);
       gl.clear();
       return;
@@ -198,6 +207,32 @@ function Scene() {
     // Découpe du rendu à l'emplacement (marge en haut et sur les côtés, aucune en bas)
     const padX = s.rect.w * 0.12;
     const padTop = s.rect.h * 0.12;
+
+    // Pendant le trajet À propos → bureau, l'avatar croise forcément le titre « Ce que je fais » (au-dessus puis
+    // en dessous). Un masque adouci découpe le canevas autour du titre : le texte reste toujours devant l'avatar.
+    let mask = '';
+    if (pTravel > 0 && pTravel < 1 && readRect(s.title, s.titleRect)) {
+      const tr = s.titleRect;
+      const overlaps =
+        s.rect.x - padX < tr.x + tr.w && s.rect.x + s.rect.w + padX > tr.x &&
+        s.rect.y - padTop < tr.y + tr.h && s.rect.y + s.rect.h > tr.y;
+      if (overlaps) {
+        const m = Math.round(Math.min(tr.h * 0.18, 28)); // fondu du bord
+        const x0 = Math.round(tr.x - m), x1 = Math.round(tr.x + tr.w + m);
+        const y0 = Math.round(tr.y - m), y1 = Math.round(tr.y + tr.h + m * 0.5);
+        // Deux dégradés : la bande horizontale du titre est transparente, sauf hors de sa largeur
+        mask =
+          `linear-gradient(to bottom, #000 ${y0}px, transparent ${y0 + m}px, transparent ${y1 - m}px, #000 ${y1}px), ` +
+          `linear-gradient(to right, transparent ${x1 - m}px, #000 ${x1}px), ` +
+          `linear-gradient(to left, transparent ${size.width - x0 - m}px, #000 ${size.width - x0}px)`;
+      }
+    }
+    if (mask !== s.masked) {
+      s.masked = mask;
+      const st = gl.domElement.style as CSSStyleDeclaration & { webkitMaskImage: string };
+      st.maskImage = mask;
+      st.webkitMaskImage = mask;
+    }
     gl.setScissorTest(false);
     gl.clear();
     gl.setScissor(s.rect.x - padX, size.height - (s.rect.y + s.rect.h), s.rect.w + padX * 2, s.rect.h + padTop);

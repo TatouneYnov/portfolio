@@ -108,7 +108,7 @@ export function Hero() {
               src={asset('assets/avatar/avatar-poster.webp')}
               srcSet={`${asset('assets/avatar/avatar-poster-450.webp')} 450w, ${asset('assets/avatar/avatar-poster.webp')} 900w`}
               sizes="(max-width: 1023px) 80vw, 34vw"
-              alt="Avatar 3D d'Ethan : cheveux bouclés avec une mèche claire, chemise noire"
+              alt="Avatar 3D d'Ethan&nbsp;: cheveux bruns en pointes avec une mèche blanche, fine moustache et bouc, chemise noire"
               width={360}
               height={400}
               fetchPriority="high"

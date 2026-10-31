@@ -63,7 +63,7 @@ export function Journey() {
                   <p className="tl-row__place">{item.place}</p>
                 </div>
                 <p className="tl-row__year">
-                  <span className="sr-only">Période : </span>
+                  <span className="sr-only">Période&nbsp;: </span>
                   {item.year}
                 </p>
                 <div className="tl-row__body">

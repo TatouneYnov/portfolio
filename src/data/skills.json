@@ -30,7 +30,7 @@
     {"id": "wireshark", "label": "Wireshark", "category": "blue", "icon": "simple-icons:wireshark", "mono": "WS", "hotkey": "e", "quip": "Je lis des paquets comme d'autres lisent des romans.", "usedIn": ["Machine Cap (HTB)"]},
     {"id": "volatility", "label": "Volatility", "category": "blue", "icon": null, "mono": "VOL", "hotkey": "y", "quip": "La RAM se souvient de tout.", "usedIn": ["TryHackMe / HTB"]},
     {"id": "autopsy", "label": "Autopsy", "category": "blue", "icon": null, "mono": "AUT", "hotkey": "t", "quip": "On ouvre l'image disque, on remonte le temps.", "usedIn": ["TryHackMe / HTB"]},
-    {"id": "splunk", "label": "Splunk", "category": "blue", "icon": "simple-icons:splunk", "mono": "SPL", "hotkey": "s", "quip": "Des logs, des logs… et soudain, l'anomalie.", "usedIn": ["TryHackMe / HTB"]},
+    {"id": "splunk", "label": "Splunk", "category": "blue", "icon": null, "mono": "SPL", "hotkey": "s", "quip": "Des logs, des logs… et soudain, l'anomalie.", "usedIn": ["TryHackMe / HTB"]},
     {"id": "cyberchef", "label": "CyberChef", "category": "blue", "icon": null, "mono": "CHEF", "hotkey": "f", "quip": "La recette : From Base64 → Gunzip → bingo.", "usedIn": ["TryHackMe / HTB"]},
     {"id": "mitre", "label": "MITRE ATT&CK", "category": "blue", "icon": null, "mono": "ATT&CK", "hotkey": "q", "quip": "La carte de toutes les ruses.", "usedIn": ["TryHackMe / HTB"]}
   ]

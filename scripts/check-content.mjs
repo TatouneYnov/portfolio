@@ -28,6 +28,11 @@ check(/>\s*(undefined|null|NaN|\[object Object\])\s*</, 'Valeur technique affich
 check(/href="#"/, 'Lien vide', body);
 check(/(?:\+33|\b0)[1-9](?:[ .-]?\d{2}){4}\b/, 'Numéro de téléphone');
 check(/École 42|Ecole 42/i, 'Mention interdite');
+// Typographie française : une espace normale devant « : ; ? ! » laisse le signe partir seul à la ligne.
+// Les textes des JSON sont corrigés à la compilation (scripts/typo.mjs) ; dans le code, écrire &nbsp;: ou \u00a0:
+check(/[\p{L}\d)…»] [:;?!](?=\s|$)/mu, 'Espace normale devant la ponctuation (mettre une espace insécable)', body
+  .replace(/<script[\s\S]*?<\/script>/g, '\n')
+  .replace(/<[^>]+>/g, '\n'));
 
 // Pages annexes : présentes et sans placeholder ni téléphone (la loi impose les mentions légales)
 for (const page of ['mentions-legales.html', 'confidentialite.html', '404.html', 'merci.html']) {

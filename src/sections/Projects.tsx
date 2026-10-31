@@ -148,7 +148,8 @@ export function Projects() {
             <div ref={head} className="section-head">
               {title}
               <p className="label section-head__hint">
-                Clique sur une bulle pour ouvrir le projet
+                <span className="only-mouse">Clique sur une bulle pour ouvrir le projet</span>
+                <span className="only-touch">Touche une bulle pour ouvrir le projet</span>
                 <span className="section-head__hint-sub">ou glisse-la dans le socle ↓</span>
               </p>
             </div>
@@ -212,6 +213,8 @@ function ProjectPanel({
   const panel = useRef<HTMLElement>(null);
   const [shown, setShown] = useState<Project | null>(project);
   const swipe = useRef<{ x: number; y: number } | null>(null);
+  // Fiche plus haute que la place disponible (écran bas) : fondu + « Suite » en bas, tant qu'il reste à lire
+  const [more, setMore] = useState(false);
   const index = shown ? projects.findIndex((p) => p.id === shown.id) : -1;
 
   useEffect(() => {
@@ -228,6 +231,23 @@ function ProjectPanel({
   }, [open, navFocus]);
 
   useEffect(() => {
+    const el = panel.current;
+    if (!open || !el) return;
+    const update = () => setMore(el.scrollHeight - el.clientHeight - el.scrollTop > 8);
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+    const body = el.querySelector('.project-panel__body');
+    if (body) ro.observe(body);
+    return () => {
+      el.removeEventListener('scroll', update);
+      ro.disconnect();
+    };
+  }, [open, shown]);
+
+  useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -241,7 +261,7 @@ function ProjectPanel({
   return (
     <aside
       ref={panel}
-      className={`project-panel${project ? ' is-open' : ''}`}
+      className={`project-panel${project ? ' is-open' : ''}${more ? ' has-more' : ''}`}
       aria-labelledby="project-panel-title"
       aria-hidden={!project}
       tabIndex={-1}
@@ -282,6 +302,9 @@ function ProjectPanel({
           </div>
           <div key={shown.id} className="project-panel__body">
             <ProjectDetails project={shown} headingLevel="h3" headingId="project-panel-title" />
+          </div>
+          <div className="project-panel__more" aria-hidden="true">
+            <span>Suite ↓</span>
           </div>
         </>
       )}

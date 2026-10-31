@@ -26,6 +26,8 @@ const PITCH = 1.0;
 const GAP = PITCH - KEY;
 const DIM = new THREE.Color('#2A2533');
 const INK = '#F1EADF'; // logos et monogrammes : blanc cassé mat
+/** Épaississement (px sur 512) des logos à traits trop fins pour se lire sur une touche */
+const BOLD: Record<string, number> = { kali: 6, linux: 3 };
 const MOD_COLOR = '#46424C'; // touches de modification : gris taupe, non interactives
 
 // Boîtier en noyer moyen : penché (plus haut à l'arrière), rebord fin, touches dans un renfoncement sur plaque anthracite
@@ -229,7 +231,11 @@ function makeCapTexture(skill: Skill): THREE.CanvasTexture {
     const img = new Image();
     img.onload = () => {
       const s = size * 0.6;
-      ctx.drawImage(img, (size - s) / 2, (size - s) / 2 + 16, s, s);
+      const x = (size - s) / 2, y = (size - s) / 2 + 16;
+      // Logos à traits fins (dragon de Kali, Tux) : épaissis en les dessinant plusieurs fois autour du centre
+      const bold = BOLD[skill.id] ?? 0;
+      if (bold) for (let a = 0; a < 16; a++) ctx.drawImage(img, x + Math.cos(a * Math.PI / 8) * bold, y + Math.sin(a * Math.PI / 8) * bold, s, s);
+      ctx.drawImage(img, x, y, s, s);
       drawHotkey();
       ink();
       texture.needsUpdate = true;

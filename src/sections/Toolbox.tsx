@@ -96,7 +96,14 @@ export function Toolbox() {
             className="display display--lg toolbox__title"
             lines={[{ text: 'Ma boîte' }, { text: 'à outils', accent: true }]}
           />
-          <p className="label section-head__hint">{use3D ? '(astuce : survole ou appuie sur une touche)' : `${skills.length} outils, classés par domaine`}</p>
+          <p className="label section-head__hint">{use3D ? (
+              <>
+                <span className="only-mouse">(astuce&nbsp;: survole une touche ou tape sa lettre)</span>
+                <span className="only-touch">(astuce&nbsp;: appuie sur une touche)</span>
+              </>
+            ) : (
+              `${skills.length} outils, classés par domaine`
+            )}</p>
         </div>
 
         {use3D && (
@@ -111,13 +118,16 @@ export function Toolbox() {
                     {current.label}
                   </p>
                   <p className="toolbox__quip">{current.quip}</p>
-                  {current.usedIn?.length ? <p className="toolbox__used">Utilisé : {current.usedIn.join(' · ')}</p> : null}
+                  {current.usedIn?.length ? <p className="toolbox__used">Utilisé&nbsp;: {current.usedIn.join(' · ')}</p> : null}
                   <p className="label toolbox__cat">{catById[current.category]?.label}</p>
                 </>
               ) : (
                 <>
                   <p className="toolbox__name">{skills.length} outils</p>
-                  <p className="toolbox__quip">Des langages aux outils d'analyse. Survole une touche ou tape sa lettre.</p>
+                  <p className="toolbox__quip">
+                    Des langages aux outils d'analyse. <span className="only-mouse">Survole une touche ou tape sa lettre.</span>
+                    <span className="only-touch">Appuie sur une touche pour la découvrir.</span>
+                  </p>
                 </>
               )}
             </div>
@@ -178,7 +188,7 @@ export function Toolbox() {
               <span className="skills-list__name">{s.label}</span>
               <span className="skills-list__cat">{catById[s.category]?.label}</span>
               <span className="skills-list__quip">{s.quip}</span>
-              {s.usedIn?.length ? <span className="skills-list__used">Utilisé : {s.usedIn.join(' · ')}</span> : null}
+              {s.usedIn?.length ? <span className="skills-list__used">Utilisé&nbsp;: {s.usedIn.join(' · ')}</span> : null}
             </li>
           ))}
         </ul>

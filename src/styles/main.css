@@ -1028,6 +1028,19 @@ html.menu-open {
   transition: opacity 0.3s, visibility 0s linear 0.3s;
 }
 
+/* Consignes selon l'appareil : souris (survol, clavier physique) ou écran tactile */
+.only-touch {
+  display: none;
+}
+@media (hover: none), (pointer: coarse) {
+  .only-mouse {
+    display: none;
+  }
+  .only-touch {
+    display: inline;
+  }
+}
+
 /* ---------- Curseur ---------- */
 /* Curseurs dessinés pour le site (scripts/gen-cursors.mjs), affichés par le système : aucun retard.
    Un navigateur qui ne gère pas image-set() garde son curseur habituel. */
@@ -1989,6 +2002,35 @@ textarea {
     grid-column: 1 / -1;
   }
 }
+/* Ordinateur à écran bas (1366×768…) : fiche plus large et plus serrée, pour que l'essentiel tienne sans défiler */
+@media (min-width: 1024px) and (max-height: 900px) {
+  .project-panel {
+    width: min(1040px, calc(100% - 2 * var(--gutter)));
+    padding-bottom: 20px;
+  }
+  .project-panel .project {
+    gap: 12px;
+  }
+  .project-panel .project__main,
+  .project-panel .project__side {
+    gap: 12px;
+  }
+  .project-panel .project__name {
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  }
+  .project-panel .project__tagline {
+    font-size: 1.05rem;
+  }
+  .project-panel .project__desc,
+  .project-panel .project__side p:not(.label) {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .project-panel__more {
+    bottom: -20px;
+    margin-bottom: -20px;
+  }
+}
 /* Barre du haut : précédent · n / total · suivant, et fermer */
 .project-panel__bar {
   position: sticky;
@@ -2024,6 +2066,36 @@ textarea {
   from {
     opacity: 0;
   }
+}
+/* Fiche plus haute que la place (écran bas) : fondu en bas et « Suite ↓ », qui disparaissent en bout de lecture */
+.project-panel {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text) 25%, transparent) transparent;
+}
+.project-panel__more {
+  position: sticky;
+  bottom: -28px;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex: none;
+  height: 64px;
+  margin: -64px -28px -28px;
+  padding-bottom: 10px;
+  border-radius: 0 0 var(--radius) var(--radius);
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg-2) 96%, transparent) 70%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.project-panel__more span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.project-panel.has-more .project-panel__more {
+  opacity: 1;
 }
 /* Voile derrière la fiche : assombrit la scène, sauf autour du socle (la bulle posée reste nette) */
 .projects__veil {
@@ -2579,6 +2651,7 @@ html:not(.js) .cal__month caption {
   font-weight: 500;
 }
 .quick-link .arrow {
+  grid-column: 4; /* même colonne avec ou sans mention (« copier ») : flèches et icônes alignées */
   width: 18px;
   height: 18px;
   color: var(--muted);
@@ -2664,9 +2737,7 @@ button.quick-link:active {
 .site-footer__sec {
   display: grid;
   gap: 14px;
-  padding-bottom: 28px;
   margin-bottom: 28px;
-  border-bottom: 1px solid var(--line);
 }
 .site-footer__sec-title {
   display: inline-flex;
@@ -2680,6 +2751,9 @@ button.quick-link:active {
   color: var(--accent);
 }
 .site-footer__sec ul {
+  /* Le trait de séparation est sur la liste : il s'arrête aux marges du contenu, comme le reste */
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 10px 32px;

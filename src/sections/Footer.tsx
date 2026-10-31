@@ -9,34 +9,34 @@ const CREDITS = [
     title: 'Avatar et scènes 3D',
     items: [
       "Avatar « figurine » modélisé en code avec Three.js, inspiré de photos d'Ethan (aucun fichier 3D externe).",
-      'Bureau, clavier et bulles : géométries Three.js générées en code.',
+      'Bureau, clavier et bulles\u00a0: géométries Three.js générées en code.',
     ],
   },
   {
     title: 'Polices',
     items: [
-      'Polices du système de ton appareil (SF Pro, Segoe UI, Roboto…) : aucune police téléchargée.',
-      "Image de partage (Open Graph) : Archivo, Inter et JetBrains Mono · SIL Open Font License",
+      'Polices du système de ton appareil (SF Pro, Segoe UI, Roboto…)\u00a0: aucune police téléchargée.',
+      "Image de partage (Open Graph)\u00a0: Archivo, Inter et JetBrains Mono · SIL Open Font License",
     ],
   },
   {
     title: 'Icônes',
     items: [
       'Solar Icons via Iconify · 480 Design · licence CC BY 4.0',
-      'Logos des outils et plateformes : Simple Icons via Iconify · CC0. Les marques appartiennent à leurs propriétaires.',
+      'Logos des outils et plateformes\u00a0: Simple Icons via Iconify · CC0. Les marques appartiennent à leurs propriétaires.',
     ],
   },
   {
     title: 'Code',
-    items: ['React, Three.js, React Three Fiber, Rapier, GSAP, Lenis', 'Formulaire : Web3Forms'],
+    items: ['React, Three.js, React Three Fiber, Rapier, GSAP, Lenis', 'Formulaire\u00a0: Web3Forms'],
   },
 ];
 
 // Encart « Comment ce site est sécurisé » : uniquement ce qui est réellement en place dans le code.
 const SECURITY = [
   'Aucun tracker, aucun cookie, aucune publicité.',
-  "Polices du système et icônes hébergées ici : rien n'est chargé depuis un autre site, ton adresse IP n'est pas envoyée à Google.",
-  'Politique de sécurité du contenu (CSP) stricte : seuls les scripts du site peuvent s\'exécuter, aucun script inline.',
+  "Polices du système et icônes hébergées ici\u00a0: rien n'est chargé depuis un autre site, ton adresse IP n'est pas envoyée à Google.",
+  'Politique de sécurité du contenu (CSP) stricte\u00a0: seuls les scripts du site peuvent s\'exécuter, aucun script inline.',
   ...(FORM_KEY ? ['Seul le formulaire de contact échange avec un service externe (Web3Forms), pour me transmettre ton message.'] : []),
 ];
 
@@ -53,7 +53,7 @@ export function Footer() {
             <li key={line}>{line}</li>
           ))}
           <li>
-            Une faille ? Le fichier{' '}
+            Une faille&#8239;? Le fichier{' '}
             <a href={asset('.well-known/security.txt')}>security.txt</a> indique comment me la signaler.
           </li>
         </ul>
