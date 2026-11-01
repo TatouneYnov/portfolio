@@ -1,6 +1,6 @@
 {
   "_note": "Stats relevées à la main sur les profils publics. Mets null pour masquer une stat.",
-  "updatedAt": "2026-10-17",
+  "updatedAt": "2026-11-01",
   "tryhackme": {
     "username": ".Tatoune",
     "url": "https://tryhackme.com/p/.Tatoune",
@@ -23,7 +23,7 @@
     "username": "Tatoune",
     "url": "https://app.hackthebox.com/users/2165775",
     "memberSince": "2024-12",
-    "level": 13,
+    "level": 16,
     "machines": [
       "Cap",
       "Nexus"

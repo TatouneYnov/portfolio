@@ -131,12 +131,12 @@ Tout le texte modifiable sans toucher au code.
 3. **Stage · 170 h** · « Et si c'était chez vous ? » · 2026–27 · « Je cherche un stage en cybersécurité ou en infra, les matins (8h–12h) et à temps plein pendant les vacances. » + lien « Voir mes disponibilités ↓ ». Style « à venir » : année en dégradé lavande qui s’efface vers le bas (plus de contour `-webkit-text-stroke` depuis le 30/10 : sur iPhone, la police système faisait apparaître des traits dans les « 2 »), perle qui pulse.
 4. **Alternance · Bachelor 3** · « Prochaine étape » · 2027–28 · « Objectif : continuer en alternance en B3, au rythme de 1 semaine à l'école et 2 semaines en entreprise. » Style « à venir » (plus en version discrète depuis le 17/10 au soir).
 
-### 4.3 training.json (stats relevées le 17 oct. 2026, mises à jour à la main)
+### 4.3 training.json (stats relevées le 17 oct. 2026, mises à jour le 1er nov. 2026, mises à jour à la main)
 Pas d'appel API depuis le navigateur. Afficher discrètement « Stats au <date> ».
 
 ```json
 {
-  "updatedAt": "2026-10-17",
+  "updatedAt": "2026-11-01",
   "tryhackme": {
     "username": ".Tatoune",
     "url": "https://tryhackme.com/p/.Tatoune",
@@ -153,7 +153,7 @@ Pas d'appel API depuis le navigateur. Afficher discrètement « Stats au <date> 
     "username": "Tatoune",
     "url": "https://app.hackthebox.com/users/2165775",
     "memberSince": "2024-12",
-    "level": 13,
+    "level": 16,
     "machines": ["Cap", "Nexus"],
     "challenges": null,
     "sherlocks": null
@@ -407,7 +407,7 @@ Pin ~150vh (≥ 1024 px uniquement) : l'avatar glisse de la colonne « À propos
 - **Rien d'autre que des keycaps sur le clavier** (aucun personnage, aucune mascotte).
 
 ### 7. Terrain d'entraînement (refait le 30/10 : tuiles façon widgets iPhone)
-Grille de tuiles en verre (`.tiles`, 4 colonnes, 2 sur mobile, `grid-auto-flow: dense`) : grande tuile TryHackMe (« Top 7 % » géant, « Voir le profil ↗ »), petites tuiles Meilleure ligue / Questions résolues / Meilleure série / Certification (en préparation), tuile large Badges, grande tuile Hack The Box (niveau 13 géant + machines nommées), tuile large Parcours en cours. Une valeur `null` retire sa tuile sans laisser de trou. Compteurs animés une fois. Mention « Stats au 17 oct. 2026 ».
+Grille de tuiles en verre (`.tiles`, 4 colonnes, 2 sur mobile, `grid-auto-flow: dense`) : grande tuile TryHackMe (« Top 7 % » géant, « Voir le profil ↗ »), petites tuiles Meilleure ligue / Questions résolues / Meilleure série / Certification (en préparation), tuile large Badges, grande tuile Hack The Box (niveau 16 géant + machines nommées), tuile large Parcours en cours. Une valeur `null` retire sa tuile sans laisser de trou. Compteurs animés une fois. Mention « Stats au 1er nov. 2026 ».
 
 ### 8. Projets (bulles physiques) — refait le 30/10 avec Ethan (grill + validation étape par étape)
 **Scène plein écran** (`.projects__scene`, `100svh`, bord à bord) : « Mes » / « projets » et l'astuce (« Clique sur une bulle pour ouvrir le projet / ou glisse-la dans le socle ↓ ») sont **posés sur la scène** ; leur hauteur (`topInset`, mesurée) sert de plafond aux bulles, qui ne passent jamais dessous.
