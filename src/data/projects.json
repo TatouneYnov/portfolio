@@ -38,21 +38,21 @@
       "tagline": "Le site vitrine d'un cabinet d'infirmières libérales",
       "bubbleLabel": "Cabinet\ninfirmier",
       "size": 1.15,
-      "status": "En cours",
-      "role": "Je conçois et développe le site pour le cabinet.",
+      "status": "Livré",
+      "role": "J'ai conçu, développé et mis en ligne le site : hébergement, nom de domaine et sécurité du serveur (HTTPS forcé, politique de sécurité du contenu stricte, aucune donnée collectée).",
       "context": "Client : un cabinet d'infirmières libérales",
-      "description": "Site vitrine statique pour retrouver les infos pratiques du cabinet et le contacter, aux couleurs de sa carte de visite. Les contenus sont validés par le cabinet.",
+      "description": "Le site vitrine d'un cabinet de cinq infirmières libérales : soins, rendez-vous, équipe, honoraires et questions fréquentes, avec l'appel au cabinet toujours à portée de doigt. Pensé d'abord pour le téléphone et pour un public âgé, aux couleurs de la carte de visite, contenus validés par le cabinet.",
       "stack": [
         "HTML",
         "CSS",
         "JavaScript"
       ],
-      "learned": "Réaliser un site, utiliser l'IA comme aide et le déployer.",
+      "learned": "Réaliser un site et le mettre en ligne.",
       "note": null,
       "links": {
         "github": null,
         "organization": null,
-        "live": null,
+        "live": "https://cabinet-infirmier-jassans.fr",
         "current": null
       },
       "image": null,
@@ -67,7 +67,7 @@
       "status": "En cours",
       "role": "Je refais le site de mon propre club de volley.",
       "context": "Volley Ball Villefranche Beaujolais (site actuel sous WordPress)",
-      "description": "Nouveau site pour le club : actus, équipes, inscriptions, formation, beach et partenaires.",
+      "description": "Nouveau site pour le club : actus, équipes et effectifs, matchs, inscriptions, formation, beach, tournoi du 8 mai et partenaires. Chaque page est pré-rendue pour être lisible sans JavaScript et bien référencée.",
       "stack": [
         "React",
         "TypeScript",
@@ -75,7 +75,7 @@
         "React Router",
         "GSAP"
       ],
-      "learned": "Réaliser un site, utiliser l'IA comme aide et le déployer.",
+      "learned": "Réaliser un site et le déployer.",
       "note": null,
       "links": {
         "github": null,
@@ -159,6 +159,37 @@
       "note": null,
       "links": {
         "github": "https://github.com/TatouneYnov/Projet_Red",
+        "organization": null,
+        "live": null,
+        "current": null
+      },
+      "image": null,
+      "draft": false
+    },
+    {
+      "id": "loldle",
+      "name": "Loldle",
+      "tagline": "Deviner le champion de League of Legends du jour",
+      "bubbleLabel": "Loldle",
+      "size": 1,
+      "status": null,
+      "context": "Projet solo",
+      "description": "Inspiré du jeu Loldle : il faut deviner un champion de League of Legends. À chaque essai, le jeu indique ce qui correspond (genre, type d'attaque, région, voie, année de sortie). Mode illimité et défi du jour, comptes joueurs, photo de profil et classements.",
+      "role": "Projet réalisé seul, du serveur à l'interface.",
+      "stack": [
+        "Node.js",
+        "Express",
+        "PostgreSQL",
+        "JWT",
+        "bcrypt",
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "learned": null,
+      "note": null,
+      "links": {
+        "github": "https://github.com/TatouneYnov/Scalingo",
         "organization": null,
         "live": null,
         "current": null

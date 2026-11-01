@@ -112,7 +112,7 @@ Tout le texte modifiable sans toucher au code.
 - Statut : **Étudiant en B2 Cybersécurité · Ynov Campus Lyon (2026–2027)** (`status`, utilisé dans `llms.txt`) ; version courte du hero `heroStatus` : « B2 · Ynov Campus Lyon · 2026–27 » (évite de répéter « Étudiant en cybersécurité » juste sous le mot rotatif)
 - Badge du hero : « Stage 170 h dès nov. 2026 · Alternance B3 en 2027 » (affiché sur 2 lignes, coupé sur « · »)
 - Recherche : stage de 170 h cette année **et** alternance en B3 (rentrée 2027, rythme **1 semaine à l'école / 2 semaines en entreprise**). Les recruteurs s'intéressent souvent plus aux alternants : l'alternance est mise en avant (badge, Disponibilités, timeline, formulaire).
-- Intérêts : cybersécurité (labs THM / HTB) et infra. Niveau dev : les bases, il s'appuie surtout sur l'IA (dit par Ethan le 31/10) : « À propos » dit « avec l'IA comme copilote », ne jamais le présenter comme développeur confirmé. **Plus aucune mention de DFIR / CTI / threat intel** (demande d'Ethan du 31/10 : il n'en a jamais fait). « À propos » et la carte « Cybersécurité » réécrits le 31/10 sur cette base.
+- Intérêts : cybersécurité (labs THM / HTB) et infra. Niveau dev : les bases (dit par Ethan le 31/10), ne jamais le présenter comme développeur confirmé. **Ne jamais écrire sur le site que ses projets ont été faits avec l'IA** (demande d'Ethan du 01/11) : l'IA apparaît seulement comme une compétence (touche Claude Code, sans « Utilisé : »). **Plus aucune mention de DFIR / CTI / threat intel** (demande d'Ethan du 31/10 : il n'en a jamais fait). « À propos » et la carte « Cybersécurité » réécrits le 31/10 sur cette base.
 - Niveau (à respecter dans tous les textes) : bases solides en infra/cyber et plusieurs langages ; **pas encore de certification** ; ne jamais gonfler.
 - Email : `ethan.bacquier@gmail.com` (bouton copier + mailto)
 - Discord : `tatoune` (bouton « copier le pseudo », pas d'URL)
@@ -174,7 +174,7 @@ Statuts possibles : « En cours », « Livré », « Projet d'école ».
 « Ce que j'ai appris » (`learned`), rédigé à partir des mots d'Ethan (17/10), sans rien ajouter :
 - Hera : « Utiliser une API REST (jetons JWT) pour construire une interface d'administration, et gérer des comptes et leurs permissions. » (corrigé le 31/10)
 - Power 4 : « Monter un serveur web en Go. » · RedQuest : « Apprendre le langage Go. »
-- Cabinet infirmier et VBVB : « Réaliser un site, utiliser l'IA comme aide et le déployer. »
+- Cabinet infirmier : « Réaliser un site et le mettre en ligne. » · VBVB : « Réaliser un site et le déployer. » (mention de l'IA retirée le 01/11)
 
 1. **Hera** — `size: 1.6`, mis en avant. **Projet d'école** (projet de groupe à Ynov). Rempli le 17/10 à partir des zips des deux repos d'Ethan :
    - Hera = application autour d'événements sportifs : des organisateurs publient des sessions (sport, niveau, lieu, horaires), les participants les rejoignent.
@@ -182,7 +182,7 @@ Statuts possibles : « En cours », « Livré », « Projet d'école ».
    - **`hera-connect`** (branche `garmin`) : prototype de connexion Garmin **basé sur le projet open source garmin-grafana** (licence BSD-3, crédité). Apports d'Ethan visibles : script d'export CSV des activités (`csvsimple/export.py`), correctifs pour l'erreur 404 de l'API Garmin, README en français. Ne jamais présenter garmin-grafana comme son code.
    - Stack affichée : Vue 3, Vue Router, Vite, API REST (JWT), Python, Docker, InfluxDB, Grafana. Liens : site https://hera-app.fr + organisation https://github.com/Hera-app (repos privés : pas de lien vers un repo). Plus de note « Fiche détaillée bientôt ».
    - L'ancien portfolio parlait de « chat temps réel / WebSockets » : **rien de tel dans ces deux repos**, ne pas le reprendre.
-2. **Site du cabinet infirmier de Jassans-Riottier** — vrai client. Site vitrine statique HTML/CSS/JS (fichiers séparés, sans framework) pour un cabinet d'infirmières libérales : infos pratiques et contact, aux couleurs de leur carte de visite, contenus validés par le cabinet. Statut **« En cours »**, pas de lien live.
+2. **Site du cabinet infirmier de Jassans-Riottier** — vrai client. Site vitrine statique HTML/CSS/JS (fichiers séparés, sans framework) pour un cabinet d'infirmières libérales : infos pratiques et contact, aux couleurs de leur carte de visite, contenus validés par le cabinet. **En ligne depuis fin octobre 2026** : https://cabinet-infirmier-jassans.fr (hébergement OVH, domaine, `.htaccess` avec HTTPS forcé, HSTS et CSP stricte, aucun formulaire ni donnée collectée), statut « Livré » depuis le 01/11. Fiche réécrite d'après le CLAUDE.md du repo `TatouneYnov/cabinet-infirmier-jassans` (5 infirmières libérales ; ne jamais y ajouter d'avis de patients).
 3. **Refonte du site du VBVB** (Volley Ball Villefranche Beaujolais) — statut **« En cours »**. Ethan refait le site de son propre club (actuellement sous WordPress) : actus, équipes, inscriptions, formation, beach, partenaires. Stack = `null` (masquée). Lien https://vbvb.fr uniquement en « site actuel », jamais comme réalisation.
 4. **Power 4 Web** — Projet d'école. Puissance 4 dans le navigateur, serveur Go (`net/http`), interface HTML/CSS, 3 difficultés (Normal 6×7, Difficile 6×9, Expert 7×8), noms de joueurs personnalisables. GitHub : https://github.com/TatouneYnov/-power4-web (ignorer le repo privé `-power4-webbbbb`).
 5. **RedQuest** — Projet d'école. RPG jouable dans le terminal, en Go : création de perso (nom, classe, compétences, équipement), boutique, combats contre des gobelins et autres monstres, gestion du mana et des ressources. GitHub : https://github.com/TatouneYnov/Projet_Red
@@ -196,7 +196,8 @@ Hera : Ethan **n'a pas codé l'API** ; il a suivi sa création et s'en est servi
 
 Pour 6 à 9 : avant de passer `draft` à `false`, lire le code et **les commits d'Ethan** (`git log --author`) et ne décrire que ce qu'il a réellement fait. Rôle en une phrase factuelle.
 
-Regardés le 31/10 à la demande d'Ethan (en attente de sa décision) : `biblio-groupe-15` (gestion de bibliothèque en Python/SQLite, groupe de 4 ; seul commit d'Ethan : l'ADR « requêtes SQL paramétrées » contre l'injection SQL), `Scalingo` (jeu de devinettes de champions League of Legends façon Loldle, Node/Express + PostgreSQL + JWT/bcrypt, classement, 34 commits d'Ethan seul), `togethapp` (app mobile React Native/Expo + Supabase : village tower defense coopératif à 2, compagnon type Tamagotchi, mini-jeux ; repo privé, 1 commit).
+**Loldle** (repo `TatouneYnov/Scalingo`, publié le 01/11 sous le nom demandé par Ethan) : jeu de devinettes de champions League of Legends inspiré de Loldle, Node/Express + PostgreSQL + JWT/bcrypt, modes illimité et défi du jour, comptes, classements ; projet solo (34 commits). Statut non renseigné (école ou perso : à confirmer).
+Regardés le 31/10, non retenus : `biblio-groupe-15` (gestion de bibliothèque en Python/SQLite, groupe de 4 ; seul commit d'Ethan : l'ADR « requêtes SQL paramétrées » contre l'injection SQL), `togethapp` (app mobile React Native/Expo + Supabase : village tower defense coopératif à 2, compagnon type Tamagotchi, mini-jeux ; repo privé, 1 commit).
 Ne **pas** utiliser : `tp-template-golang`, `algo-projet`, `ynov_2025_bachelor_1`, `exam-git-avanc-*` (non retenus par Ethan).
 
 ### 4.5 skills.json (22 touches)
@@ -213,7 +214,7 @@ Chaque entrée : `id, label, category, icon (id iconify ou null), mono (monogram
 - JavaScript — « undefined is not a function… et pourtant ça marche. »
 - Vue — « Mon ancien portfolio, c'était lui. »
 - Git — « git commit -m "ça marche (je crois)" »
-- Claude Code — « Je décris, il code, je relis et je teste. » (ajouté le 31/10 : Ethan a les bases en dev et s'appuie surtout sur l'IA ; usedIn = Cabinet infirmier, Refonte du VBVB, Ce portfolio, d'après les CLAUDE.md de ses repos ; logo Simple Icons `claude`)
+- Claude Code — « Bien poser le problème, c'est déjà la moitié de la solution. » (ajouté le 31/10, compétence seule : `usedIn` vide, aucun projet présenté comme fait avec l'IA ; logo Simple Icons `claude`)
 
 **Système & infra** (`infra`, ardoise `#5E6B85`)
 - Linux — « Mon terrain de jeu préféré. »
