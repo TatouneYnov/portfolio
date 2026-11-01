@@ -172,8 +172,8 @@
       "tagline": "Deviner le champion de League of Legends du jour",
       "bubbleLabel": "Loldle",
       "size": 1,
-      "status": null,
-      "context": "Projet solo",
+      "status": "Projet d'école",
+      "context": "Ynov · projet solo",
       "description": "Inspiré du jeu Loldle : il faut deviner un champion de League of Legends. À chaque essai, le jeu indique ce qui correspond (genre, type d'attaque, région, voie, année de sortie). Mode illimité et défi du jour, comptes joueurs, photo de profil et classements.",
       "role": "Projet réalisé seul, du serveur à l'interface.",
       "stack": [

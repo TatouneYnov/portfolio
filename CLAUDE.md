@@ -196,7 +196,7 @@ Hera : Ethan **n'a pas codé l'API** ; il a suivi sa création et s'en est servi
 
 Pour 6 à 9 : avant de passer `draft` à `false`, lire le code et **les commits d'Ethan** (`git log --author`) et ne décrire que ce qu'il a réellement fait. Rôle en une phrase factuelle.
 
-**Loldle** (repo `TatouneYnov/Scalingo`, publié le 01/11 sous le nom demandé par Ethan) : jeu de devinettes de champions League of Legends inspiré de Loldle, Node/Express + PostgreSQL + JWT/bcrypt, modes illimité et défi du jour, comptes, classements ; projet solo (34 commits). Statut non renseigné (école ou perso : à confirmer).
+**Loldle** (repo `TatouneYnov/Scalingo`, publié le 01/11 sous le nom demandé par Ethan) : jeu de devinettes de champions League of Legends inspiré de Loldle, Node/Express + PostgreSQL + JWT/bcrypt, modes illimité et défi du jour, comptes, classements ; projet solo (34 commits). Projet d'école (confirmé par Ethan le 01/11), contexte « Ynov · projet solo ».
 Regardés le 31/10, non retenus : `biblio-groupe-15` (gestion de bibliothèque en Python/SQLite, groupe de 4 ; seul commit d'Ethan : l'ADR « requêtes SQL paramétrées » contre l'injection SQL), `togethapp` (app mobile React Native/Expo + Supabase : village tower defense coopératif à 2, compagnon type Tamagotchi, mini-jeux ; repo privé, 1 commit).
 Ne **pas** utiliser : `tp-template-golang`, `algo-projet`, `ynov_2025_bachelor_1`, `exam-git-avanc-*` (non retenus par Ethan).
 
